@@ -1,0 +1,69 @@
+//*****************************************************************
+// File:   cl.jj
+// Author: Procesadores de Lenguajes-University of Zaragoza
+// Date:   julio 2023
+// Coms:   compilar mediante "ant"
+//*****************************************************************
+
+options {
+	IGNORE_CASE = true;
+	COMMON_TOKEN_ACTION = false;
+}
+
+PARSER_BEGIN(alike)
+
+package traductor;
+
+//...
+
+public class alike {
+   //...
+   
+   public static void main(String[] args) {
+	   alike parser = null;
+	   
+	   try {
+		   if(args.length == 0) {
+			   parser = new alike(System.in);
+		   }
+		   else {
+			   parser = new alike(new java.io.FileInputStream(args[0]));
+		   }
+		   //Programa es el símbolo inicial de la gramática
+		   parser.Programa();
+		   //...
+		   System.out.println("***** Análisis terminado con éxito *****");
+	   }
+	   catch (java.io.FileNotFoundException e) {
+		   System.err.println ("Fichero " + args[0] + " no encontrado.");
+	   }
+	   catch (TokenMgrError e) {
+		   System.err.println("LEX_ERROR: " + e.getMessage());
+	   }
+	   //...
+   }
+}
+PARSER_END(alike)
+
+TOKEN : {
+	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+}
+
+TOKEN : {
+|	< tBOOL: "bool" >
+|	< tCHAR: "char" >
+   ...
+}
+
+//------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
+void Programa() : 
+{
+
+}
+{
+   ( 
+	   < tBEGIN > | < tBOOL > | < tCHAR > | ...
+   )+
+   < EOF >
+}
