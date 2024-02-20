@@ -1,0 +1,27 @@
+//*****************************************************************
+// File:   lexer.jj
+// Author: Procesadores de Lenguajes-University of Zaragoza
+// Date:   febrero 2022
+// Coms:   Compilar mediante "ant"
+//*****************************************************************
+
+options {
+	IGNORE_CASE = false;
+	// opciones aquí
+}
+
+PARSER_BEGIN(lexer)
+
+public class lexer {
+
+}
+
+PARSER_END(lexer)
+//---------------------------------------------------------
+TOKEN : {
+ 	< tPALABRA: (~["\t","\n"," "])+ >
+| 	< tNL: "\n" >
+|	< tRESTO: ~[] >
+}
+//---------------------------------------------------------
+

@@ -1,0 +1,3761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ajedrez>
+; --- Program "ajedrez"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "tamano_tablero", type INT, level 0,  address [3]!
+; --- Simple variable "nreinas", type INT, level 0,  address [4]!
+; --- Simple variable "fila", type INT, level 0,  address [5]!
+; --- Simple variable "columna", type INT, level 0,  address [6]!
+; --- Simple variable "f", type INT, level 0,  address [7]!
+; --- Simple variable "c", type INT, level 0,  address [8]!
+; --- Array variable "tablero", type INT, size 1000, level 0, address [9:1008]!
+; --- Array variable "reinas", type INT, size 1000, level 0, address [1009:2008]!
+</constant_variable_declaration>
+<function_min>
+L1:
+; --- Simple parameter "x", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "y", type INT, class VAL, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "y" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "x" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L2
+<constant_variable_declaration>
+</constant_variable_declaration>
+L2:
+<min_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "x"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "y"
+  SRF  0  5
+  DRF 
+  GT 
+</condition>
+  JMF L3
+<then>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "y"
+  SRF  0  5
+  DRF 
+  CSF 
+</return>
+  JMP L4
+</then>
+<else>
+L3:
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "x"
+  SRF  0  4
+  DRF 
+  CSF 
+</return>
+</else>
+L4:
+</if-then>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L5
+; --- Write STRING "Function "min" does not return a value in line 23."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 109
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 50
+  WRT  0
+  STC 51
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L5:
+</check_runtime_return_execution>
+  CSF 
+</min_instruction_block>
+</function_min>
+<function_max>
+L6:
+; --- Simple parameter "x", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "y", type INT, class VAL, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "y" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "x" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L7
+<constant_variable_declaration>
+</constant_variable_declaration>
+L7:
+<max_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "x"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "y"
+  SRF  0  5
+  DRF 
+  GT 
+</condition>
+  JMF L8
+<then>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "x"
+  SRF  0  4
+  DRF 
+  CSF 
+</return>
+  JMP L9
+</then>
+<else>
+L8:
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "y"
+  SRF  0  5
+  DRF 
+  CSF 
+</return>
+</else>
+L9:
+</if-then>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L10
+; --- Write STRING "Function "max" does not return a value in line 31."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 120
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 49
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L10:
+</check_runtime_return_execution>
+  CSF 
+</max_instruction_block>
+</function_max>
+<procedure_linea>
+L11:
+  JMP L12
+<constant_variable_declaration>
+</constant_variable_declaration>
+L12:
+<linea_instruction_block>
+<put>
+<int2char>
+  STC 13
+  STC 13
+; --- check 0 <= int <= 255
+  DUP 
+  STC  0
+  GTE 
+  JMF L13
+  STC 255
+  LTE 
+  JMF L13
+  JMP L14
+L13:
+; --- Write STRING "Value "
+; --- Standard string writing
+  STC 86
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  WRT  1
+; --- Write STRING " invalid for int2char in line 34."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 50
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 52
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L14:
+</int2char>
+; --- Put CHARACTER
+  WRT  0
+</put>
+<put>
+<int2char>
+  STC 10
+  STC 10
+; --- check 0 <= int <= 255
+  DUP 
+  STC  0
+  GTE 
+  JMF L15
+  STC 255
+  LTE 
+  JMF L15
+  JMP L16
+L15:
+; --- Write STRING "Value "
+; --- Standard string writing
+  STC 86
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  WRT  1
+; --- Write STRING " invalid for int2char in line 34."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 50
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 52
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L16:
+</int2char>
+; --- Put CHARACTER
+  WRT  0
+</put>
+  CSF 
+</linea_instruction_block>
+</procedure_linea>
+<function_sitio>
+L17:
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "columna" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "fila" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L18
+<constant_variable_declaration>
+</constant_variable_declaration>
+L18:
+<sitio_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  STC  1
+  SBT 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  TMS 
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  PLUS 
+  STC  1
+  SBT 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L19
+; --- Write STRING "Function "sitio" does not return a value in line 39."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 57
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L19:
+</check_runtime_return_execution>
+  CSF 
+</sitio_instruction_block>
+</function_sitio>
+<function_componente>
+L20:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [4]!
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [5]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [6]!
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "columna" (number 3).
+  SRF  0  6
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "fila" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L21
+<constant_variable_declaration>
+</constant_variable_declaration>
+L21:
+<componente_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+<component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  5
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  6
+  DRF 
+</argument_2>
+  OSF  7  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L22
+  DUP 
+  STC 1000
+  LT 
+  JMT L23
+L22:
+; --- Write STRING "Index out of bounds for array "tablero" in line 42."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 52
+  WRT  0
+  STC 50
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L23:
+; --- Initial ref address of array "tablero"
+  SRF  0  4
+  DRF 
+  PLUS 
+  DRF 
+</component_of_array_tablero>
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L24
+; --- Write STRING "Function "componente" does not return a value in line 43."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 109
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 52
+  WRT  0
+  STC 51
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L24:
+</check_runtime_return_execution>
+  CSF 
+</componente_instruction_block>
+</function_componente>
+<function_ocupada>
+L25:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [4]!
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [5]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [6]!
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "columna" (number 3).
+  SRF  0  6
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "fila" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L26
+<constant_variable_declaration>
+</constant_variable_declaration>
+L26:
+<ocupada_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+<component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  5
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  6
+  DRF 
+</argument_2>
+  OSF  7  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L27
+  DUP 
+  STC 1000
+  LT 
+  JMT L28
+L27:
+; --- Write STRING "Index out of bounds for array "tablero" in line 46."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 52
+  WRT  0
+  STC 54
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L28:
+; --- Initial ref address of array "tablero"
+  SRF  0  4
+  DRF 
+  PLUS 
+  DRF 
+</component_of_array_tablero>
+  STC  0
+  GT 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L29
+; --- Write STRING "Function "ocupada" does not return a value in line 47."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 111
+  WRT  0
+  STC 99
+  WRT  0
+  STC 117
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 97
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 52
+  WRT  0
+  STC 55
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L29:
+</check_runtime_return_execution>
+  CSF 
+</ocupada_instruction_block>
+</function_ocupada>
+<procedure_asignar_componente>
+L30:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [3]!
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [5]!
+; --- Simple parameter "valor", type INT, class VAL, level 1,  address [6]!
+<recover_argument_4>
+; --- Recover simple val / ref variable parameter "valor" (number 4).
+  SRF  0  6
+  ASGI 
+</recover_argument_4>
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "columna" (number 3).
+  SRF  0  5
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "fila" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L31
+<constant_variable_declaration>
+</constant_variable_declaration>
+L31:
+<asignar_componente_instruction_block>
+<Assignment_to_component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  7  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L32
+  DUP 
+  STC 1000
+  LT 
+  JMT L33
+L32:
+; --- Write STRING "Index out of bounds for array "tablero" in line 50."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 48
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L33:
+; --- Initial address of array "tablero"
+  SRF  0  3
+  DRF 
+  PLUS 
+; --- Constant / variable / parameter "valor"
+  SRF  0  6
+  DRF 
+  ASG 
+</Assignment_to_component_of_array_tablero>
+  CSF 
+</asignar_componente_instruction_block>
+</procedure_asignar_componente>
+<procedure_marcar_componente>
+L34:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [3]!
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [5]!
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "columna" (number 3).
+  SRF  0  5
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "fila" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L35
+<constant_variable_declaration>
+</constant_variable_declaration>
+L35:
+<marcar_componente_instruction_block>
+<Assignment_to_component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  6  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L36
+  DUP 
+  STC 1000
+  LT 
+  JMT L37
+L36:
+; --- Write STRING "Index out of bounds for array "tablero" in line 54."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 52
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L37:
+; --- Initial address of array "tablero"
+  SRF  0  3
+  DRF 
+  PLUS 
+<component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  6  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L38
+  DUP 
+  STC 1000
+  LT 
+  JMT L39
+L38:
+; --- Write STRING "Index out of bounds for array "tablero" in line 54."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 52
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L39:
+; --- Initial ref address of array "tablero"
+  SRF  0  3
+  DRF 
+  PLUS 
+  DRF 
+</component_of_array_tablero>
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_component_of_array_tablero>
+  CSF 
+</marcar_componente_instruction_block>
+</procedure_marcar_componente>
+<procedure_desmarcar_componente>
+L40:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [3]!
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [5]!
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "columna" (number 3).
+  SRF  0  5
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "fila" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L41
+<constant_variable_declaration>
+</constant_variable_declaration>
+L41:
+<desmarcar_componente_instruction_block>
+<Assignment_to_component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  6  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L42
+  DUP 
+  STC 1000
+  LT 
+  JMT L43
+L42:
+; --- Write STRING "Index out of bounds for array "tablero" in line 58."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 56
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L43:
+; --- Initial address of array "tablero"
+  SRF  0  3
+  DRF 
+  PLUS 
+<component_of_array_tablero>
+<function_call_sitio>
+; --- Function call sitio
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  6  1 L17
+</function_call_sitio>
+  STC  0
+  SBT 
+; --- Checking if index is valid for array "tablero"
+  DUP 
+  STC  0
+  GTE 
+  JMF L44
+  DUP 
+  STC 1000
+  LT 
+  JMT L45
+L44:
+; --- Write STRING "Index out of bounds for array "tablero" in line 58."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 56
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L45:
+; --- Initial ref address of array "tablero"
+  SRF  0  3
+  DRF 
+  PLUS 
+  DRF 
+</component_of_array_tablero>
+  STC  1
+  SBT 
+  ASG 
+</Assignment_to_component_of_array_tablero>
+  CSF 
+</desmarcar_componente_instruction_block>
+</procedure_desmarcar_componente>
+<procedure_colocar_reina>
+L46:
+; --- Simple parameter "fila", type INT, class VAL, level 1,  address [3]!
+; --- Simple parameter "columna", type INT, class VAL, level 1,  address [4]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "columna" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "fila" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L47
+<constant_variable_declaration>
+; --- Simple variable "f", type INT, level 1,  address [5]!
+; --- Simple variable "c", type INT, level 1,  address [6]!
+</constant_variable_declaration>
+L47:
+<colocar_reina_instruction_block>
+<procedure_call_marcar_componente>
+; --- Procedure call marcar_componente
+<argument_1>
+; --- Constant / variable / parameter "reinas"
+  SRF  1 1009
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "fila"
+  SRF  0  3
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "columna"
+  SRF  0  4
+  DRF 
+</argument_3>
+  OSF  7  1 L34
+</procedure_call_marcar_componente>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_f>
+<while>
+L48:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L49
+<while_instruction_block>
+<procedure_call_marcar_componente>
+; --- Procedure call marcar_componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "columna"
+  SRF  0  4
+  DRF 
+</argument_3>
+  OSF  7  1 L34
+</procedure_call_marcar_componente>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_f>
+</while_instruction_block>
+  JMP L48
+L49:
+</while>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_c>
+<while>
+L50:
+<condition>
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L51
+<while_instruction_block>
+<procedure_call_marcar_componente>
+; --- Procedure call marcar_componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "fila"
+  SRF  0  3
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+</argument_3>
+  OSF  7  1 L34
+</procedure_call_marcar_componente>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L50
+L51:
+</while>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "fila"
+  SRF  0  3
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "columna"
+  SRF  0  4
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_c>
+<while>
+L52:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  GT 
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  GT 
+  AND 
+</condition>
+  JMF L53
+<while_instruction_block>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  SBT 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  SBT 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L52
+L53:
+</while>
+<while>
+L54:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+  AND 
+</condition>
+  JMF L55
+<while_instruction_block>
+<procedure_call_marcar_componente>
+; --- Procedure call marcar_componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+</argument_3>
+  OSF  7  1 L34
+</procedure_call_marcar_componente>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L54
+L55:
+</while>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "fila"
+  SRF  0  3
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "columna"
+  SRF  0  4
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_c>
+<while>
+L56:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  GT 
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LT 
+  AND 
+</condition>
+  JMF L57
+<while_instruction_block>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  SBT 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L56
+L57:
+</while>
+<while>
+L58:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  GTE 
+  AND 
+</condition>
+  JMF L59
+<while_instruction_block>
+<procedure_call_marcar_componente>
+; --- Procedure call marcar_componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+</argument_3>
+  OSF  7  1 L34
+</procedure_call_marcar_componente>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  5
+; --- Constant / variable / parameter "f"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_f>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  6
+; --- Constant / variable / parameter "c"
+  SRF  0  6
+  DRF 
+  STC  1
+  SBT 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L58
+L59:
+</while>
+  CSF 
+</colocar_reina_instruction_block>
+</procedure_colocar_reina>
+<procedure_iniciar_tablero>
+L60:
+  JMP L61
+<constant_variable_declaration>
+; --- Simple variable "f", type INT, level 1,  address [3]!
+; --- Simple variable "c", type INT, level 1,  address [4]!
+</constant_variable_declaration>
+L61:
+<iniciar_tablero_instruction_block>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  3
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_f>
+<while>
+L62:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L63
+<while_instruction_block>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  4
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_c>
+<while>
+L64:
+<condition>
+; --- Constant / variable / parameter "c"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L65
+<while_instruction_block>
+<procedure_call_asignar_componente>
+; --- Procedure call asignar_componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  3
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  4
+  DRF 
+</argument_3>
+<argument_4>
+  STC  0
+</argument_4>
+  OSF  5  1 L30
+</procedure_call_asignar_componente>
+<procedure_call_asignar_componente>
+; --- Procedure call asignar_componente
+<argument_1>
+; --- Constant / variable / parameter "reinas"
+  SRF  1 1009
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  3
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  4
+  DRF 
+</argument_3>
+<argument_4>
+  STC  0
+</argument_4>
+  OSF  5  1 L30
+</procedure_call_asignar_componente>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  4
+; --- Constant / variable / parameter "c"
+  SRF  0  4
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L64
+L65:
+</while>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  3
+; --- Constant / variable / parameter "f"
+  SRF  0  3
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_f>
+</while_instruction_block>
+  JMP L62
+L63:
+</while>
+  CSF 
+</iniciar_tablero_instruction_block>
+</procedure_iniciar_tablero>
+<procedure_mostrar_tablero>
+L66:
+; --- Ref array parameter "tablero", type INT, class REF, size 1000, level 1, address [3]!
+<recover_argument_1>
+; --- Recover array ref variable parameter "tablero" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L67
+<constant_variable_declaration>
+; --- Simple variable "f", type INT, level 1,  address [4]!
+; --- Simple variable "c", type INT, level 1,  address [5]!
+</constant_variable_declaration>
+L67:
+<mostrar_tablero_instruction_block>
+<procedure_call_linea>
+; --- Procedure call linea
+  OSF  6  1 L11
+</procedure_call_linea>
+<put>
+; --- Write STRING "Esta es una solución para n: "
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 99
+  WRT  0
+  STC 105
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<procedure_call_linea>
+; --- Procedure call linea
+  OSF  6  1 L11
+</procedure_call_linea>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  4
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_f>
+<while>
+L68:
+<condition>
+; --- Constant / variable / parameter "f"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L69
+<while_instruction_block>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  5
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_c>
+<while>
+L70:
+<condition>
+; --- Constant / variable / parameter "c"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+</condition>
+  JMF L71
+<while_instruction_block>
+<if-then>
+<condition>
+<function_call_componente>
+; --- Function call componente
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  0  3
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "f"
+  SRF  0  4
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "c"
+  SRF  0  5
+  DRF 
+</argument_3>
+  OSF  6  1 L20
+</function_call_componente>
+  STC  0
+  GT 
+</condition>
+  JMF L72
+<then>
+<put>
+; --- Write STRING " o"
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+</put>
+  JMP L73
+</then>
+<else>
+L72:
+<put>
+; --- Write STRING " ."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+</else>
+L73:
+</if-then>
+<Assignment_to_simple_variable_c>
+; --- Address of variable / parameter "c"
+  SRF  0  5
+; --- Constant / variable / parameter "c"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_c>
+</while_instruction_block>
+  JMP L70
+L71:
+</while>
+<procedure_call_linea>
+; --- Procedure call linea
+  OSF  6  1 L11
+</procedure_call_linea>
+<Assignment_to_simple_variable_f>
+; --- Address of variable / parameter "f"
+  SRF  0  4
+; --- Constant / variable / parameter "f"
+  SRF  0  4
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_f>
+</while_instruction_block>
+  JMP L68
+L69:
+</while>
+  CSF 
+</mostrar_tablero_instruction_block>
+</procedure_mostrar_tablero>
+<function_libre>
+L74:
+; --- Simple parameter "fila", type INT, class REF, level 1,  address [4]!
+; --- Simple parameter "columna", type INT, class REF, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "columna" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "fila" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L75
+<constant_variable_declaration>
+; --- Simple variable "endal", type BOOL, level 1,  address [6]!
+</constant_variable_declaration>
+L75:
+<libre_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<Assignment_to_simple_variable_fila>
+; --- Address of variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_fila>
+<Assignment_to_simple_variable_columna>
+; --- Address of variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_columna>
+<Assignment_to_simple_variable_endal>
+; --- Address of variable / parameter "endal"
+  SRF  0  6
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_endal>
+<while>
+L76:
+<condition>
+; --- Constant / variable / parameter "endal"
+  SRF  0  6
+  DRF 
+  NGB 
+</condition>
+  JMF L77
+<while_instruction_block>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  GT 
+</condition>
+  JMF L78
+<then>
+<Assignment_to_simple_variable_endal>
+; --- Address of variable / parameter "endal"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_endal>
+  JMP L79
+</then>
+<else>
+L78:
+<if-then>
+<condition>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  GT 
+</condition>
+  JMF L80
+<then>
+<Assignment_to_simple_variable_columna>
+; --- Address of variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_columna>
+<Assignment_to_simple_variable_fila>
+; --- Address of variable / parameter "fila"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_fila>
+  JMP L81
+</then>
+<else>
+L80:
+<if-then>
+<condition>
+<function_call_ocupada>
+; --- Function call ocupada
+<argument_1>
+; --- Constant / variable / parameter "tablero"
+  SRF  1  9
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  DRF 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  DRF 
+</argument_3>
+  OSF  7  1 L25
+</function_call_ocupada>
+</condition>
+  JMF L82
+<then>
+<Assignment_to_simple_variable_columna>
+; --- Address of variable / parameter "columna"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "columna"
+  SRF  0  5
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_columna>
+  JMP L83
+</then>
+<else>
+L82:
+<Assignment_to_simple_variable_endal>
+; --- Address of variable / parameter "endal"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_endal>
+</else>
+L83:
+</if-then>
+</else>
+L81:
+</if-then>
+</else>
+L79:
+</if-then>
+</while_instruction_block>
+  JMP L76
+L77:
+</while>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "fila"
+  SRF  0  4
+  DRF 
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  1  3
+  DRF 
+  LTE 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L84
+; --- Write STRING "Function "libre" does not return a value in line 156."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 49
+  WRT  0
+  STC 53
+  WRT  0
+  STC 54
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L84:
+</check_runtime_return_execution>
+  CSF 
+</libre_instruction_block>
+</function_libre>
+L0:
+<ajedrez_instruction_block>
+<Assignment_to_simple_variable_tamano_tablero>
+; --- Address of variable / parameter "tamano_tablero"
+  SRF  0  3
+  STC  4
+  ASG 
+</Assignment_to_simple_variable_tamano_tablero>
+<put>
+; --- Write STRING "Este programa intenta colocar "
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 103
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 111
+  WRT  0
+  STC 99
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " reinas en un tablero de ajedrez de "
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 106
+  WRT  0
+  STC 101
+  WRT  0
+  STC 100
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 122
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+  STC 42
+; --- Put CHARACTER
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " sin que se ataquen."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<while>
+L85:
+<condition>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  STC 10
+  LTE 
+</condition>
+  JMF L86
+<while_instruction_block>
+<Assignment_to_simple_variable_fila>
+; --- Address of variable / parameter "fila"
+  SRF  0  5
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_fila>
+<Assignment_to_simple_variable_nreinas>
+; --- Address of variable / parameter "nreinas"
+  SRF  0  4
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_nreinas>
+<put>
+; --- Write STRING "Probando con n: "
+; --- Standard string writing
+  STC 80
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 98
+  WRT  0
+  STC 97
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<while>
+L87:
+<condition>
+; --- Constant / variable / parameter "fila"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  LTE 
+; --- Constant / variable / parameter "nreinas"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  LT 
+  AND 
+</condition>
+  JMF L88
+<while_instruction_block>
+<Assignment_to_simple_variable_columna>
+; --- Address of variable / parameter "columna"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_columna>
+<while>
+L89:
+<condition>
+; --- Constant / variable / parameter "columna"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  LTE 
+; --- Constant / variable / parameter "nreinas"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  LT 
+  AND 
+</condition>
+  JMF L90
+<while_instruction_block>
+<Assignment_to_simple_variable_nreinas>
+; --- Address of variable / parameter "nreinas"
+  SRF  0  4
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_nreinas>
+<procedure_call_iniciar_tablero>
+; --- Procedure call iniciar_tablero
+  OSF 2009  0 L60
+</procedure_call_iniciar_tablero>
+<procedure_call_colocar_reina>
+; --- Procedure call colocar_reina
+<argument_1>
+; --- Constant / variable / parameter "fila"
+  SRF  0  5
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "columna"
+  SRF  0  6
+  DRF 
+</argument_2>
+  OSF 2009  0 L46
+</procedure_call_colocar_reina>
+<while>
+L91:
+<condition>
+; --- Constant / variable / parameter "nreinas"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  LT 
+<function_call_libre>
+; --- Function call libre
+<argument_1>
+; --- Constant / variable / parameter "f"
+  SRF  0  7
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "c"
+  SRF  0  8
+</argument_2>
+  OSF 2009  0 L74
+</function_call_libre>
+  AND 
+</condition>
+  JMF L92
+<while_instruction_block>
+<procedure_call_colocar_reina>
+; --- Procedure call colocar_reina
+<argument_1>
+; --- Constant / variable / parameter "f"
+  SRF  0  7
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "c"
+  SRF  0  8
+  DRF 
+</argument_2>
+  OSF 2009  0 L46
+</procedure_call_colocar_reina>
+<Assignment_to_simple_variable_nreinas>
+; --- Address of variable / parameter "nreinas"
+  SRF  0  4
+; --- Constant / variable / parameter "nreinas"
+  SRF  0  4
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_nreinas>
+</while_instruction_block>
+  JMP L91
+L92:
+</while>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "nreinas"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  EQ 
+</condition>
+  JMF L93
+<then>
+<procedure_call_mostrar_tablero>
+; --- Procedure call mostrar_tablero
+<argument_1>
+; --- Constant / variable / parameter "reinas"
+  SRF  0 1009
+</argument_1>
+  OSF 2009  0 L66
+</procedure_call_mostrar_tablero>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</then>
+L93:
+</if-then>
+<Assignment_to_simple_variable_columna>
+; --- Address of variable / parameter "columna"
+  SRF  0  6
+; --- Constant / variable / parameter "columna"
+  SRF  0  6
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_columna>
+</while_instruction_block>
+  JMP L89
+L90:
+</while>
+<Assignment_to_simple_variable_fila>
+; --- Address of variable / parameter "fila"
+  SRF  0  5
+; --- Constant / variable / parameter "fila"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_fila>
+</while_instruction_block>
+  JMP L87
+L88:
+</while>
+<Assignment_to_simple_variable_tamano_tablero>
+; --- Address of variable / parameter "tamano_tablero"
+  SRF  0  3
+; --- Constant / variable / parameter "tamano_tablero"
+  SRF  0  3
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_tamano_tablero>
+</while_instruction_block>
+  JMP L85
+L86:
+</while>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</ajedrez_instruction_block>
+  LVP 
+</ajedrez>

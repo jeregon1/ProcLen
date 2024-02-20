@@ -1,0 +1,1018 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fibonacci>
+; --- Program "fibonacci"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "i", type INT, level 0,  address [3]!
+; --- Simple variable "n", type INT, level 0,  address [4]!
+; --- Simple variable "fn", type INT, level 0,  address [5]!
+; --- Simple variable "fnm1", type INT, level 0,  address [6]!
+; --- Simple variable "fnm2", type INT, level 0,  address [7]!
+</constant_variable_declaration>
+<procedure_pedir_dato>
+L1:
+; --- Simple parameter "dato", type INT, class REF, level 1,  address [3]!
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "dato" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L2
+<constant_variable_declaration>
+</constant_variable_declaration>
+L2:
+<pedir_dato_instruction_block>
+<Assignment_to_simple_variable_dato>
+; --- Address of variable / parameter "dato"
+  SRF  0  3
+  DRF 
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_dato>
+<while>
+L3:
+<condition>
+; --- Constant / variable / parameter "dato"
+  SRF  0  3
+  DRF 
+  DRF 
+  STC  0
+  LTE 
+</condition>
+  JMF L4
+<while_instruction_block>
+<put>
+; --- Write STRING "Escribe un numero positivo: "
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 99
+  WRT  0
+  STC 114
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 118
+  WRT  0
+  STC 111
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<get>
+; --- Get simple variable/parameter "dato".
+  SRF  0  3
+  DRF 
+  RD  1
+</get>
+</while_instruction_block>
+  JMP L3
+L4:
+</while>
+  CSF 
+</pedir_dato_instruction_block>
+</procedure_pedir_dato>
+<procedure_dato>
+L5:
+; --- Simple parameter "dato", type INT, class REF, level 1,  address [3]!
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "dato" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L6
+<constant_variable_declaration>
+; --- Simple variable "correcto", type BOOL, level 1,  address [4]!
+</constant_variable_declaration>
+L6:
+<dato_instruction_block>
+<Assignment_to_simple_variable_dato>
+; --- Address of variable / parameter "dato"
+  SRF  0  3
+  DRF 
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_dato>
+<Assignment_to_simple_variable_correcto>
+; --- Address of variable / parameter "correcto"
+  SRF  0  4
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_correcto>
+<while>
+L7:
+<condition>
+; --- Constant / variable / parameter "correcto"
+  SRF  0  4
+  DRF 
+  NGB 
+</condition>
+  JMF L8
+<while_instruction_block>
+<procedure_call_pedir_dato>
+; --- Procedure call pedir_dato
+<argument_1>
+; --- Constant / variable / parameter "dato"
+  SRF  0  3
+  DRF 
+</argument_1>
+  OSF  5  1 L1
+</procedure_call_pedir_dato>
+<Assignment_to_simple_variable_correcto>
+; --- Address of variable / parameter "correcto"
+  SRF  0  4
+; --- Constant / variable / parameter "dato"
+  SRF  0  3
+  DRF 
+  DRF 
+  STC  0
+  GT 
+  ASG 
+</Assignment_to_simple_variable_correcto>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "correcto"
+  SRF  0  4
+  DRF 
+  NGB 
+</condition>
+  JMF L9
+<then>
+<put>
+; --- Write STRING "El numero debe ser postivo."
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 108
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 118
+  WRT  0
+  STC 111
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+</then>
+L9:
+</if-then>
+</while_instruction_block>
+  JMP L7
+L8:
+</while>
+  CSF 
+</dato_instruction_block>
+</procedure_dato>
+L0:
+<fibonacci_instruction_block>
+<put>
+; --- Write STRING ""
+; --- Standard string writing
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "Este programa pide un número positivo n y calcula fib(n) con la fórmula recursiva fib(n) = fib(n-1) + fib(n-2)"
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 103
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 118
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 99
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 110
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 114
+  WRT  0
+  STC 109
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 110
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 61
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 110
+  WRT  0
+  STC 45
+  WRT  0
+  STC 49
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 43
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 110
+  WRT  0
+  STC 45
+  WRT  0
+  STC 50
+  WRT  0
+  STC 41
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "Es muy rápido porque la implementación es iterativa."
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 109
+  WRT  0
+  STC 117
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC -61
+  WRT  0
+  STC -95
+  WRT  0
+  STC 112
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 109
+  WRT  0
+  STC 112
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 99
+  WRT  0
+  STC 105
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "Habrá MATH overflow en fib(47) porque los enteros en la máquina p son de 4 bytes)."
+; --- Standard string writing
+  STC 72
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 114
+  WRT  0
+  STC -61
+  WRT  0
+  STC -95
+  WRT  0
+  STC 32
+  WRT  0
+  STC 77
+  WRT  0
+  STC 65
+  WRT  0
+  STC 84
+  WRT  0
+  STC 72
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 118
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 102
+  WRT  0
+  STC 108
+  WRT  0
+  STC 111
+  WRT  0
+  STC 119
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 52
+  WRT  0
+  STC 55
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 109
+  WRT  0
+  STC -61
+  WRT  0
+  STC -95
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 52
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 121
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 41
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING ""
+; --- Standard string writing
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<procedure_call_dato>
+; --- Procedure call dato
+<argument_1>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+</argument_1>
+  OSF  8  0 L5
+</procedure_call_dato>
+<put>
+; --- Write STRING ""
+; --- Standard string writing
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "fib(1) = 1"
+; --- Standard string writing
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 49
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 61
+  WRT  0
+  STC 32
+  WRT  0
+  STC 49
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "fib(2) = 1"
+; --- Standard string writing
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+  STC 50
+  WRT  0
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 61
+  WRT  0
+  STC 32
+  WRT  0
+  STC 49
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  3
+  STC  3
+  ASG 
+</Assignment_to_simple_variable_i>
+<Assignment_to_simple_variable_fnm1>
+; --- Address of variable / parameter "fnm1"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_fnm1>
+<Assignment_to_simple_variable_fnm2>
+; --- Address of variable / parameter "fnm2"
+  SRF  0  7
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_fnm2>
+<while>
+L10:
+<condition>
+; --- Constant / variable / parameter "i"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  LTE 
+</condition>
+  JMF L11
+<while_instruction_block>
+<Assignment_to_simple_variable_fn>
+; --- Address of variable / parameter "fn"
+  SRF  0  5
+; --- Constant / variable / parameter "fnm1"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "fnm2"
+  SRF  0  7
+  DRF 
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_fn>
+<put>
+; --- Write STRING "fib("
+; --- Standard string writing
+  STC 102
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "i"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING ") = "
+; --- Standard string writing
+  STC 41
+  WRT  0
+  STC 32
+  WRT  0
+  STC 61
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "fn"
+  SRF  0  5
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_fnm2>
+; --- Address of variable / parameter "fnm2"
+  SRF  0  7
+; --- Constant / variable / parameter "fnm1"
+  SRF  0  6
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_fnm2>
+<Assignment_to_simple_variable_fnm1>
+; --- Address of variable / parameter "fnm1"
+  SRF  0  6
+; --- Constant / variable / parameter "fn"
+  SRF  0  5
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_fnm1>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  3
+; --- Constant / variable / parameter "i"
+  SRF  0  3
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_i>
+</while_instruction_block>
+  JMP L10
+L11:
+</while>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</fibonacci_instruction_block>
+  LVP 
+</fibonacci>

@@ -1,0 +1,89 @@
+//*****************************************************************
+// File:   wc.jj
+// Author: Procesadores de Lenguajes-University of Zaragoza
+// Date:   febrero 2022
+// Coms:   Compilar mediante "ant"
+//         Implementa una versión sin opcines del "wc" de Unix
+//         La gramática está formdada por una única producción
+//         Respecto a la versión 0, la información que modifica el 
+//         parser está en un objeto (de una clase definida en lib)
+//         y generada en la producción inicial, que devuelve finalmente
+//         dicho objeto.
+//         Esta opción no sería válida si la información tuviera que
+//         ser compartida entre varias producciones
+//         Para la ejecución, siendo "<path>" el camino hasta "wc.jar"
+//              java -jar <path>/wc.jar
+//              java -jar <path>/wc.jar < fichero
+//*****************************************************************
+
+options {
+  IGNORE_CASE = false;
+  COMMON_TOKEN_ACTION = false;
+}
+
+PARSER_BEGIN(wc)
+
+package traductor;
+import lib.InfoFich.*;
+
+public class wc {
+    public static void main(String[] args) {
+    	wc parser;
+    	InfoFich info;
+
+    	try {
+	    	if(args.length == 0) {
+				parser = new wc(System.in);
+			}
+			else {
+	            parser = new wc(new java.io.FileInputStream(args[0]));
+			}
+			info = parser.fichero();
+			System.out.println(info.toString());
+		} catch (java.io.FileNotFoundException e) {
+			System.err.println ("Fichero " + args[0] + " no encontrado.");
+		} catch (TokenMgrError e) {
+        	System.err.println("LEX_ERROR: " + e.getMessage());
+        } catch (ParseException e) {
+            System.err.println("PARSER_ERROR: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(wc)
+
+TOKEN : {
+ 	< tPALABRA: (~["\t","\n"])+ >
+| 	< tNL: "\n" >
+|	< tTAB: "\t" >
+}
+//---------------------------------------------------------
+//MAIN UNIT
+InfoFich fichero() : 
+{
+	InfoFich info = new InfoFich();
+	Token t;
+}
+{
+	( 
+		t = < tPALABRA >
+		{
+			info.nPal++;
+			info.nChar += t.endColumn - t.beginColumn + 1;
+		}
+	|	t = < tNL >
+		{
+			info.nLin++;
+			info.nChar++;
+		}
+	|	t = < tTAB >
+		{
+			info.nChar++;
+		}
+	)+
+	{
+		return info;
+	}
+}
+//--------------------------------------------------
+

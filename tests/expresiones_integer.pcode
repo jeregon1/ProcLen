@@ -1,0 +1,2258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exps>
+; --- Program "exps"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "i1", type INT, level 0,  address [3]!
+; --- Simple variable "i2", type INT, level 0,  address [4]!
+; --- Simple variable "i3", type INT, level 0,  address [5]!
+; --- Simple variable "i4", type INT, level 0,  address [6]!
+; --- Simple variable "i5", type INT, level 0,  address [7]!
+; --- Array variable "arr", type INT, size 10, level 0, address [8:17]!
+; --- Simple variable "numformulas", type INT, level 0,  address [18]!
+; --- Simple variable "numcorrectas", type INT, level 0,  address [19]!
+</constant_variable_declaration>
+<procedure_evalua>
+L1:
+; --- Simple parameter "found", type INT, class VAL, level 1,  address [3]!
+; --- Simple parameter "expected", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "numformulas", type INT, class REF, level 1,  address [5]!
+; --- Simple parameter "numtrues", type INT, class REF, level 1,  address [6]!
+<recover_argument_4>
+; --- Recover simple val / ref variable parameter "numtrues" (number 4).
+  SRF  0  6
+  ASGI 
+</recover_argument_4>
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "numformulas" (number 3).
+  SRF  0  5
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "expected" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "found" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L2
+<constant_variable_declaration>
+</constant_variable_declaration>
+L2:
+<evalua_instruction_block>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "found"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "expected"
+  SRF  0  4
+  DRF 
+  EQ 
+</condition>
+  JMF L3
+<then>
+<Assignment_to_simple_variable_numtrues>
+; --- Address of variable / parameter "numtrues"
+  SRF  0  6
+  DRF 
+; --- Constant / variable / parameter "numtrues"
+  SRF  0  6
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_numtrues>
+</then>
+L3:
+</if-then>
+<Assignment_to_simple_variable_numformulas>
+; --- Address of variable / parameter "numformulas"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "numformulas"
+  SRF  0  5
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_numformulas>
+  CSF 
+</evalua_instruction_block>
+</procedure_evalua>
+L0:
+<exps_instruction_block>
+<put>
+; --- Write STRING "-----------------------------------------------------"
+; --- Standard string writing
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_numformulas>
+; --- Address of variable / parameter "numformulas"
+  SRF  0 18
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_numformulas>
+<Assignment_to_simple_variable_numcorrectas>
+; --- Address of variable / parameter "numcorrectas"
+  SRF  0 19
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_numcorrectas>
+<Assignment_to_simple_variable_i1>
+; --- Address of variable / parameter "i1"
+  SRF  0  3
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_i1>
+<Assignment_to_simple_variable_i2>
+; --- Address of variable / parameter "i2"
+  SRF  0  4
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_i2>
+<Assignment_to_simple_variable_i3>
+; --- Address of variable / parameter "i3"
+  SRF  0  5
+  STC  3
+  ASG 
+</Assignment_to_simple_variable_i3>
+<Assignment_to_simple_variable_i4>
+; --- Address of variable / parameter "i4"
+  SRF  0  6
+  STC  4
+  ASG 
+</Assignment_to_simple_variable_i4>
+<Assignment_to_simple_variable_i5>
+; --- Address of variable / parameter "i5"
+  SRF  0  7
+  STC  5
+  ASG 
+</Assignment_to_simple_variable_i5>
+<Assignment_to_component_of_array_arr>
+  STC  1
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  STC  1
+  ASG 
+</Assignment_to_component_of_array_arr>
+<Assignment_to_component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  STC  2
+  ASG 
+</Assignment_to_component_of_array_arr>
+<Assignment_to_component_of_array_arr>
+  STC  3
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  STC  3
+  ASG 
+</Assignment_to_component_of_array_arr>
+<Assignment_to_component_of_array_arr>
+  STC  4
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  STC  4
+  ASG 
+</Assignment_to_component_of_array_arr>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  1
+  NGI 
+</argument_1>
+<argument_2>
+  STC  1
+  NGI 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  2
+  STC  2
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  4
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  9
+  STC  5
+  MOD 
+</argument_1>
+<argument_2>
+  STC  4
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  2
+  STC  2
+  TMS 
+  STC  2
+  TMS 
+  STC  2
+  TMS 
+</argument_1>
+<argument_2>
+  STC 16
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC 10
+  STC 10
+  TMS 
+  STC  2
+  PLUS 
+</argument_1>
+<argument_2>
+  STC 102
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  2
+  STC 10
+  STC 10
+  TMS 
+  PLUS 
+</argument_1>
+<argument_2>
+  STC 102
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  2
+  NGI 
+  STC  5
+  STC  5
+  DIV 
+  STC  2
+  TMS 
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  0
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  6
+  STC  2
+  DIV 
+  STC  4
+  TMS 
+  STC  2
+  DIV 
+</argument_1>
+<argument_2>
+  STC  6
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  2
+  STC  2
+  PLUS 
+  STC  3
+  DIV 
+</argument_1>
+<argument_2>
+  STC  1
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  5
+  NGI 
+  STC  1
+  STC  4
+  STC  2
+  DIV 
+  TMS 
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  3
+  NGI 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  NGI 
+</argument_1>
+<argument_2>
+  STC  1
+  NGI 
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  3
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  TMS 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  5
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  STC  5
+  PLUS 
+; --- Constant / variable / parameter "i5"
+  SRF  0  7
+  DRF 
+  DIV 
+  STC  2
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  4
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  STC  5
+  PLUS 
+; --- Constant / variable / parameter "i5"
+  SRF  0  7
+  DRF 
+  STC  2
+  PLUS 
+  DIV 
+</argument_1>
+<argument_2>
+  STC  1
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  PLUS 
+  STC  5
+  MOD 
+</argument_1>
+<argument_2>
+  STC  3
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 102
+  PLUS 
+  STC  5
+  MOD 
+</argument_1>
+<argument_2>
+  STC  0
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+  STC  1
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  3
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L4
+  DUP 
+  STC 10
+  LT 
+  JMT L5
+L4:
+; --- Write STRING "Index out of bounds for array "arr" in line 55."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 53
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L5:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L6
+  DUP 
+  STC 10
+  LT 
+  JMT L7
+L6:
+; --- Write STRING "Index out of bounds for array "arr" in line 55."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 53
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L7:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  7
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  PLUS 
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L8
+  DUP 
+  STC 10
+  LT 
+  JMT L9
+L8:
+; --- Write STRING "Index out of bounds for array "arr" in line 56."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 54
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L9:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  STC  2
+  DIV 
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L10
+  DUP 
+  STC 10
+  LT 
+  JMT L11
+L10:
+; --- Write STRING "Index out of bounds for array "arr" in line 56."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 54
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L11:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  5
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+<component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L12
+  DUP 
+  STC 10
+  LT 
+  JMT L13
+L12:
+; --- Write STRING "Index out of bounds for array "arr" in line 57."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 55
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L13:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+<component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  STC  5
+  PLUS 
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L14
+  DUP 
+  STC 10
+  LT 
+  JMT L15
+L14:
+; --- Write STRING "Index out of bounds for array "arr" in line 57."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 55
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L15:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  PLUS 
+</argument_1>
+<argument_2>
+  STC  2
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+<component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L16
+  DUP 
+  STC 10
+  LT 
+  JMT L17
+L16:
+; --- Write STRING "Index out of bounds for array "arr" in line 58."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 56
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L17:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+<component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L18
+  DUP 
+  STC 10
+  LT 
+  JMT L19
+L18:
+; --- Write STRING "Index out of bounds for array "arr" in line 58."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 56
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L19:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  TMS 
+<component_of_array_arr>
+; --- Array component "arr", passed as argument to val parameter "found".
+<component_of_array_arr>
+  STC  2
+  STC  1
+  SBT 
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  STC  1
+  SBT 
+; --- Checking if index is valid for array "arr"
+  DUP 
+  STC  0
+  GTE 
+  JMF L20
+  DUP 
+  STC 10
+  LT 
+  JMT L21
+L20:
+; --- Write STRING "Index out of bounds for array "arr" in line 58."
+; --- Standard string writing
+  STC 73
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 102
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 100
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 56
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L21:
+; --- Initial address of array "arr"
+  SRF  0  8
+  PLUS 
+  DRF 
+</component_of_array_arr>
+  DIV 
+</argument_1>
+<argument_2>
+  STC  2
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+</argument_3>
+<argument_4>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+</argument_4>
+  OSF 20  0 L1
+</procedure_call_evalua>
+<put>
+; --- Write STRING "Debería haber llegado aquí sin problemas léxicos o sintácticos."
+; --- Standard string writing
+  STC 68
+  WRT  0
+  STC 101
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC -61
+  WRT  0
+  STC -83
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 103
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC -61
+  WRT  0
+  STC -83
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC -61
+  WRT  0
+  STC -87
+  WRT  0
+  STC 120
+  WRT  0
+  STC 105
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC -61
+  WRT  0
+  STC -95
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "De las "
+; --- Standard string writing
+  STC 68
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 18
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " fórmulas, "
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 114
+  WRT  0
+  STC 109
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 44
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "numcorrectas"
+  SRF  0 19
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " han dado el resultado correcto."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 108
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 111
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</exps_instruction_block>
+  LVP 
+</exps>

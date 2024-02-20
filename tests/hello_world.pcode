@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hello>
+; --- Program "hello"
+  ENP L0
+<constant_variable_declaration>
+</constant_variable_declaration>
+L0:
+<hello_instruction_block>
+<put>
+; --- Write STRING "Hello World!"
+; --- Standard string writing
+  STC 72
+  WRT  0
+  STC 101
+  WRT  0
+  STC 108
+  WRT  0
+  STC 108
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 87
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 108
+  WRT  0
+  STC 100
+  WRT  0
+  STC 33
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</hello_instruction_block>
+  LVP 
+</hello>

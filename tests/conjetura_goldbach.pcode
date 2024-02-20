@@ -1,0 +1,1648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<goldbach>
+; --- Program "goldbach"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "n", type INT, level 0,  address [3]!
+; --- Simple variable "i", type INT, level 0,  address [4]!
+</constant_variable_declaration>
+<function_pedir_entero>
+L1:
+  JMP L2
+<constant_variable_declaration>
+; --- Simple variable "n", type INT, level 1,  address [4]!
+</constant_variable_declaration>
+L2:
+<pedir_entero_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<Assignment_to_simple_variable_n>
+; --- Address of variable / parameter "n"
+  SRF  0  4
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_n>
+<while>
+L3:
+<condition>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  STC  2
+  LTE 
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  STC  2
+  MOD 
+  STC  0
+  NEQ 
+  OR 
+</condition>
+  JMF L4
+<while_instruction_block>
+<put>
+; --- Write STRING "Dame un numero PAR mayor que 2: "
+; --- Standard string writing
+  STC 68
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 80
+  WRT  0
+  STC 65
+  WRT  0
+  STC 82
+  WRT  0
+  STC 32
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 50
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<get>
+; --- Get simple variable/parameter "n".
+  SRF  0  4
+  RD  1
+</get>
+</while_instruction_block>
+  JMP L3
+L4:
+</while>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L5
+; --- Write STRING "Function "pedir_entero" does not return a value in line 19."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 112
+  WRT  0
+  STC 101
+  WRT  0
+  STC 100
+  WRT  0
+  STC 105
+  WRT  0
+  STC 114
+  WRT  0
+  STC 95
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 49
+  WRT  0
+  STC 57
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L5:
+</check_runtime_return_execution>
+  CSF 
+</pedir_entero_instruction_block>
+</function_pedir_entero>
+<function_es_primo>
+L6:
+; --- Simple parameter "k", type INT, class VAL, level 1,  address [4]!
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "k" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L7
+<constant_variable_declaration>
+; --- Simple variable "i", type INT, level 1,  address [5]!
+; --- Simple variable "primo", type BOOL, level 1,  address [6]!
+</constant_variable_declaration>
+L7:
+<es_primo_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  5
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_i>
+<Assignment_to_simple_variable_primo>
+; --- Address of variable / parameter "primo"
+  SRF  0  6
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_primo>
+<while>
+L8:
+<condition>
+; --- Constant / variable / parameter "i"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+  STC  2
+  DIV 
+  LTE 
+; --- Constant / variable / parameter "primo"
+  SRF  0  6
+  DRF 
+  AND 
+</condition>
+  JMF L9
+<while_instruction_block>
+<Assignment_to_simple_variable_primo>
+; --- Address of variable / parameter "primo"
+  SRF  0  6
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "i"
+  SRF  0  5
+  DRF 
+  MOD 
+  STC  0
+  NEQ 
+  ASG 
+</Assignment_to_simple_variable_primo>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  5
+; --- Constant / variable / parameter "i"
+  SRF  0  5
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_i>
+</while_instruction_block>
+  JMP L8
+L9:
+</while>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "primo"
+  SRF  0  6
+  DRF 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L10
+; --- Write STRING "Function "es_primo" does not return a value in line 31."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 95
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 105
+  WRT  0
+  STC 109
+  WRT  0
+  STC 111
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 49
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L10:
+</check_runtime_return_execution>
+  CSF 
+</es_primo_instruction_block>
+</function_es_primo>
+<function_hay_un_par>
+L11:
+; --- Simple parameter "k", type INT, class VAL, level 1,  address [4]!
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "k" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L12
+<constant_variable_declaration>
+; --- Simple variable "i", type INT, level 1,  address [5]!
+; --- Simple variable "n", type INT, level 1,  address [6]!
+; --- Simple variable "a", type INT, level 1,  address [7]!
+; --- Simple variable "b", type INT, level 1,  address [8]!
+</constant_variable_declaration>
+L12:
+<hay_un_par_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<Assignment_to_simple_variable_a>
+; --- Address of variable / parameter "a"
+  SRF  0  7
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_a>
+<Assignment_to_simple_variable_b>
+; --- Address of variable / parameter "b"
+  SRF  0  8
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_b>
+<Assignment_to_simple_variable_n>
+; --- Address of variable / parameter "n"
+  SRF  0  6
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_n>
+<put>
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " es la suma de: "
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<while>
+L13:
+<condition>
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+  LT 
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+  LT 
+  AND 
+</condition>
+  JMF L14
+<while_instruction_block>
+<if-then>
+<condition>
+<function_call_es_primo>
+; --- Function call es_primo
+<argument_1>
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+</argument_1>
+  OSF  9  1 L6
+</function_call_es_primo>
+<function_call_es_primo>
+; --- Function call es_primo
+<argument_1>
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+</argument_1>
+  OSF  9  1 L6
+</function_call_es_primo>
+  AND 
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+  PLUS 
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+  EQ 
+  AND 
+</condition>
+  JMF L15
+<then>
+<put>
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING "+"
+; --- Standard string writing
+  STC 43
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING ", "
+; --- Standard string writing
+  STC 44
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<Assignment_to_simple_variable_n>
+; --- Address of variable / parameter "n"
+  SRF  0  6
+; --- Constant / variable / parameter "n"
+  SRF  0  6
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_n>
+</then>
+L15:
+</if-then>
+<Assignment_to_simple_variable_a>
+; --- Address of variable / parameter "a"
+  SRF  0  7
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_a>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "a"
+  SRF  0  7
+  DRF 
+; --- Constant / variable / parameter "k"
+  SRF  0  4
+  DRF 
+  EQ 
+</condition>
+  JMF L16
+<then>
+<Assignment_to_simple_variable_b>
+; --- Address of variable / parameter "b"
+  SRF  0  8
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_b>
+<Assignment_to_simple_variable_a>
+; --- Address of variable / parameter "a"
+  SRF  0  7
+; --- Constant / variable / parameter "b"
+  SRF  0  8
+  DRF 
+  ASG 
+</Assignment_to_simple_variable_a>
+</then>
+L16:
+</if-then>
+</while_instruction_block>
+  JMP L13
+L14:
+</while>
+<put>
+; --- Constant / variable / parameter "n"
+  SRF  0  6
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " parejas de primos en total."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 106
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 105
+  WRT  0
+  STC 109
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 116
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "n"
+  SRF  0  6
+  DRF 
+  STC  0
+  GT 
+  CSF 
+</return>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L17
+; --- Write STRING "Function "hay_un_par" does not return a value in line 55."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 95
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 95
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 53
+  WRT  0
+  STC 53
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L17:
+</check_runtime_return_execution>
+  CSF 
+</hay_un_par_instruction_block>
+</function_hay_un_par>
+L0:
+<goldbach_instruction_block>
+<put>
+; --- Write STRING "Conjetura de Golbach: todo número par mayor que 2 puede escribirse como suma de dos números primos."
+; --- Standard string writing
+  STC 67
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 106
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 71
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 98
+  WRT  0
+  STC 97
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+  STC 116
+  WRT  0
+  STC 111
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 121
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 50
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 99
+  WRT  0
+  STC 114
+  WRT  0
+  STC 105
+  WRT  0
+  STC 98
+  WRT  0
+  STC 105
+  WRT  0
+  STC 114
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 109
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 105
+  WRT  0
+  STC 109
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "https://es.wikipedia.org/wiki/Conjetura_de_Goldbach"
+; --- Standard string writing
+  STC 104
+  WRT  0
+  STC 116
+  WRT  0
+  STC 116
+  WRT  0
+  STC 112
+  WRT  0
+  STC 115
+  WRT  0
+  STC 58
+  WRT  0
+  STC 47
+  WRT  0
+  STC 47
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 46
+  WRT  0
+  STC 119
+  WRT  0
+  STC 105
+  WRT  0
+  STC 107
+  WRT  0
+  STC 105
+  WRT  0
+  STC 112
+  WRT  0
+  STC 101
+  WRT  0
+  STC 100
+  WRT  0
+  STC 105
+  WRT  0
+  STC 97
+  WRT  0
+  STC 46
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 103
+  WRT  0
+  STC 47
+  WRT  0
+  STC 119
+  WRT  0
+  STC 105
+  WRT  0
+  STC 107
+  WRT  0
+  STC 105
+  WRT  0
+  STC 47
+  WRT  0
+  STC 67
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 106
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 95
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 95
+  WRT  0
+  STC 71
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 100
+  WRT  0
+  STC 98
+  WRT  0
+  STC 97
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "Este programa comprueba si es cierta hasta el número que le digas."
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 103
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 109
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 98
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 105
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 108
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 109
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 105
+  WRT  0
+  STC 103
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_n>
+; --- Address of variable / parameter "n"
+  SRF  0  3
+<function_call_pedir_entero>
+; --- Function call pedir_entero
+  OSF  5  0 L1
+</function_call_pedir_entero>
+  ASG 
+</Assignment_to_simple_variable_n>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  4
+  STC  4
+  ASG 
+</Assignment_to_simple_variable_i>
+<while>
+L18:
+<condition>
+; --- Constant / variable / parameter "i"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "n"
+  SRF  0  3
+  DRF 
+  LTE 
+</condition>
+  JMF L19
+<while_instruction_block>
+<if-then>
+<condition>
+<function_call_hay_un_par>
+; --- Function call hay_un_par
+<argument_1>
+; --- Constant / variable / parameter "i"
+  SRF  0  4
+  DRF 
+</argument_1>
+  OSF  5  0 L11
+</function_call_hay_un_par>
+  NGB 
+</condition>
+  JMF L20
+<then>
+<put>
+; --- Write STRING "L conjetura no se cumple para "
+; --- Standard string writing
+  STC 76
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 106
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 112
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "i"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING "! (Seguro que por error del compilador!)"
+; --- Standard string writing
+  STC 33
+  WRT  0
+  STC 32
+  WRT  0
+  STC 40
+  WRT  0
+  STC 83
+  WRT  0
+  STC 101
+  WRT  0
+  STC 103
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 108
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 109
+  WRT  0
+  STC 112
+  WRT  0
+  STC 105
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 33
+  WRT  0
+  STC 41
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</then>
+L20:
+</if-then>
+<Assignment_to_simple_variable_i>
+; --- Address of variable / parameter "i"
+  SRF  0  4
+; --- Constant / variable / parameter "i"
+  SRF  0  4
+  DRF 
+  STC  2
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_i>
+</while_instruction_block>
+  JMP L18
+L19:
+</while>
+</goldbach_instruction_block>
+  LVP 
+</goldbach>

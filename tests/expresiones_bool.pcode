@@ -1,0 +1,2114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exps>
+; --- Program "exps"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "i1", type INT, level 0,  address [3]!
+; --- Simple variable "i2", type INT, level 0,  address [4]!
+; --- Simple variable "i3", type INT, level 0,  address [5]!
+; --- Simple variable "i4", type INT, level 0,  address [6]!
+; --- Simple variable "i5", type INT, level 0,  address [7]!
+; --- Simple variable "b", type BOOL, level 0,  address [8]!
+; --- Simple variable "b1", type BOOL, level 0,  address [9]!
+; --- Simple variable "b2", type BOOL, level 0,  address [10]!
+; --- Simple variable "b3", type BOOL, level 0,  address [11]!
+; --- Simple variable "b4", type BOOL, level 0,  address [12]!
+; --- Simple variable "b5", type BOOL, level 0,  address [13]!
+; --- Simple variable "b6", type BOOL, level 0,  address [14]!
+; --- Simple variable "numformulas", type INT, level 0,  address [15]!
+; --- Simple variable "numtrues", type INT, level 0,  address [16]!
+</constant_variable_declaration>
+<procedure_evalua>
+L1:
+; --- Simple parameter "b", type BOOL, class VAL, level 1,  address [3]!
+; --- Simple parameter "numformulas", type INT, class REF, level 1,  address [4]!
+; --- Simple parameter "numtrues", type INT, class REF, level 1,  address [5]!
+<recover_argument_3>
+; --- Recover simple val / ref variable parameter "numtrues" (number 3).
+  SRF  0  5
+  ASGI 
+</recover_argument_3>
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "numformulas" (number 2).
+  SRF  0  4
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "b" (number 1).
+  SRF  0  3
+  ASGI 
+</recover_argument_1>
+  JMP L2
+<constant_variable_declaration>
+</constant_variable_declaration>
+L2:
+<evalua_instruction_block>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "b"
+  SRF  0  3
+  DRF 
+</condition>
+  JMF L3
+<then>
+<Assignment_to_simple_variable_numtrues>
+; --- Address of variable / parameter "numtrues"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "numtrues"
+  SRF  0  5
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_numtrues>
+</then>
+L3:
+</if-then>
+<Assignment_to_simple_variable_numformulas>
+; --- Address of variable / parameter "numformulas"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "numformulas"
+  SRF  0  4
+  DRF 
+  DRF 
+  STC  1
+  PLUS 
+  ASG 
+</Assignment_to_simple_variable_numformulas>
+  CSF 
+</evalua_instruction_block>
+</procedure_evalua>
+L0:
+<exps_instruction_block>
+<put>
+; --- Write STRING "-----------------------------------------------------"
+; --- Standard string writing
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+  STC 45
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_numformulas>
+; --- Address of variable / parameter "numformulas"
+  SRF  0 15
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_numformulas>
+<Assignment_to_simple_variable_numtrues>
+; --- Address of variable / parameter "numtrues"
+  SRF  0 16
+  STC  0
+  ASG 
+</Assignment_to_simple_variable_numtrues>
+<Assignment_to_simple_variable_b1>
+; --- Address of variable / parameter "b1"
+  SRF  0  9
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b1>
+<Assignment_to_simple_variable_b2>
+; --- Address of variable / parameter "b2"
+  SRF  0 10
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b2>
+<Assignment_to_simple_variable_b3>
+; --- Address of variable / parameter "b3"
+  SRF  0 11
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b3>
+<Assignment_to_simple_variable_b4>
+; --- Address of variable / parameter "b4"
+  SRF  0 12
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b4>
+<Assignment_to_simple_variable_b5>
+; --- Address of variable / parameter "b5"
+  SRF  0 13
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b5>
+<Assignment_to_simple_variable_b6>
+; --- Address of variable / parameter "b6"
+  SRF  0 14
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_b6>
+<Assignment_to_simple_variable_i1>
+; --- Address of variable / parameter "i1"
+  SRF  0  3
+  STC  1
+  ASG 
+</Assignment_to_simple_variable_i1>
+<Assignment_to_simple_variable_i2>
+; --- Address of variable / parameter "i2"
+  SRF  0  4
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_i2>
+<Assignment_to_simple_variable_i3>
+; --- Address of variable / parameter "i3"
+  SRF  0  5
+  STC  3
+  ASG 
+</Assignment_to_simple_variable_i3>
+<Assignment_to_simple_variable_i4>
+; --- Address of variable / parameter "i4"
+  SRF  0  6
+  STC  4
+  ASG 
+</Assignment_to_simple_variable_i4>
+<Assignment_to_simple_variable_i5>
+; --- Address of variable / parameter "i5"
+  SRF  0  7
+  STC  5
+  ASG 
+</Assignment_to_simple_variable_i5>
+<put>
+; --- Write STRING "Este programa evalúa un conjunto de expresiones booleanas correctas"
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 103
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 106
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 120
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 111
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 97
+  WRT  0
+  STC 110
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC  1
+  STC  1
+  AND 
+  STC  1
+  NGB 
+  AND 
+  STC  3
+  STC  5
+  GT 
+  AND 
+  STC  6
+  STC  5
+  GT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+  OR 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+  NGB 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  AND 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+; --- Constant / variable / parameter "b6"
+  SRF  0 14
+  DRF 
+  AND 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+  NGB 
+  AND 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  NGB 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+  NGB 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  NGB 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+  NGB 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  AND 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+  NGB 
+  OR 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+  AND 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+  NGB 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  NGB 
+  AND 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  EQ 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+  NGB 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  AND 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+; --- Constant / variable / parameter "b6"
+  SRF  0 14
+  DRF 
+  OR 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  EQ 
+  NGB 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  OR 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+; --- Constant / variable / parameter "b6"
+  SRF  0 14
+  DRF 
+  OR 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  AND 
+  NGB 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+  NGB 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  AND 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  AND 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  AND 
+  EQ 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+; --- Constant / variable / parameter "b4"
+  SRF  0 12
+  DRF 
+  OR 
+  AND 
+; --- Constant / variable / parameter "b5"
+  SRF  0 13
+  DRF 
+; --- Constant / variable / parameter "b6"
+  SRF  0 14
+  DRF 
+  OR 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "b1"
+  SRF  0  9
+  DRF 
+; --- Constant / variable / parameter "b2"
+  SRF  0 10
+  DRF 
+  OR 
+; --- Constant / variable / parameter "b3"
+  SRF  0 11
+  DRF 
+  OR 
+  NGB 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC 10
+  GT 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  5
+  LTE 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  PLUS 
+  STC  2
+  TMS 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  SBT 
+  GTE 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  0
+  GT 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC 100
+  LT 
+  AND 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 42
+  EQ 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  TMS 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  EQ 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC 20
+  GTE 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  5
+  LT 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 10
+  GTE 
+  OR 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  3
+  MOD 
+  STC  0
+  EQ 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  2
+  MOD 
+  STC  1
+  EQ 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  2
+  DIV 
+  STC 10
+  GT 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC  7
+  EQ 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  SBT 
+  STC  5
+  GTE 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  STC 100
+  LT 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  5
+  DIV 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  2
+  DIV 
+  EQ 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 10
+  GT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  3
+  TMS 
+  PLUS 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC  2
+  DIV 
+  GTE 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  STC  7
+  EQ 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC 10
+  DIV 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  4
+  MOD 
+  EQ 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 20
+  GT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+  STC 10
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  LTE 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC  5
+  LT 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC 15
+  GTE 
+  OR 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  TMS 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  GT 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  0
+  GTE 
+  NGB 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  STC 100
+  LT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  EQ 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  EQ 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+  STC  2
+  DIV 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  NEQ 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+  STC  5
+  GT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  PLUS 
+  STC  7
+  MOD 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  TMS 
+  STC 10
+  MOD 
+  EQ 
+; --- Constant / variable / parameter "i5"
+  SRF  0  7
+  DRF 
+  STC  3
+  GTE 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  PLUS 
+  STC 50
+  GT 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  PLUS 
+  STC 100
+  LT 
+  OR 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<procedure_call_evalua>
+; --- Procedure call evalua
+<argument_1>
+; --- Constant / variable / parameter "i1"
+  SRF  0  3
+  DRF 
+; --- Constant / variable / parameter "i2"
+  SRF  0  4
+  DRF 
+  EQ 
+; --- Constant / variable / parameter "i3"
+  SRF  0  5
+  DRF 
+; --- Constant / variable / parameter "i4"
+  SRF  0  6
+  DRF 
+  GT 
+  AND 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+</argument_2>
+<argument_3>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+</argument_3>
+  OSF 17  0 L1
+</procedure_call_evalua>
+<put>
+; --- Write STRING "Debería haber llegado aquí sin problemas léxicos o sintácticos"
+; --- Standard string writing
+  STC 68
+  WRT  0
+  STC 101
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC -61
+  WRT  0
+  STC -83
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 98
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 103
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 113
+  WRT  0
+  STC 117
+  WRT  0
+  STC -61
+  WRT  0
+  STC -83
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 98
+  WRT  0
+  STC 108
+  WRT  0
+  STC 101
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC -61
+  WRT  0
+  STC -87
+  WRT  0
+  STC 120
+  WRT  0
+  STC 105
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC -61
+  WRT  0
+  STC -95
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 115
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "y dar 38 fórmulas y 19 TRUES."
+; --- Standard string writing
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 56
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 114
+  WRT  0
+  STC 109
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 49
+  WRT  0
+  STC 57
+  WRT  0
+  STC 32
+  WRT  0
+  STC 84
+  WRT  0
+  STC 82
+  WRT  0
+  STC 85
+  WRT  0
+  STC 69
+  WRT  0
+  STC 83
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+<int2char>
+  STC  9
+  STC  9
+; --- check 0 <= int <= 255
+  DUP 
+  STC  0
+  GTE 
+  JMF L4
+  STC 255
+  LTE 
+  JMF L4
+  JMP L5
+L4:
+; --- Write STRING "Value "
+; --- Standard string writing
+  STC 86
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  WRT  1
+; --- Write STRING " invalid for int2char in line 86."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 50
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 56
+  WRT  0
+  STC 54
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L5:
+</int2char>
+; --- Put CHARACTER
+  WRT  0
+</put>
+<put>
+; --- Write STRING "numFormulas: "
+; --- Standard string writing
+  STC 110
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 70
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 109
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "numformulas"
+  SRF  0 15
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+<int2char>
+  STC  9
+  STC  9
+; --- check 0 <= int <= 255
+  DUP 
+  STC  0
+  GTE 
+  JMF L6
+  STC 255
+  LTE 
+  JMF L6
+  JMP L7
+L6:
+; --- Write STRING "Value "
+; --- Standard string writing
+  STC 86
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  WRT  1
+; --- Write STRING " invalid for int2char in line 87."
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 100
+  WRT  0
+  STC 32
+  WRT  0
+  STC 102
+  WRT  0
+  STC 111
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 116
+  WRT  0
+  STC 50
+  WRT  0
+  STC 99
+  WRT  0
+  STC 104
+  WRT  0
+  STC 97
+  WRT  0
+  STC 114
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 56
+  WRT  0
+  STC 55
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L7:
+</int2char>
+; --- Put CHARACTER
+  WRT  0
+</put>
+<put>
+; --- Write STRING "num TRUES:   "
+; --- Standard string writing
+  STC 110
+  WRT  0
+  STC 117
+  WRT  0
+  STC 109
+  WRT  0
+  STC 32
+  WRT  0
+  STC 84
+  WRT  0
+  STC 82
+  WRT  0
+  STC 85
+  WRT  0
+  STC 69
+  WRT  0
+  STC 83
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+  STC 32
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "numtrues"
+  SRF  0 16
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</exps_instruction_block>
+  LVP 
+</exps>

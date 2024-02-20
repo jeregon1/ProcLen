@@ -1,0 +1,14 @@
+FILE=../progs/$1.pcode
+if test -f "$FILE"; then
+    rm ../progs/$1.pcode
+fi
+
+FILE=../progs/$1.progs
+if test -f "$FILE"; then
+    ./adaccomp ../progs/$1 -x -r -c -o
+fi
+
+FILE=../progs/$1.pcode
+if test -f "$FILE"; then
+    ../maquinap/ensamblador ../progs/$1
+fi

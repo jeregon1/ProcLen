@@ -1,0 +1,874 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cambio_base>
+; --- Program "cambio_base"
+  ENP L0
+<constant_variable_declaration>
+; --- Simple variable "num", type INT, level 0,  address [3]!
+; --- Simple variable "base", type INT, level 0,  address [4]!
+; --- Simple variable "enb", type INT, level 0,  address [5]!
+</constant_variable_declaration>
+<function_b_dec>
+L1:
+; --- Simple parameter "n", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "b", type INT, class VAL, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "b" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "n" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L2
+<constant_variable_declaration>
+; --- Simple variable "uc", type INT, level 1,  address [6]!
+; --- Simple variable "valrec", type INT, level 1,  address [7]!
+</constant_variable_declaration>
+L2:
+<b_dec_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  STC  0
+  EQ 
+</condition>
+  JMF L3
+<then>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+  STC  0
+  CSF 
+</return>
+  JMP L4
+</then>
+<else>
+L3:
+<Assignment_to_simple_variable_uc>
+; --- Address of variable / parameter "uc"
+  SRF  0  6
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  STC 10
+  MOD 
+  ASG 
+</Assignment_to_simple_variable_uc>
+<Assignment_to_simple_variable_valrec>
+; --- Address of variable / parameter "valrec"
+  SRF  0  7
+<function_call_b_dec>
+; --- Function call b_dec
+<argument_1>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  STC 10
+  DIV 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  8  1 L1
+</function_call_b_dec>
+  ASG 
+</Assignment_to_simple_variable_valrec>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "valrec"
+  SRF  0  7
+  DRF 
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+  TMS 
+; --- Constant / variable / parameter "uc"
+  SRF  0  6
+  DRF 
+  PLUS 
+  CSF 
+</return>
+</else>
+L4:
+</if-then>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L5
+; --- Write STRING "Function "b_dec" does not return a value in line 22."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 98
+  WRT  0
+  STC 95
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 50
+  WRT  0
+  STC 50
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L5:
+</check_runtime_return_execution>
+  CSF 
+</b_dec_instruction_block>
+</function_b_dec>
+<function_dec_b>
+L6:
+; --- Simple parameter "n", type INT, class VAL, level 1,  address [4]!
+; --- Simple parameter "b", type INT, class VAL, level 1,  address [5]!
+<recover_argument_2>
+; --- Recover simple val / ref variable parameter "b" (number 2).
+  SRF  0  5
+  ASGI 
+</recover_argument_2>
+<recover_argument_1>
+; --- Recover simple val / ref variable parameter "n" (number 1).
+  SRF  0  4
+  ASGI 
+</recover_argument_1>
+  JMP L7
+<constant_variable_declaration>
+; --- Simple variable "resto", type INT, level 1,  address [6]!
+; --- Simple variable "valrec", type INT, level 1,  address [7]!
+</constant_variable_declaration>
+L7:
+<dec_b_instruction_block>
+<mark_runtime_return_execution_false>
+  SRF  0  3
+  STC  0
+  ASG 
+</mark_runtime_return_execution_false>
+<if-then>
+<condition>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+  LT 
+</condition>
+  JMF L8
+<then>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+  CSF 
+</return>
+  JMP L9
+</then>
+<else>
+L8:
+<Assignment_to_simple_variable_resto>
+; --- Address of variable / parameter "resto"
+  SRF  0  6
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+  MOD 
+  ASG 
+</Assignment_to_simple_variable_resto>
+<Assignment_to_simple_variable_valrec>
+; --- Address of variable / parameter "valrec"
+  SRF  0  7
+<function_call_dec_b>
+; --- Function call dec_b
+<argument_1>
+; --- Constant / variable / parameter "n"
+  SRF  0  4
+  DRF 
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+  DIV 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "b"
+  SRF  0  5
+  DRF 
+</argument_2>
+  OSF  8  1 L6
+</function_call_dec_b>
+  ASG 
+</Assignment_to_simple_variable_valrec>
+<return>
+<mark_runtime_return_execution_true>
+  SRF  0  3
+  STC  1
+  ASG 
+</mark_runtime_return_execution_true>
+; --- Constant / variable / parameter "valrec"
+  SRF  0  7
+  DRF 
+  STC 10
+  TMS 
+; --- Constant / variable / parameter "resto"
+  SRF  0  6
+  DRF 
+  PLUS 
+  CSF 
+</return>
+</else>
+L9:
+</if-then>
+<check_runtime_return_execution>
+  SRF  0  3
+  DRF 
+  JMT L10
+; --- Write STRING "Function "dec_b" does not return a value in line 34."
+; --- Standard string writing
+  STC 70
+  WRT  0
+  STC 117
+  WRT  0
+  STC 110
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC 105
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 34
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 95
+  WRT  0
+  STC 98
+  WRT  0
+  STC 34
+  WRT  0
+  STC 32
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 111
+  WRT  0
+  STC 116
+  WRT  0
+  STC 32
+  WRT  0
+  STC 114
+  WRT  0
+  STC 101
+  WRT  0
+  STC 116
+  WRT  0
+  STC 117
+  WRT  0
+  STC 114
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 118
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 51
+  WRT  0
+  STC 52
+  WRT  0
+  STC 46
+  WRT  0
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
+L10:
+</check_runtime_return_execution>
+  CSF 
+</dec_b_instruction_block>
+</function_dec_b>
+L0:
+<cambio_base_instruction_block>
+<Assignment_to_simple_variable_num>
+; --- Address of variable / parameter "num"
+  SRF  0  3
+  STC  4
+  ASG 
+</Assignment_to_simple_variable_num>
+<Assignment_to_simple_variable_base>
+; --- Address of variable / parameter "base"
+  SRF  0  4
+  STC  2
+  ASG 
+</Assignment_to_simple_variable_base>
+<put>
+; --- Write STRING "Este programa convierte n="
+; --- Standard string writing
+  STC 69
+  WRT  0
+  STC 115
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 112
+  WRT  0
+  STC 114
+  WRT  0
+  STC 111
+  WRT  0
+  STC 103
+  WRT  0
+  STC 114
+  WRT  0
+  STC 97
+  WRT  0
+  STC 109
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 105
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 116
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 110
+  WRT  0
+  STC 61
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "num"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING " a base b="
+; --- Standard string writing
+  STC 32
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 97
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+  STC 32
+  WRT  0
+  STC 98
+  WRT  0
+  STC 61
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING ", y luego efectúa la conversión inversa."
+; --- Standard string writing
+  STC 44
+  WRT  0
+  STC 32
+  WRT  0
+  STC 121
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  STC 103
+  WRT  0
+  STC 111
+  WRT  0
+  STC 32
+  WRT  0
+  STC 101
+  WRT  0
+  STC 102
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 116
+  WRT  0
+  STC -61
+  WRT  0
+  STC -70
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
+  STC 32
+  WRT  0
+  STC 99
+  WRT  0
+  STC 111
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 115
+  WRT  0
+  STC 105
+  WRT  0
+  STC -61
+  WRT  0
+  STC -77
+  WRT  0
+  STC 110
+  WRT  0
+  STC 32
+  WRT  0
+  STC 105
+  WRT  0
+  STC 110
+  WRT  0
+  STC 118
+  WRT  0
+  STC 101
+  WRT  0
+  STC 114
+  WRT  0
+  STC 115
+  WRT  0
+  STC 97
+  WRT  0
+  STC 46
+  WRT  0
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "n: "
+; --- Standard string writing
+  STC 110
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "num"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "b: "
+; --- Standard string writing
+  STC 98
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<Assignment_to_simple_variable_enb>
+; --- Address of variable / parameter "enb"
+  SRF  0  5
+<function_call_dec_b>
+; --- Function call dec_b
+<argument_1>
+; --- Constant / variable / parameter "num"
+  SRF  0  3
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+</argument_2>
+  OSF  6  0 L6
+</function_call_dec_b>
+  ASG 
+</Assignment_to_simple_variable_enb>
+<put>
+; --- Write STRING "dec_b("
+; --- Standard string writing
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 95
+  WRT  0
+  STC 98
+  WRT  0
+  STC 40
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "num"
+  SRF  0  3
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING ","
+; --- Standard string writing
+  STC 44
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING "): "
+; --- Standard string writing
+  STC 41
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "enb"
+  SRF  0  5
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+<put>
+; --- Write STRING "b_dec("
+; --- Standard string writing
+  STC 98
+  WRT  0
+  STC 95
+  WRT  0
+  STC 100
+  WRT  0
+  STC 101
+  WRT  0
+  STC 99
+  WRT  0
+  STC 40
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "enb"
+  SRF  0  5
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING ","
+; --- Standard string writing
+  STC 44
+  WRT  0
+</put>
+<put>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+; --- Put INTEGER
+  WRT  1
+</put>
+<put>
+; --- Write STRING "): "
+; --- Standard string writing
+  STC 41
+  WRT  0
+  STC 58
+  WRT  0
+  STC 32
+  WRT  0
+</put>
+<put>
+<function_call_b_dec>
+; --- Function call b_dec
+<argument_1>
+; --- Constant / variable / parameter "enb"
+  SRF  0  5
+  DRF 
+</argument_1>
+<argument_2>
+; --- Constant / variable / parameter "base"
+  SRF  0  4
+  DRF 
+</argument_2>
+  OSF  6  0 L1
+</function_call_b_dec>
+; --- Put INTEGER
+  WRT  1
+</put>
+<put_line>
+; --- CR/LF
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+</put_line>
+</cambio_base_instruction_block>
+  LVP 
+</cambio_base>
