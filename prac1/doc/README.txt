@@ -2,6 +2,11 @@ Compilador alike.jar (V1.0)
 ------------------------------
 Análisis léxico y sintáctico
 
+Autores:
+Javier Sin Pelayo, 843442
+Jesús López Ansón, 839922
+
+Fecha de entrega: 
 
 Invocar como:
 

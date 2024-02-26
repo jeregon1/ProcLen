@@ -7,7 +7,7 @@
 
 options {
 	IGNORE_CASE = true;
-	COMMON_TOKEN_ACTION = false;
+	COMMON_TOKEN_ACTION = true;
 }
 
 PARSER_BEGIN(alike)
@@ -38,32 +38,135 @@ public class alike {
 		   System.err.println ("Fichero " + args[0] + " no encontrado.");
 	   }
 	   catch (TokenMgrError e) {
-		   System.err.println("LEX_ERROR: " + e.getMessage());
+		// Tiene que quedar el mensaje así
+		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
+		   System.err.println("ERROR LÉXICO: " + e.getMessage());
 	   }
+	   catch (ParseException e) {
+		   System.err.println("PARSER_ERROR: " + e.getMessage());
+	   }
+	   
 	   //...
    }
 }
 PARSER_END(alike)
 
-TOKEN : {
-	< #LETTER: (["a"-"z","A"-"Z"]) >
-|	< #DIGIT: ["0"-"9"] >
+//---------------------------------------------------------
+TOKEN_MGR_DECLS : {
+	static void CommonTokenAction(Token t) {
+		String kind = "";
+		switch (t.kind) {
+			case tNUM:    kind = "constante entera"; break;
+			case tID:	  kind = "identificador"; break;
+			case tASSIGN: kind = "operador asignación"; break;
+			case tAND: case tOR: case tNOT: case tEQ: case tNEQ: case tLT: case tLE: case tGT: case tGE:
+						  kind = "operador lógico"; break;
+			case tPLUS: case tMINUS: case tMULT: case tDIV: case tMOD:
+						  kind = "operador aritmético"; break;
+			case tBOOL: case tCHAR: case tINT:
+						  kind = "palabra reservada"; break;
+			case tCOMMENT: kind = "comentario"; break;
+			case tNEWLINE: kind = "salto de línea"; break;
+			case tCOMMA: case tSEMICOLON: kind = "separador"; break;
+			case tIF: case tELSE: case tELSIF: case tENDIF: case tTHEN: case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tEND: case tRETURN: case tPROCEDURE: case tFUNCTION: case tIS:
+						  kind = "token"; break;
+						  
+			default: 	  kind = "ERROR"; break;
+		}
+
+		if (kind != "ERROR") System.out.println("(" + t.beginLine + "," + t.beginColumn + "): " + kind + " \"" + t.image + "\"");
+		else 				 System.out.println("ERROR LÉXICO: (" + t.beginLine + "," + t.beginColumn + "): símbolo no reconocido: \"" + t.image + "\"");
+
+	}
 }
 
 TOKEN : {
-|	< tBOOL: "bool" >
-|	< tCHAR: "char" >
-   ...
+	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+|	< tSEMICOLON: ";" >
+|	< tCOMMA: "," >
+|   < tSIMPLE_QUOTE: "'" >
+|	< tNEWLINE: ("\n" | "\r" | "\n\r" ) >
+
+	// Tipos de datos
+|	< tINT: "integer" >
+|	< tCHAR: "character" >
+|	< tBOOL: "boolean" >
+// 🎃👇🏼 esto iría en análisis sintáctico, la especificación de que vaya entre colillas simples
+// |   < tCHAR: "'" (~["'","\n","\r"])* "'" > 
+
+
+	// Palabras reservadas para bloques de código estructurados
+|	< tWHILE: "while" > 
+|   < tLOOP: "loop" >
+|	< tENDLOOP: "end loop" >
+|	< tIF: "if" >
+|	< tTHEN: "then" >
+|	< tELSIF: "elsif" >
+|	< tELSE: "else" >
+|	< tENDIF: "end if" >
+
+|   < tPROCEDURE: "procedure" >
+|   < tFUNCTION: "function" >
+|   < tIS: "is" >
+|   < tBEGIN: "begin" >
+|   < tEND: "end" >
+|	< tRETURN: "return" > 
+
+	// Literales
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tNUM: ("-")? (<DIGIT>)+ > 
+
+	// Operadores
+|	< tASSIGN: ":=" > 
+	
+|	< tAND: "&&" >
+|	< tOR: "||" >
+|	< tNOT: "!" >
+|	< tEQ: "=" >
+|	< tNEQ: "!=" >
+|	< tLT: "<" >
+|	< tLE: "<=" >
+|	< tGT: ">" >
+|	< tGE: ">=" >
+|	< tPLUS: "+" >
+|	< tMINUS: "-" >
+|	< tMULT: "*" >
+|	< tDIV: "/" >
+|	< tMOD: "mod" >
+
+
+	// Otros
+
+// comment es cualquier cosa detrás de "--" hasta finial de línea
+| 	< tCOMMENT: "--" (~["\n","\r"])* ("\n")>
+|	< tID: (<LETTER> | "_") (<LETTER>|<DIGIT>|"_")* >
+
+|  	< #ANY : (~[])+ >
 }
+
+SKIP : { " " | "\t" }
+
+// < * > TOKEN :
+// {
+//   < UNEXPECTED_TOKEN : (~[])+ >
+// }
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void Programa() : 
 {
-
+	Token t;
 }
 {
    ( 
-	   < tBEGIN > | < tBOOL > | < tCHAR > | ...
-   )+
+	   < tBOOL > | < tCHAR > | <tINT> | <tIF> | <tELSE> | <tID>
+	   | <tNUM> | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> 
+	   | <tNEQ> | <tLT> | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> 
+	   | <tMULT> | <tDIV> | <tMOD> | <tPROCEDURE> | <tFUNCTION> | <tIS> 
+	   | <tBEGIN> | <tEND> | <tRETURN> | <tWHILE> | <tLOOP> | <tENDLOOP> 
+	   | <tTHEN> | <tELSIF> | <tENDIF> | <tTRUE> | <tFALSE> 
+	   | <tCOMMENT> | <tSEMICOLON> | <tCOMMA> | <tSIMPLE_QUOTE> | <tNEWLINE>
+   )* 
    < EOF >
 }
