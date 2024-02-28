@@ -67,7 +67,7 @@ TOKEN_MGR_DECLS : {
 						  kind = "palabra reservada"; break;
 			case tCOMMENT: kind = "comentario"; break;
 			case tNEWLINE: kind = "salto de línea"; break;
-			case tCOMMA: case tSEMICOLON: kind = "separador"; break;
+			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
 			case tIF: case tELSE: case tELSIF: case tENDIF: case tTHEN: case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tEND: case tRETURN: case tPROCEDURE: case tFUNCTION: case tIS:
 						  kind = "token"; break;
 						  
@@ -83,7 +83,10 @@ TOKEN_MGR_DECLS : {
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
 |	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
 |	< tCOMMA: "," >
 |   < tSIMPLE_QUOTE: "'" >
 |	< tNEWLINE: ("\n" | "\r" | "\n\r" ) >
@@ -136,14 +139,13 @@ TOKEN : {
 |	< tDIV: "/" >
 |	< tMOD: "mod" >
 
-
 	// Otros
 
 // comment es cualquier cosa detrás de "--" hasta finial de línea
-| 	< tCOMMENT: "--" (~["\n","\r"])* ("\n")>
+| 	< tCOMMENT: "--" (<tNEWLINE>)* <tNEWLINE>>
 |	< tID: (<LETTER> | "_") (<LETTER>|<DIGIT>|"_")* >
 
-|  	< #ANY : (~[])+ >
+// |  	< #ANY : (~[])+ >
 }
 
 SKIP : { " " | "\t" }
@@ -160,13 +162,14 @@ void Programa() :
 }
 {
    ( 
-	   < tBOOL > | < tCHAR > | <tINT> | <tIF> | <tELSE> | <tID>
-	   | <tNUM> | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> 
-	   | <tNEQ> | <tLT> | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> 
-	   | <tMULT> | <tDIV> | <tMOD> | <tPROCEDURE> | <tFUNCTION> | <tIS> 
-	   | <tBEGIN> | <tEND> | <tRETURN> | <tWHILE> | <tLOOP> | <tENDLOOP> 
-	   | <tTHEN> | <tELSIF> | <tENDIF> | <tTRUE> | <tFALSE> 
-	   | <tCOMMENT> | <tSEMICOLON> | <tCOMMA> | <tSIMPLE_QUOTE> | <tNEWLINE>
+	   <tSEMICOLON> | <tCOLON> |<tCOMMA> | <tSIMPLE_QUOTE> | <tNEWLINE>
+	   | < tBOOL > | < tCHAR > | <tINT> 
+	   | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> | <tWHILE> | <tLOOP> | <tENDLOOP>
+	   | <tPROCEDURE> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
+	   | <tTRUE> | <tFALSE> | <tNUM> 
+	   | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> | <tNEQ> | <tLT> 
+	   | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> | <tMULT> | <tDIV> | <tMOD>
+	   | <tCOMMENT> | <tID>
    )* 
    < EOF >
 }
