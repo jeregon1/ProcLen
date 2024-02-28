@@ -1,0 +1,79 @@
+Programa: 
+	<tPROCEDURE>
+	<tID>
+	<tIS>
+	( declaracion_variables )?
+	( declaracion_procs_funcs )?
+	<tBEGIN>
+	instrucciones
+	<tEND>
+	<tPC>
+
+declaracion_variables:
+	( declaracion_var )+
+
+declaracion_var:
+	lista_ids
+	<tDPV>
+	tipo_variable
+
+...
+
+cabecera_procedimiento:
+	<tPROCEDURE>
+	<tID>
+	( parametros_formales )?
+	<tIS>
+
+...
+
+instruccion() :
+    inst_leer()
+|   inst_saltar_linea
+|	inst_escribir
+|   inst_escribir_linea
+|   inst_invocacion_o_asignacion
+|   inst_if
+|   inst_while
+|   inst_return
+|   inst_null
+
+expresion:
+    relacion
+	( ((<tAND> | <tOR>) relacion)+ )?
+
+relacion:
+    expresion_simple()
+ 	( operador_relacional expresion_simple )?
+
+operador_relacional:
+    <tIG> |	<tMEN> | <tMAY> | <tMENI> |	<tMAYI> | <tDIF>
+
+expresion_simple:
+    ( <tMAS> |	<tMENOS> )? 
+    termino
+	( ( <tMAS> | tMENOS> ) termino )*
+
+termino:
+    factor ( operador_multiplicativo factor )*
+
+operador_multiplicativo:
+    <tPROD> | <tMOD> | <tDIV>
+
+factor:
+    primario
+|   <tNOT>  primario()
+
+primario:
+    <tAPAR> expresion <tCPAR>
+|	<tINT2CHAR> <tAPAR> expresion <tCPAR>
+|	<tCHAR2INT> <tAPAR> expresion <tCPAR>
+|	LOOKAHEAD(2)
+    <tID> <tAPAR> lista_una_o_mas_exps <tCPAR> //invoc. func. o comp. array
+|	<tID>              //var. o func. sin pars
+|	<tCONST_INT>
+|	<tCONST_CHAR>
+|	<tCONST_STRING>rn sf.primario_8(t);
+|	<tTRUE>
+|	<tFALSE>
+
