@@ -8,13 +8,12 @@
 options {
 	IGNORE_CASE = true;
 	COMMON_TOKEN_ACTION = true;
+	UNICODE_INPUT = true;
 }
 
 PARSER_BEGIN(alike)
 
 package traductor;
-
-//...
 
 public class alike {
    //...
@@ -40,7 +39,7 @@ public class alike {
 	   catch (TokenMgrError e) {
 		// Tiene que quedar el mensaje así
 		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
-		   System.err.println("ERROR LÉXICO: " + e.getMessage());
+		   System.err.println("TokenMgrError: " + e.getMessage());
 	   }
 	   catch (ParseException e) {
 		   System.err.println("PARSER_ERROR: " + e.getMessage());
@@ -66,8 +65,7 @@ TOKEN_MGR_DECLS : {
 			case tBOOL: case tCHAR: case tINT:
 						  kind = "palabra reservada"; break;
 			case tCOMMENT: kind = "comentario"; break;
-			case tNEWLINE: kind = "salto de línea"; break;
-			case tCOMMA: case tSEMICOLON: kind = "separador"; break;
+			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
 			case tIF: case tELSE: case tELSIF: case tENDIF: case tTHEN: case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tEND: case tRETURN: case tPROCEDURE: case tFUNCTION: case tIS:
 						  kind = "token"; break;
 						  
@@ -83,20 +81,17 @@ TOKEN_MGR_DECLS : {
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
 |	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
 |	< tCOMMA: "," >
 |   < tSIMPLE_QUOTE: "'" >
-|	< tNEWLINE: ("\n" | "\r" | "\n\r" ) >
 
 	// Tipos de datos
 |	< tINT: "integer" >
 |	< tCHAR: "character" >
 |	< tBOOL: "boolean" >
-// 🎃👇🏼 esto iría en análisis sintáctico, la especificación de que vaya entre colillas simples
-// |   < tCHAR: "'" (~["'","\n","\r"])* "'" > 
-
-
-	// Palabras reservadas para bloques de código estructurados
 |	< tWHILE: "while" > 
 |   < tLOOP: "loop" >
 |	< tENDLOOP: "end loop" >
@@ -136,22 +131,15 @@ TOKEN : {
 |	< tDIV: "/" >
 |	< tMOD: "mod" >
 
-
 	// Otros
 
 // comment es cualquier cosa detrás de "--" hasta finial de línea
-| 	< tCOMMENT: "--" (~["\n","\r"])* ("\n")>
-|	< tID: (<LETTER> | "_") (<LETTER>|<DIGIT>|"_")* >
+|   < tCOMMENT: "--" (~["\n"])* >
+|	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
 
-|  	< #ANY : (~[])+ >
 }
 
-SKIP : { " " | "\t" }
-
-// < * > TOKEN :
-// {
-//   < UNEXPECTED_TOKEN : (~[])+ >
-// }
+SKIP : { " " | "\t" | "\n" }
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void Programa() : 
@@ -160,13 +148,15 @@ void Programa() :
 }
 {
    ( 
-	   < tBOOL > | < tCHAR > | <tINT> | <tIF> | <tELSE> | <tID>
-	   | <tNUM> | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> 
-	   | <tNEQ> | <tLT> | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> 
-	   | <tMULT> | <tDIV> | <tMOD> | <tPROCEDURE> | <tFUNCTION> | <tIS> 
-	   | <tBEGIN> | <tEND> | <tRETURN> | <tWHILE> | <tLOOP> | <tENDLOOP> 
-	   | <tTHEN> | <tELSIF> | <tENDIF> | <tTRUE> | <tFALSE> 
-	   | <tCOMMENT> | <tSEMICOLON> | <tCOMMA> | <tSIMPLE_QUOTE> | <tNEWLINE>
+	   <tSEMICOLON> |<tCOMMA> | <tSIMPLE_QUOTE>  | <tCOLON> 
+	   | < tBOOL > | < tCHAR > | <tINT> 
+	   | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> | <tWHILE> | <tLOOP> | <tENDLOOP>
+	   | <tPROCEDURE> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
+	   | <tTRUE> | <tFALSE> | <tNUM> 
+	   | <tAND> | <tOR> | <tNOT> | <tEQ> | <tNEQ> | <tLT> 
+	   | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> | <tMULT> | <tDIV> | <tMOD>
+	   | <tCOMMENT> | <tID> 
+	   | <tASSIGN>
    )* 
    < EOF >
 }
