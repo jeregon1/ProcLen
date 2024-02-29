@@ -67,8 +67,8 @@ TOKEN_MGR_DECLS : {
 			case tBOOL: case tCHAR: case tINT:
 						  kind = "palabra reservada"; break;
 			case tCOMMENT: kind = "comentario"; break;
-			case tCOMMA: case tSEMICOLON: case tCOLON: case tSIMPLE_QUOTE: case tDOUBLE_QUOTE: kind = "separador"; break;
-			case tLPAREN: case tRPAREN: case tLBRACE: case tRBRACE: case tLBRACKET: case tRBRACKET: kind = "delimitador"; break;
+			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
+			case tLPAREN: case tRPAREN: kind = "paréntesis"; break;
 
 			case tIF: case tTHEN: case tELSE: case tELSIF: case tENDIF: 
 			case tWHILE: case tLOOP: case tENDLOOP: 
@@ -97,16 +97,10 @@ TOKEN : {
 |	< tSEMICOLON: ";" >
 |	< tCOLON: ":" >
 |	< tCOMMA: "," >
-|   < tSIMPLE_QUOTE: "'" >
-|   < tDOUBLE_QUOTE: "\"" >
 
 	// Delimitadores
 |	< tLPAREN: "(" >
 |	< tRPAREN: ")" >
-|	< tLBRACE: "{" >
-|	< tRBRACE: "}" >
-|	< tLBRACKET: "[" >
-|	< tRBRACKET: "]" >
 
 	// Tipos de datos
 |	< tINT: "integer" >
@@ -183,8 +177,8 @@ void Programa() :
 }
 {
    ( 
-	   <tSEMICOLON> |<tCOMMA> | <tCOLON> | <tSIMPLE_QUOTE> | <tDOUBLE_QUOTE>
-	   | <tLPAREN> | <tRPAREN> | <tLBRACE> | <tRBRACE> | <tLBRACKET> | <tRBRACKET>
+	   <tSEMICOLON> |<tCOMMA> | <tCOLON> 
+	   | <tLPAREN> | <tRPAREN> 
 	   | < tBOOL > | < tCHAR > | <tINT> 
 	   | <tWHILE> | <tLOOP> | <tENDLOOP> | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> 
 	   | <tPROCEDURE> | <tREF> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
