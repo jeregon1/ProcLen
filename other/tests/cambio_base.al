@@ -1,6 +1,6 @@
 --Ejemplo de cambio de bases numéricas
 procedure cambio_base is
-	x;:9character;
+	x : character;
 	num, base: integer;
 	enb: integer;
 ------------------------------------------------------
