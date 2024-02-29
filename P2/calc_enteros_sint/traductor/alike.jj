@@ -1,0 +1,377 @@
+//*****************************************************************
+// File:   alike.jj
+// Author: Javier Sin Pelayo (843442) - Jesús López Ansón (839922)
+// Date:   1-3-2024
+// Coms:   compilar mediante "ant"
+//         Analzador sintáctico de lenguaje alike
+//*****************************************************************
+
+options {
+ 	IGNORE_CASE = false;
+ 	DEBUG_PARSER = false;
+}
+
+PARSER_BEGIN(sintactic_analyzer)
+
+package traductor;
+
+public class sintactic_analyzer {
+    public static void main(String[] args) {
+    	sintactic_analyzer parser;
+    	
+    	try {
+	    	if(args.length == 0) {
+				parser = new sintactic_analyzer(System.in);
+			}
+			else {
+	            parser = new sintactic_analyzer(new java.io.FileInputStream(args[0]));
+			}
+			//Programa es el símbolo inicial de la gramática
+			parser.calc();
+		}
+		catch (java.io.FileNotFoundException e) {
+			System.err.println ("Fichero " + args[0] + " no encontrado.");
+		}
+		catch (TokenMgrError e) {
+        	System.err.println("LEX_ERROR: " + e.getMessage());
+        }
+        catch (ParseException e) {
+            System.err.println("Svoid_ERROR: " + e.getMessage());
+        } 
+        catch(Exception e) {
+  			System.err.println("Finalizo traducción por detección de error no controlado: \n\t"
+  				               + e.getMessage());
+		}
+    }
+}
+PARSER_END(sintactic_analyzer)
+
+SKIP : {
+	" "
+|	"\t"
+|	"\n"
+|	"\r"
+|	"\r\n"	
+}
+
+TOKEN : {
+	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
+|	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
+|	< tCOMMA: "," >
+
+	// Delimitadores
+|	< tLPAREN: "(" >
+|	< tRPAREN: ")" >
+
+	// Tipos de datos
+|	< tINT: "integer" >
+|	< tCHAR: "character" >
+|	< tBOOL: "boolean" >
+
+	// Palabras reservadas
+|	< tWHILE: "while" > 
+|   < tLOOP: "loop" >
+|	< tENDLOOP: "end loop" >
+|	< tIF: "if" >
+|	< tTHEN: "then" >
+|	< tELSIF: "elsif" >
+|	< tELSE: "else" >
+|	< tENDIF: "end if" >
+
+|   < tPROCEDURE: "procedure" >
+|   < tFUNCTION: "function" >
+|   < tREF: "ref" >
+|   < tIS: "is" >
+|   < tBEGIN: "begin" >
+|   < tEND: "end" >
+|	< tRETURN: "return" > 
+
+|   < tARRAY: "array" >
+| 	< tARRAY_OF: "of" >
+|	< tRANGE: ".." >
+
+	// Funciones estándar
+| 	< tPUT: "put" >
+| 	< tPUT_LINE: "put_line" >
+|	< tGET: "get" >
+|	< tSKIP_LINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tEXIT: "exit" >
+
+	// Literales
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tNUM: ("-")? (<DIGIT>)+ >
+|	< tCONST_CHAR: "'"~[]"'" >
+|	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
+
+	// Operadores
+|	< tASSIGN: ":=" > 
+|	< tAND: "and" >
+|	< tOR: "or" >
+|	< tNOT: "not" >
+|	< tEQ: "=" >
+|	< tNEQ: "/=" >
+|	< tLT: "<" >
+|	< tLE: "<=" >
+|	< tGT: ">" >
+|	< tGE: ">=" >
+|	< tPLUS: "+" >
+|	< tMINUS: "-" >
+|	< tMULT: "*" >
+|	< tDIV: "/" >
+|	< tMOD: "mod" >
+
+	// Otros
+|   < tCOMMENT: "--" (~["\n", "\r"])* >
+|	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
+
+}
+
+SPECIAL_TOKEN : {
+ 	< tBASURA: ~[] >
+	 	{
+			System.err.println("Carácter extraño. Reemplazo por espacio");
+			matchedToken.image = " ";
+	 	}
+}
+
+/* ---------DRAFT DE LA GRAMÁTICA DE EJEMPLO---------
+
+Programa:
+	<tPROCEDURE>
+	<tID>
+	<tIS>
+	( declaracion_variables )?
+	( declaracion_procs_funcs )?
+	<tBEGIN>
+	instrucciones
+	<tEND>
+	<tPC>
+
+declaracion_variables:
+	( declaracion_var )+
+
+declaracion_var:
+	lista_ids
+	<tDPV>
+	tipo_variable
+
+...
+
+cabecera_procedimiento:
+	<tPROCEDURE>
+	<tID>
+	( parametros_formales )?
+	<tIS>
+
+...
+
+instruccion() :
+	inst_leer()
+	| inst_saltar_linea
+	| inst_escribir
+	| inst_escribir_linea
+	| inst_invocacion_o_asignacion
+	| inst_if
+	| inst_while
+	| inst_return
+	| inst_null
+
+expresion:
+	relacion
+	( ((<tAND> | <tOR>) relacion)+ )?
+
+relacion:
+	expresion_simple()
+	( operador_relacional expresion_simple )?
+
+operador_relacional:
+	<tIG> | <tMEN> | <tMAY> | <tMENI> | <tMAYI> | <tDIF>
+
+expresion_simple:
+	( <tMAS> | <tMENOS> )?
+	termino
+	( ( <tMAS> | tMENOS> ) termino )*
+
+termino:
+	factor ( operador_multiplicativo factor )*
+
+operador_multiplicativo:
+	<tPROD> | <tMOD> | <tDIV>
+
+factor:
+	primario
+	| <tNOT> primario()
+
+primario:
+	<tAPAR> expresion <tCPAR>
+| <tINT2CHAR> <tAPAR> expresion <tCPAR>
+| <tCHAR2INT> <tAPAR> expresion <tCPAR>
+| LOOKAHEAD(2)
+	<tID> <tAPAR> lista_una_o_mas_exps <tCPAR> //invoc. func. o comp. array
+| <tID> //var. o func. sin pars
+| <tCONST_INT>
+| <tCONST_CHAR>
+| <tCONST_STRING>rn sf.primario_8(t);
+| <tTRUE>
+| <tFALSE>
+*/
+//---------------------------------------------------------
+//calc: (dec_constantes)? (dec_variables)? (instrucciones)+
+void calc () : 
+{
+
+}
+{
+	(dec_constantes())? (dec_variables())? (instrucciones())+
+}
+
+//dec_constantes: (dec_constante)+
+void dec_constantes() :
+{
+
+}
+{
+	( dec_constante() )+
+}
+
+//dec_constante: < tCONST > < tASS > < tNUM > < tPC >
+void dec_constante() :
+{
+
+}
+{
+	< tCONST > 
+	< tID > 
+	< tASS > 
+	< tNUM > 
+	< tPC >
+}
+
+//dec_variables: (dec_variable)+
+void dec_variables() :
+{
+
+}
+{
+	( dec_variable() )+
+}
+
+//dec_variable:  < tVAR > < tID > < tPC >
+void dec_variable() :
+{
+
+}
+{
+	< tVAR >
+	< tID >
+	< tPC >
+}
+
+//instrucciones: (instruccion)+
+void instrucciones() :
+{
+
+}
+{
+	( instruccion() < tPC >)+ < EOF >
+}
+
+void instruccion() :
+{
+
+}
+{
+	inst_asignacion()
+|	inst_escribir()
+}
+
+void inst_asignacion() :
+{
+
+}
+{
+	< tID >
+	< tASS >
+	expresion()
+}
+
+void inst_escribir() :
+{
+
+}
+{
+	< tWRITE >
+	expresion()
+}
+
+void expresion() :
+{ 
+}
+{ 	
+	termino() 
+	expresion_plus()
+}
+
+void expresion_plus() :
+{ 
+
+}
+{ 	
+	< tMAS > 
+	termino() 
+	expresion_plus()
+|	< tMENOS >
+	termino() 
+	expresion_plus()
+|	{
+		//epsilon
+	}
+}
+
+void termino() :
+{ 
+
+}
+{
+	factor()
+	termino_plus()
+}
+
+void termino_plus() :
+{ 
+
+}
+{ 	
+	< tPROD > 
+	factor()
+	termino_plus()
+|	< tDIV >
+	factor()
+	termino_plus()
+|	{
+		//epsilon
+	}
+}
+
+void factor() :
+{ 
+
+}
+{
+	< tAP >
+	expresion()
+	< tCP >
+|	< tID >
+|	< tNUM >
+|	< tMAS >
+	factor()
+|	< tMENOS >
+	factor()
+}
