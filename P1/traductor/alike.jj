@@ -56,6 +56,8 @@ TOKEN_MGR_DECLS : {
 		String kind = "";
 		switch (t.kind) {
 			case tNUM:    kind = "constante entera"; break;
+			case tCONST_CHAR: kind = "constante carácter"; break;
+			case tCONST_STRING: kind = "constante string"; break;
 			case tID:	  kind = "identificador"; break;
 			case tASSIGN: kind = "operador asignación"; break;
 			case tAND: case tOR: case tNOT: case tEQ: case tNEQ: case tLT: case tLE: case tGT: case tGE:
@@ -65,16 +67,24 @@ TOKEN_MGR_DECLS : {
 			case tBOOL: case tCHAR: case tINT:
 						  kind = "palabra reservada"; break;
 			case tCOMMENT: kind = "comentario"; break;
-			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
-			case tIF: case tELSE: case tELSIF: case tENDIF: case tTHEN: case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tEND: case tRETURN: case tPROCEDURE: case tFUNCTION: case tIS:
+			case tCOMMA: case tSEMICOLON: case tCOLON: case tSIMPLE_QUOTE: case tDOUBLE_QUOTE: kind = "separador"; break;
+			case tLPAREN: case tRPAREN: case tLBRACE: case tRBRACE: case tLBRACKET: case tRBRACKET: kind = "delimitador"; break;
+
+			case tIF: case tTHEN: case tELSE: case tELSIF: case tENDIF: 
+			case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tPROCEDURE: case tFUNCTION: case tIS: case tEND: case tRETURN:
+			case tARRAY: case tARRAY_OF:
 						  kind = "token"; break;
+
+			case tPUT: case tPUT_LINE: case tGET: case tSKIP_LINE: case tINT2CHAR: case tCHAR2INT: case tEXIT:
+				kind = "función estándar"; break;
+
+			case EOF: kind = "Fin de fichero"; break;
 						  
 			default: 	  kind = "ERROR"; break;
 		}
 
 		if (kind != "ERROR") System.out.println("(" + t.beginLine + "," + t.beginColumn + "): " + kind + " \"" + t.image + "\"");
 		else 				 System.out.println("ERROR LÉXICO: (" + t.beginLine + "," + t.beginColumn + "): símbolo no reconocido: \"" + t.image + "\"");
-
 	}
 }
 
@@ -87,11 +97,22 @@ TOKEN : {
 |	< tCOLON: ":" >
 |	< tCOMMA: "," >
 |   < tSIMPLE_QUOTE: "'" >
+|   < tDOUBLE_QUOTE: "\"" >
+
+	// Delimitadores
+|	< tLPAREN: "(" >
+|	< tRPAREN: ")" >
+|	< tLBRACE: "{" >
+|	< tRBRACE: "}" >
+|	< tLBRACKET: "[" >
+|	< tRBRACKET: "]" >
 
 	// Tipos de datos
 |	< tINT: "integer" >
 |	< tCHAR: "character" >
 |	< tBOOL: "boolean" >
+
+	// Palabras reservadas
 |	< tWHILE: "while" > 
 |   < tLOOP: "loop" >
 |	< tENDLOOP: "end loop" >
@@ -108,14 +129,27 @@ TOKEN : {
 |   < tEND: "end" >
 |	< tRETURN: "return" > 
 
+|   < tARRAY: "array" >
+| 	< tARRAY_OF: "of" >
+
+	// Funciones estándar
+| 	< tPUT: "put" >
+| 	< tPUT_LINE: "put_line" >
+|	< tGET: "get" >
+|	< tSKIP_LINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tEXIT: "exit" >
+
 	// Literales
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
-| 	< tNUM: ("-")? (<DIGIT>)+ > 
+| 	< tNUM: ("-")? (<DIGIT>)+ >
+|	< tCONST_CHAR: "'~[]'" >
+|	< tCONST_STRING: "\"" (~[])* "\"" >
 
 	// Operadores
 |	< tASSIGN: ":=" > 
-	
 |	< tAND: "&&" >
 |	< tOR: "||" >
 |	< tNOT: "!" >
@@ -132,14 +166,12 @@ TOKEN : {
 |	< tMOD: "mod" >
 
 	// Otros
-
-// comment es cualquier cosa detrás de "--" hasta finial de línea
-|   < tCOMMENT: "--" (~["\n"])* >
+|   < tCOMMENT: "--" (~["\n", "\r"])* >
 |	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
 
 }
 
-SKIP : { " " | "\t" | "\n" }
+SKIP : { " " | "\t" | "\n" | "\r" }
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void Programa() : 
@@ -148,15 +180,18 @@ void Programa() :
 }
 {
    ( 
-	   <tSEMICOLON> |<tCOMMA> | <tSIMPLE_QUOTE>  | <tCOLON> 
+	   <tSEMICOLON> |<tCOMMA> | <tCOLON> | <tSIMPLE_QUOTE> | <tDOUBLE_QUOTE>
+	   | <tLPAREN> | <tRPAREN> | <tLBRACE> | <tRBRACE> | <tLBRACKET> | <tRBRACKET>
 	   | < tBOOL > | < tCHAR > | <tINT> 
-	   | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> | <tWHILE> | <tLOOP> | <tENDLOOP>
+	   | <tWHILE> | <tLOOP> | <tENDLOOP> | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> 
 	   | <tPROCEDURE> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
-	   | <tTRUE> | <tFALSE> | <tNUM> 
-	   | <tAND> | <tOR> | <tNOT> | <tEQ> | <tNEQ> | <tLT> 
+	   | <tARRAY> | <tARRAY_OF>
+	   | <tPUT> | <tPUT_LINE> | <tGET> | <tSKIP_LINE> | <tINT2CHAR> | <tCHAR2INT> | <tEXIT>
+	   | <tTRUE> | <tFALSE> | <tNUM> | <tCONST_CHAR> | <tCONST_STRING> 
+	   | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> | <tNEQ> | <tLT> 
 	   | <tLE> | <tGT> | <tGE> | <tPLUS> | <tMINUS> | <tMULT> | <tDIV> | <tMOD>
 	   | <tCOMMENT> | <tID> 
-	   | <tASSIGN>
+	   
    )* 
    < EOF >
 }
