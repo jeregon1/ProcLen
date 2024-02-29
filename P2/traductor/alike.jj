@@ -1,0 +1,356 @@
+//*****************************************************************
+// File:   cl.jj
+// Author: Procesadores de Lenguajes-University of Zaragoza
+// Date:   julio 2023
+// Coms:   compilar mediante "ant"
+//*****************************************************************
+
+options {
+	IGNORE_CASE = true;
+	COMMON_TOKEN_ACTION = true;
+	UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(alike)
+
+package traductor;
+
+public class alike {
+   //...
+   
+   public static void main(String[] args) {
+	   alike parser = null;
+	   
+	   try {
+		   if(args.length == 0) {
+			   parser = new alike(System.in);
+		   }
+		   else {
+			   parser = new alike(new java.io.FileInputStream(args[0]));
+		   }
+		   //Programa es el símbolo inicial de la gramática
+		   parser.Programa();
+		   //...
+		   System.out.println("***** Análisis terminado con éxito *****");
+	   }
+	   catch (java.io.FileNotFoundException e) {
+		   System.err.println ("Fichero " + args[0] + " no encontrado.");
+	   }
+	   catch (TokenMgrError e) {
+		// Tiene que quedar el mensaje así
+		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
+		   System.err.println("TokenMgrError: " + e.getMessage());
+	   }
+	   catch (ParseException e) {
+		   System.err.println("PARSER_ERROR: " + e.getMessage());
+	   }
+	   
+	   //...
+   }
+}
+PARSER_END(alike)
+
+//---------------------------------------------------------
+TOKEN_MGR_DECLS : {
+	static void CommonTokenAction(Token t) {
+		String kind = "";
+		switch (t.kind) {
+			case tNUM:    kind = "constante entera"; break;
+			case tCONST_CHAR: kind = "constante carácter"; break;
+			case tCONST_STRING: kind = "constante string"; break;
+			case tID:	  kind = "identificador"; break;
+			case tASSIGN: kind = "operador asignación"; break;
+			case tAND: case tOR: case tNOT: case tEQ: case tNEQ: case tLT: case tLE: case tGT: case tGE:
+						  kind = "operador lógico"; break;
+			case tPLUS: case tMINUS: case tMULT: case tDIV: case tMOD:
+						  kind = "operador aritmético"; break;
+			case tBOOL: case tCHAR: case tINT:
+						  kind = "palabra reservada"; break;
+			case tCOMMENT: kind = "comentario"; break;
+			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
+			case tLPAREN: case tRPAREN: kind = "paréntesis"; break;
+
+			case tIF: case tTHEN: case tELSE: case tELSIF: case tENDIF: 
+			case tWHILE: case tLOOP: case tENDLOOP: 
+			case tPROCEDURE: case tREF: case tFUNCTION: case tIS: case tBEGIN: case tEND: case tRETURN:
+			case tARRAY: case tARRAY_OF: case tRANGE:
+						  kind = "token"; break;
+
+			case tPUT: case tPUT_LINE: case tGET: case tSKIP_LINE: case tINT2CHAR: case tCHAR2INT: case tEXIT:
+				kind = "función estándar"; break;
+
+			case EOF: kind = "Fin de fichero"; break;
+						  
+			default: 	  kind = "ERROR"; break;
+		}
+
+		if (kind != "ERROR") System.out.println("(" + t.beginLine + "," + t.beginColumn + "): " + kind + " \"" + t.image + "\"");
+		else 				 System.out.println("ERROR LÉXICO: (" + t.beginLine + "," + t.beginColumn + "): símbolo no reconocido: \"" + t.image + "\"");
+	}
+}
+
+TOKEN : {
+	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
+|	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
+|	< tCOMMA: "," >
+
+	// Delimitadores
+|	< tLPAREN: "(" >
+|	< tRPAREN: ")" >
+
+	// Tipos de datos
+|	< tINT: "integer" >
+|	< tCHAR: "character" >
+|	< tBOOL: "boolean" >
+
+	// Palabras reservadas
+|	< tWHILE: "while" > 
+|   < tLOOP: "loop" >
+|	< tENDLOOP: "end loop" >
+|	< tIF: "if" >
+|	< tTHEN: "then" >
+|	< tELSIF: "elsif" >
+|	< tELSE: "else" >
+|	< tENDIF: "end if" >
+
+|   < tPROCEDURE: "procedure" >
+|   < tFUNCTION: "function" >
+|   < tREF: "ref" >
+|   < tIS: "is" >
+|   < tBEGIN: "begin" >
+|   < tEND: "end" >
+|	< tRETURN: "return" > 
+
+|   < tARRAY: "array" >
+| 	< tARRAY_OF: "of" >
+|	< tRANGE: ".." >
+
+	// Funciones estándar
+| 	< tPUT: "put" >
+| 	< tPUT_LINE: "put_line" >
+|	< tGET: "get" >
+|	< tSKIP_LINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tEXIT: "exit" >
+|	< tNULL: "null" >
+
+	// Literales
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tNUM: ("-")? (<DIGIT>)+ >
+|	< tCONST_CHAR: "'"~[]"'" >
+|	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
+
+	// Operadores
+|	< tASSIGN: ":=" > 
+|	< tAND: "and" >
+|	< tOR: "or" >
+|	< tNOT: "not" >
+|	< tEQ: "=" >
+|	< tNEQ: "/=" >
+|	< tLT: "<" >
+|	< tLE: "<=" >
+|	< tGT: ">" >
+|	< tGE: ">=" >
+|	< tPLUS: "+" >
+|	< tMINUS: "-" >
+|	< tMULT: "*" >
+|	< tDIV: "/" >
+|	< tMOD: "mod" >
+
+	// Otros
+|   < tCOMMENT: "--" (~["\n", "\r"])* >
+|	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
+
+}
+
+SKIP : { " " | "\t" | "\n" | "\r" }
+
+
+//-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
+
+//------------ Símbolo inicial de la gramática.
+// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_variables())? (declaracion_procs_funcs())? <tBEGIN> instrucciones <tEND> <tPC> <EOF>
+void Programa() : 
+{
+	Token t;
+}
+{
+	<tPROCEDURE>
+	<tID>
+	<tIS>
+	( declaracion_var() )*
+	( declaracion_procs_funcs() )?
+	<tBEGIN>
+	(instrucciones())?
+	<tEND>
+	<tSEMICOLON>
+	   
+   < EOF >
+}
+
+
+//declaracion_var: lista_ids <tCOLON> tipo_variable
+void declaracion_var() : {}
+{
+	lista_ids() // lista ids
+	<tCOLON>
+	tipo_variable()
+}
+
+void lista_ids() : {}
+{
+	<tID> (<tCOMMA> <tID>)*
+}
+
+//tipo_variable: (tipo_variable_simple | tipo_variable_array)
+void tipo_variable() : {}
+{
+	( tipo_variable_simple() | tipo_variable_array() )
+}
+
+//tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
+void tipo_variable_simple() : {}
+{
+	( <tINT> | <tCHAR> | <tBOOL> )
+}
+
+//tipo_variable_array: <tARRAY> <tLPAREN> <tNUM> <tRANGE> <tNUM> <tRPAREN> <tOF> tipo_variable_simple
+void tipo_variable_array() : {}
+{
+	<tARRAY> <tLPAREN> <tNUM> <tRANGE> <tNUM> <tRPAREN> <tOF> tipo_variable_simple()
+}
+
+//cabecera_procedimiento: <tPROCEDURE> <tID> (parametros_formales())? <tIS>
+void cabecera_procedimiento(): {}
+{
+	<tPROCEDURE>
+	<tID>
+	<tLPAREN>
+	( lista_parametros() )?
+	<tRPAREN>
+	<tIS>
+}
+
+//lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
+void lista_parametros() : {}
+{
+	parametro_formal()
+	( <tSEMICOLON> parametro_formal() )*
+}
+
+//parametro_formal: <tREF>? <tID> <tCOLON> tipo_variable
+void parametro_formal() : {}
+{
+	lista_ids()
+	<tCOLON>
+	( <tREF> )?
+	tipo_variable()
+}
+
+void instrucciones() : {}
+{
+	( instruccion() <tSEMICOLON> )+
+}
+
+void instruccion(): {}
+{
+	inst_leer()
+|	<tSKIP_LINE> // skip_line()
+|   inst_escribir()
+|   inst_escribir_linea()
+|   inst_invocacion_procedimiento()
+|   inst_asignacion()
+|   inst_if()
+|   inst_while()
+|   inst_return()
+|   <tNULL>
+}
+
+//inst_escribir: <tPUT> (<tLPAREN> (expresion (<tCOMMA> expresion)*) <tRPAREN>)?
+void inst_escribir() : {}
+{
+	<tPUT> (<tLPAREN> (expresion() ( <tCOMMA> expresion() )* ) <tRPAREN>)?
+}
+
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> (expresion (<tCOMMA> expresion)*) <tRPAREN>)?
+void inst_escribir_linea() : {}
+{
+	<tPUT_LINE> (<tLPAREN> (expresion() ( <tCOMMA> expresion() )* ) <tRPAREN>)?
+}
+
+//invocacion_procedimiento: <tID> (<tLPAREN> (expresion (<tCOMMA> expresion)*)? <tRPAREN>)?
+void inst_invocacion_procedimiento() : {}
+{
+	<tID>
+	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )?
+}
+
+//asignacion: <tID> <tASSIGN> expresion
+void inst_asignacion() : {}
+{
+	<tID>
+	<tASSIGN>
+	expresion()
+}
+
+//inst_if: <tIF> expresion <tTHEN> instrucciones (<tELSIF> expresion <tTHEN> instrucciones)* (<tELSE> instrucciones)? <tENDIF>
+void inst_if() : {}
+{
+	<tIF> 
+	expresion() 
+	<tTHEN> 
+	instrucciones() 
+	(<tELSIF> expresion() <tTHEN> instrucciones())* 
+	(<tELSE> instrucciones())? 
+	<tENDIF>
+}
+
+//inst_while: <tWHILE> expresion <tLOOP> instrucciones <tENDLOOP>
+void inst_while() : {}
+{
+	<tWHILE>
+	expresion()
+	<tLOOP>
+	instrucciones()
+	<tENDLOOP>
+}
+
+//inst_return: <tRETURN> (expresion)?
+void inst_return() : {}
+{
+	<tRETURN> 
+	( expresion() )?
+}
+
+//expresion: relacion ((<tAND> | <tOR>) relacion)*
+expresion() : {}
+{
+	relacion()
+	( ((<tAND> | <tOR>) relacion())+ )?
+}
+
+//relacion: 
+void relacion() : {}
+{
+	expresion_simple()
+ 	( operador_relacional() expresion_simple() )?
+}
+
+void operador_relacional() : {}
+{
+	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ> 
+}
+
+void expresion_simple() : {}
+{
+    ( <tPLUS> |	<tMINUS> )? 
+    termino()
+	( ( <tPLUS> | <tMINUS> ) termino() )*
+}
+
