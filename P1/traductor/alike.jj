@@ -71,8 +71,9 @@ TOKEN_MGR_DECLS : {
 			case tLPAREN: case tRPAREN: case tLBRACE: case tRBRACE: case tLBRACKET: case tRBRACKET: kind = "delimitador"; break;
 
 			case tIF: case tTHEN: case tELSE: case tELSIF: case tENDIF: 
-			case tWHILE: case tLOOP: case tENDLOOP: case tBEGIN: case tPROCEDURE: case tFUNCTION: case tIS: case tEND: case tRETURN:
-			case tARRAY: case tARRAY_OF:
+			case tWHILE: case tLOOP: case tENDLOOP: 
+			case tPROCEDURE: case tREF: case tFUNCTION: case tIS: case tBEGIN: case tEND: case tRETURN:
+			case tARRAY: case tARRAY_OF: case tRANGE:
 						  kind = "token"; break;
 
 			case tPUT: case tPUT_LINE: case tGET: case tSKIP_LINE: case tINT2CHAR: case tCHAR2INT: case tEXIT:
@@ -124,6 +125,7 @@ TOKEN : {
 
 |   < tPROCEDURE: "procedure" >
 |   < tFUNCTION: "function" >
+|   < tREF: "ref" >
 |   < tIS: "is" >
 |   < tBEGIN: "begin" >
 |   < tEND: "end" >
@@ -131,6 +133,7 @@ TOKEN : {
 
 |   < tARRAY: "array" >
 | 	< tARRAY_OF: "of" >
+|	< tRANGE: ".." >
 
 	// Funciones estándar
 | 	< tPUT: "put" >
@@ -145,16 +148,16 @@ TOKEN : {
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
 | 	< tNUM: ("-")? (<DIGIT>)+ >
-|	< tCONST_CHAR: "'~[]'" >
-|	< tCONST_STRING: "\"" (~[])* "\"" >
+|	< tCONST_CHAR: "'"~[]"'" >
+|	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
 
 	// Operadores
 |	< tASSIGN: ":=" > 
-|	< tAND: "&&" >
-|	< tOR: "||" >
-|	< tNOT: "!" >
+|	< tAND: "and" >
+|	< tOR: "or" >
+|	< tNOT: "not" >
 |	< tEQ: "=" >
-|	< tNEQ: "!=" >
+|	< tNEQ: "/=" >
 |	< tLT: "<" >
 |	< tLE: "<=" >
 |	< tGT: ">" >
@@ -184,8 +187,8 @@ void Programa() :
 	   | <tLPAREN> | <tRPAREN> | <tLBRACE> | <tRBRACE> | <tLBRACKET> | <tRBRACKET>
 	   | < tBOOL > | < tCHAR > | <tINT> 
 	   | <tWHILE> | <tLOOP> | <tENDLOOP> | <tIF> | <tELSE>  | <tTHEN> | <tELSIF> | <tENDIF> 
-	   | <tPROCEDURE> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
-	   | <tARRAY> | <tARRAY_OF>
+	   | <tPROCEDURE> | <tREF> | <tFUNCTION> | <tIS> | <tBEGIN> | <tEND> | <tRETURN> 
+	   | <tARRAY> | <tARRAY_OF> | <tRANGE>
 	   | <tPUT> | <tPUT_LINE> | <tGET> | <tSKIP_LINE> | <tINT2CHAR> | <tCHAR2INT> | <tEXIT>
 	   | <tTRUE> | <tFALSE> | <tNUM> | <tCONST_CHAR> | <tCONST_STRING> 
 	   | <tASSIGN> | <tAND> | <tOR> | <tNOT> | <tEQ> | <tNEQ> | <tLT> 
