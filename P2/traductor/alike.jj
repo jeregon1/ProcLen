@@ -7,7 +7,7 @@
 
 options {
 	IGNORE_CASE = true;
-	COMMON_TOKEN_ACTION = true;
+	// COMMON_TOKEN_ACTION = true;
 	UNICODE_INPUT = true;
 }
 
@@ -51,43 +51,9 @@ public class alike {
 PARSER_END(alike)
 
 //---------------------------------------------------------
-TOKEN_MGR_DECLS : {
-	static void CommonTokenAction(Token t) {
-		String kind = "";
-		switch (t.kind) {
-			case tNUM:    kind = "constante entera"; break;
-			case tCONST_CHAR: kind = "constante carácter"; break;
-			case tCONST_STRING: kind = "constante string"; break;
-			case tID:	  kind = "identificador"; break;
-			case tASSIGN: kind = "operador asignación"; break;
-			case tAND: case tOR: case tNOT: case tEQ: case tNEQ: case tLT: case tLE: case tGT: case tGE:
-						  kind = "operador lógico"; break;
-			case tPLUS: case tMINUS: case tMULT: case tDIV: case tMOD:
-						  kind = "operador aritmético"; break;
-			case tBOOL: case tCHAR: case tINT:
-						  kind = "palabra reservada"; break;
-			case tCOMMENT: kind = "comentario"; break;
-			case tCOMMA: case tSEMICOLON: case tCOLON: kind = "separador"; break;
-			case tLPAREN: case tRPAREN: kind = "paréntesis"; break;
+// TOKEN_MGR_DECLS : {
 
-			case tIF: case tTHEN: case tELSE: case tELSIF: case tENDIF: 
-			case tWHILE: case tLOOP: case tENDLOOP: 
-			case tPROCEDURE: case tREF: case tFUNCTION: case tIS: case tBEGIN: case tEND: case tRETURN:
-			case tARRAY: case tARRAY_OF: case tRANGE:
-						  kind = "token"; break;
-
-			case tPUT: case tPUT_LINE: case tGET: case tSKIP_LINE: case tINT2CHAR: case tCHAR2INT: case tEXIT:
-				kind = "función estándar"; break;
-
-			case EOF: kind = "Fin de fichero"; break;
-						  
-			default: 	  kind = "ERROR"; break;
-		}
-
-		if (kind != "ERROR") System.out.println("(" + t.beginLine + "," + t.beginColumn + "): " + kind + " \"" + t.image + "\"");
-		else 				 System.out.println("ERROR LÉXICO: (" + t.beginLine + "," + t.beginColumn + "): símbolo no reconocido: \"" + t.image + "\"");
-	}
-}
+// }
 
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) >
@@ -126,7 +92,7 @@ TOKEN : {
 |	< tRETURN: "return" > 
 
 |   < tARRAY: "array" >
-| 	< tARRAY_OF: "of" >
+| 	< tOF: "of" >
 |	< tRANGE: ".." >
 
 	// Funciones estándar
@@ -142,7 +108,7 @@ TOKEN : {
 	// Literales
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
-| 	< tNUM: ("-")? (<DIGIT>)+ >
+| 	< tNUM: (<DIGIT>)+ >
 |	< tCONST_CHAR: "'"~[]"'" >
 |	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
 
@@ -194,15 +160,15 @@ void Programa() :
    < EOF >
 }
 
-
 //declaracion_var: lista_ids <tCOLON> tipo_variable
 void declaracion_var() : {}
 {
-	lista_ids() // lista ids
+	lista_ids()
 	<tCOLON>
 	tipo_variable()
 }
 
+//lista_ids: <tID> (<tCOMMA> <tID>)*
 void lista_ids() : {}
 {
 	<tID> (<tCOMMA> <tID>)*
@@ -226,14 +192,17 @@ void tipo_variable_array() : {}
 	<tARRAY> <tLPAREN> <tNUM> <tRANGE> <tNUM> <tRPAREN> <tOF> tipo_variable_simple()
 }
 
-//cabecera_procedimiento: <tPROCEDURE> <tID> (parametros_formales())? <tIS>
+void declaracion_procs_funcs() : {}
+{
+	<tOF>
+}
+
+//cabecera_procedimiento: <tPROCEDURE> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tIS>
 void cabecera_procedimiento(): {}
 {
 	<tPROCEDURE>
-	<tID>
-	<tLPAREN>
-	( lista_parametros() )?
-	<tRPAREN>
+	<tID> // Puede NO tener parámetros
+	( <tLPAREN> lista_parametros() <tRPAREN> )?
 	<tIS>
 }
 
@@ -244,7 +213,7 @@ void lista_parametros() : {}
 	( <tSEMICOLON> parametro_formal() )*
 }
 
-//parametro_formal: <tREF>? <tID> <tCOLON> tipo_variable
+//parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
 void parametro_formal() : {}
 {
 	lista_ids()
@@ -253,48 +222,64 @@ void parametro_formal() : {}
 	tipo_variable()
 }
 
+/*--------------------------------------- INSTRUCCIONES ---------------------------------------*/ 
+
+//instrucciones: ( instruccion <tSEMICOLON> )+
 void instrucciones() : {}
 {
 	( instruccion() <tSEMICOLON> )+
 }
 
+//instruccion: inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>
 void instruccion(): {}
 {
 	inst_leer()
-|	<tSKIP_LINE> // skip_line()
+|	<tSKIP_LINE> // Nunca recibe parámetros
 |   inst_escribir()
 |   inst_escribir_linea()
-|   inst_invocacion_procedimiento()
-|   inst_asignacion()
+|   inst_invocacion_procedimiento_o_asignacion()
 |   inst_if()
 |   inst_while()
 |   inst_return()
 |   <tNULL>
 }
 
-//inst_escribir: <tPUT> (<tLPAREN> (expresion (<tCOMMA> expresion)*) <tRPAREN>)?
+//inst_leer: <tGET> <tLPAREN> <tID> (<tCOMMA> <tID>)* <tRPAREN>
+void inst_leer() : {}
+{
+	<tGET> // Necesita parámetros
+	<tLPAREN> <tID> (<tCOMMA> <tID>)* <tRPAREN>
+}
+
+//inst_escribir: <tPUT> <tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>
 void inst_escribir() : {}
 {
-	<tPUT> (<tLPAREN> (expresion() ( <tCOMMA> expresion() )* ) <tRPAREN>)?
+	<tPUT> // Necesita parámetros
+	<tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN>
 }
 
-//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> (expresion (<tCOMMA> expresion)*) <tRPAREN>)?
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_escribir_linea() : {}
 {
-	<tPUT_LINE> (<tLPAREN> (expresion() ( <tCOMMA> expresion() )* ) <tRPAREN>)?
+	<tPUT_LINE> // Puede NO tener parámetros
+	(<tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN>)?
 }
 
-//invocacion_procedimiento: <tID> (<tLPAREN> (expresion (<tCOMMA> expresion)*)? <tRPAREN>)?
+//  Warning: Line 270, Column 16: This choice can expand to the empty token sequence and will therefore always be taken in favor of the choices appearing later.
+void inst_invocacion_procedimiento_o_asignacion() : {}
+{
+	<tID> (inst_invocacion_procedimiento() | inst_asignacion())
+}
+
+//invocacion_procedimiento: <tID> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_invocacion_procedimiento() : {}
 {
-	<tID>
 	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )?
 }
 
 //asignacion: <tID> <tASSIGN> expresion
 void inst_asignacion() : {}
 {
-	<tID>
 	<tASSIGN>
 	expresion()
 }
@@ -302,10 +287,7 @@ void inst_asignacion() : {}
 //inst_if: <tIF> expresion <tTHEN> instrucciones (<tELSIF> expresion <tTHEN> instrucciones)* (<tELSE> instrucciones)? <tENDIF>
 void inst_if() : {}
 {
-	<tIF> 
-	expresion() 
-	<tTHEN> 
-	instrucciones() 
+	<tIF>	  expresion() <tTHEN> instrucciones() 
 	(<tELSIF> expresion() <tTHEN> instrucciones())* 
 	(<tELSE> instrucciones())? 
 	<tENDIF>
@@ -314,9 +296,7 @@ void inst_if() : {}
 //inst_while: <tWHILE> expresion <tLOOP> instrucciones <tENDLOOP>
 void inst_while() : {}
 {
-	<tWHILE>
-	expresion()
-	<tLOOP>
+	<tWHILE> expresion() <tLOOP>
 	instrucciones()
 	<tENDLOOP>
 }
@@ -324,15 +304,15 @@ void inst_while() : {}
 //inst_return: <tRETURN> (expresion)?
 void inst_return() : {}
 {
-	<tRETURN> 
-	( expresion() )?
+	<tRETURN> ( expresion() )?
 }
 
+/*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
+
 //expresion: relacion ((<tAND> | <tOR>) relacion)*
-expresion() : {}
+void expresion() : {}
 {
-	relacion()
-	( ((<tAND> | <tOR>) relacion())+ )?
+	relacion() ((<tAND> | <tOR>) relacion())*
 }
 
 //relacion: 
@@ -344,7 +324,7 @@ void relacion() : {}
 
 void operador_relacional() : {}
 {
-	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ> 
+	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>
 }
 
 void expresion_simple() : {}
@@ -352,5 +332,25 @@ void expresion_simple() : {}
     ( <tPLUS> |	<tMINUS> )? 
     termino()
 	( ( <tPLUS> | <tMINUS> ) termino() )*
+}
+
+void termino() : {}
+{
+    factor() ( operador_multiplicativo() factor() )*
+}
+
+void operador_multiplicativo() : {}
+{
+	(<tMULT> | <tDIV> | <tMOD>)
+}
+
+void factor() : {}
+{
+	( <tNOT> )? primario()
+}
+
+void primario() : {}
+{
+	( <tLPAREN> expresion() <tRPAREN> )
 }
 
