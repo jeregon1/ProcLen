@@ -8,7 +8,7 @@
 options {
 	IGNORE_CASE = true;
 	// COMMON_TOKEN_ACTION = true;
-	UNICODE_INPUT = true;
+	// UNICODE_INPUT = true;
 }
 
 PARSER_BEGIN(alike)
@@ -16,7 +16,7 @@ PARSER_BEGIN(alike)
 package traductor;
 
 public class alike {
-   //...
+   static boolean inFunction = false;
    
    public static void main(String[] args) {
 	   alike parser = null;
@@ -52,7 +52,7 @@ PARSER_END(alike)
 
 //---------------------------------------------------------
 // TOKEN_MGR_DECLS : {
-
+// 	boolean inFunction = false;
 // }
 
 TOKEN : {
@@ -108,7 +108,7 @@ TOKEN : {
 	// Literales
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
-| 	< tNUM: (<DIGIT>)+ >
+| 	< tCONST_INT: (<DIGIT>)+ >
 |	< tCONST_CHAR: "'"~[]"'" >
 |	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
 
@@ -130,12 +130,14 @@ TOKEN : {
 |	< tMOD: "mod" >
 
 	// Otros
-|   < tCOMMENT: "--" (~["\n", "\r"])* >
 |	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
 
 }
 
-SKIP : { " " | "\t" | "\n" | "\r" }
+SKIP : { 
+	" " | "\t" | "\n" | "\r" 
+	|  <COMMENT: "--" (~["\n", "\r"])*> 
+}
 
 
 //-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
@@ -151,9 +153,9 @@ void Programa() :
 	<tID>
 	<tIS>
 	( declaracion_var() )*
-	( declaracion_procs_funcs() )?
+	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-	(instrucciones())?
+	(instruccion())*
 	<tEND>
 	<tSEMICOLON>
 	   
@@ -166,6 +168,7 @@ void declaracion_var() : {}
 	lista_ids()
 	<tCOLON>
 	tipo_variable()
+	<tSEMICOLON>
 }
 
 //lista_ids: <tID> (<tCOMMA> <tID>)*
@@ -186,25 +189,48 @@ void tipo_variable_simple() : {}
 	( <tINT> | <tCHAR> | <tBOOL> )
 }
 
-//tipo_variable_array: <tARRAY> <tLPAREN> <tNUM> <tRANGE> <tNUM> <tRPAREN> <tOF> tipo_variable_simple
+//tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
 void tipo_variable_array() : {}
 {
-	<tARRAY> <tLPAREN> <tNUM> <tRANGE> <tNUM> <tRPAREN> <tOF> tipo_variable_simple()
+	<tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple()
 }
 
-void declaracion_procs_funcs() : {}
-{
-	<tOF>
-}
-
-//cabecera_procedimiento: <tPROCEDURE> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tIS>
-void cabecera_procedimiento(): {}
+//declaracion_procedimiento: cabecera_procedimiento (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+void declaracion_procedimiento() : {}
 {
 	<tPROCEDURE>
 	<tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros() <tRPAREN> )?
 	<tIS>
+
+	(declaracion_var())*
+	( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+	(instruccion())*
+	<tEND>
+	<tSEMICOLON>
 }
+
+//declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+void declaracion_funcion() : {}
+{
+	<tFUNCTION>
+	<tID> // Puede NO tener parámetros
+	( <tLPAREN> lista_parametros() <tRPAREN> )?
+	<tRETURN>
+	tipo_variable_simple()
+	<tIS>
+
+	(declaracion_var())*
+	( declaracion_procedimiento() | declaracion_funcion() )*
+	{alike.inFunction = true;}
+	<tBEGIN>
+	(instruccion())*
+	<tEND>
+	<tSEMICOLON>
+	{alike.inFunction = false;}
+}
+
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
 void lista_parametros() : {}
@@ -220,35 +246,40 @@ void parametro_formal() : {}
 	<tCOLON>
 	( <tREF> )?
 	tipo_variable()
+	
 }
 
 /*--------------------------------------- INSTRUCCIONES ---------------------------------------*/ 
 
-//instrucciones: ( instruccion <tSEMICOLON> )+
-void instrucciones() : {}
-{
-	( instruccion() <tSEMICOLON> )+
-}
 
 //instruccion: inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>
 void instruccion(): {}
 {
-	inst_leer()
-|	<tSKIP_LINE> // Nunca recibe parámetros
+	(inst_leer()
+|	<tSKIP_LINE> // Nunca recibe argumentos
 |   inst_escribir()
 |   inst_escribir_linea()
 |   inst_invocacion_procedimiento_o_asignacion()
 |   inst_if()
 |   inst_while()
-|   inst_return()
+// |   {if inFunction inst_return()}
+|   LOOKAHEAD({ alike.inFunction }) inst_return()
 |   <tNULL>
+)
+	<tSEMICOLON>
 }
 
 //inst_leer: <tGET> <tLPAREN> <tID> (<tCOMMA> <tID>)* <tRPAREN>
 void inst_leer() : {}
 {
 	<tGET> // Necesita parámetros
-	<tLPAREN> <tID> (<tCOMMA> <tID>)* <tRPAREN>
+	<tLPAREN> <tID> (array_component())? ( <tCOMMA> ( <tID> (array_component())? ) )* <tRPAREN>
+}
+
+//array_component: <tLPAREN> expresion <tRBRACKET>
+void array_component() : {}
+{
+	<tLPAREN> expresion() <tRPAREN>
 }
 
 //inst_escribir: <tPUT> <tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>
@@ -265,16 +296,10 @@ void inst_escribir_linea() : {}
 	(<tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN>)?
 }
 
-//  Warning: Line 270, Column 16: This choice can expand to the empty token sequence and will therefore always be taken in favor of the choices appearing later.
+//inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
 void inst_invocacion_procedimiento_o_asignacion() : {}
 {
-	<tID> (inst_invocacion_procedimiento() | inst_asignacion())
-}
-
-//invocacion_procedimiento: <tID> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
-void inst_invocacion_procedimiento() : {}
-{
-	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )?
+	<tID> ( inst_asignacion() | inst_invocacion_procedimiento() )
 }
 
 //asignacion: <tID> <tASSIGN> expresion
@@ -284,20 +309,26 @@ void inst_asignacion() : {}
 	expresion()
 }
 
-//inst_if: <tIF> expresion <tTHEN> instrucciones (<tELSIF> expresion <tTHEN> instrucciones)* (<tELSE> instrucciones)? <tENDIF>
+//invocacion_procedimiento: <tID> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
+void inst_invocacion_procedimiento() : {}
+{
+	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )?
+}
+
+//inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
 void inst_if() : {}
 {
-	<tIF>	  expresion() <tTHEN> instrucciones() 
-	(<tELSIF> expresion() <tTHEN> instrucciones())* 
-	(<tELSE> instrucciones())? 
+	<tIF>	  expresion() <tTHEN> ( instruccion() )+
+	(<tELSIF> expresion() <tTHEN> ( instruccion() )+ )* 
+	(<tELSE> 					  ( instruccion() )+ )? 
 	<tENDIF>
 }
 
-//inst_while: <tWHILE> expresion <tLOOP> instrucciones <tENDLOOP>
+//inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
 void inst_while() : {}
 {
 	<tWHILE> expresion() <tLOOP>
-	instrucciones()
+	(instruccion())+
 	<tENDLOOP>
 }
 
@@ -315,18 +346,20 @@ void expresion() : {}
 	relacion() ((<tAND> | <tOR>) relacion())*
 }
 
-//relacion: 
+//relacion: expresion_simple (operador_relacional expresion_simple)?
 void relacion() : {}
 {
 	expresion_simple()
  	( operador_relacional() expresion_simple() )?
 }
 
+//operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
 void operador_relacional() : {}
 {
 	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>
 }
 
+//expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
 void expresion_simple() : {}
 {
     ( <tPLUS> |	<tMINUS> )? 
@@ -334,23 +367,45 @@ void expresion_simple() : {}
 	( ( <tPLUS> | <tMINUS> ) termino() )*
 }
 
+//termino: factor (operador_multiplicativo factor)*
 void termino() : {}
 {
     factor() ( operador_multiplicativo() factor() )*
 }
 
+//operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
 void operador_multiplicativo() : {}
 {
 	(<tMULT> | <tDIV> | <tMOD>)
 }
 
+//factor: (<tNOT>)? primario
 void factor() : {}
 {
 	( <tNOT> )? primario()
 }
 
-void primario() : {}
+//primario: <tLPAREN> expresion <tRPAREN> | <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tCONST_STRING> | <tTRUE> | <tFALSE>
+void primario() : 
 {
-	( <tLPAREN> expresion() <tRPAREN> )
+	Token t;
+}
+{
+    <tLPAREN> expresion() <tRPAREN>
+|	<tINT2CHAR> <tLPAREN> expresion() <tRPAREN>
+|	<tCHAR2INT> <tLPAREN> expresion() <tRPAREN>
+|	LOOKAHEAD(2)
+    <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. o comp. array
+|	<tID>              //var. o func. sin pars
+|	<tCONST_INT>
+|	<tCONST_CHAR>
+|	<tCONST_STRING> //rn sf.primario_8(t);
+|	<tTRUE>
+|	<tFALSE>
 }
 
+//lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
+void lista_una_o_mas_exps(): {}
+{
+	expresion() ( <tCOMMA> expresion() )*
+}
