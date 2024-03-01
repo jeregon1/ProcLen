@@ -7,6 +7,7 @@
 
 options {
 	IGNORE_CASE = true;
+	// DEBUG_PARSER = true;
 	// COMMON_TOKEN_ACTION = true;
 	// UNICODE_INPUT = true;
 }
@@ -39,7 +40,7 @@ public class alike {
 	   catch (TokenMgrError e) {
 		// Tiene que quedar el mensaje así
 		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
-		   System.err.println("TokenMgrError: " + e.getMessage());
+		   System.err.println("LEXICAL: " + e.getMessage());
 	   }
 	   catch (ParseException e) {
 		   System.err.println("PARSER_ERROR: " + e.getMessage());
@@ -51,13 +52,11 @@ public class alike {
 PARSER_END(alike)
 
 //---------------------------------------------------------
-// TOKEN_MGR_DECLS : {
-// 	boolean inFunction = false;
-// }
 
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
+|   < #SKIP_AUX: " " | "\t" | "\n" | "\r" >
 
 	// Separadores
 |	< tSEMICOLON: ";" >
@@ -76,12 +75,12 @@ TOKEN : {
 	// Palabras reservadas
 |	< tWHILE: "while" > 
 |   < tLOOP: "loop" >
-|	< tENDLOOP: "end loop" >
+|	< tENDLOOP: "end" (<SKIP_AUX>)+ "loop" >
 |	< tIF: "if" >
 |	< tTHEN: "then" >
 |	< tELSIF: "elsif" >
 |	< tELSE: "else" >
-|	< tENDIF: "end if" >
+|	< tENDIF: "end" (<SKIP_AUX>)+ "if" >
 
 |   < tPROCEDURE: "procedure" >
 |   < tFUNCTION: "function" >
@@ -223,12 +222,12 @@ void declaracion_funcion() : {}
 
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
-	{alike.inFunction = true;}
 	<tBEGIN>
+	{alike.inFunction = true;}
 	(instruccion())*
+	{alike.inFunction = false;}
 	<tEND>
 	<tSEMICOLON>
-	{alike.inFunction = false;}
 }
 
 
@@ -249,7 +248,7 @@ void parametro_formal() : {}
 	
 }
 
-/*--------------------------------------- INSTRUCCIONES ---------------------------------------*/ 
+/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 
 //instruccion: inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>
@@ -262,7 +261,6 @@ void instruccion(): {}
 |   inst_invocacion_procedimiento_o_asignacion()
 |   inst_if()
 |   inst_while()
-// |   {if inFunction inst_return()}
 |   LOOKAHEAD({ alike.inFunction }) inst_return()
 |   <tNULL>
 )
@@ -286,33 +284,27 @@ void array_component() : {}
 void inst_escribir() : {}
 {
 	<tPUT> // Necesita parámetros
-	<tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN>
+	<tLPAREN> (<tCONST_STRING> | expresion()) ( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>
 }
 
 //inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_escribir_linea() : {}
 {
 	<tPUT_LINE> // Puede NO tener parámetros
-	(<tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN>)?
+	(<tLPAREN> (<tCONST_STRING> | expresion()) ( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>)?
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
 void inst_invocacion_procedimiento_o_asignacion() : {}
 {
-	<tID> ( inst_asignacion() | inst_invocacion_procedimiento() )
-}
-
-//asignacion: <tID> <tASSIGN> expresion
-void inst_asignacion() : {}
-{
+	<tID> 
+( //inst_asignacion() 
+	LOOKAHEAD( (array_component())? <tASSIGN> ) 
+	(array_component())?
 	<tASSIGN>
 	expresion()
-}
-
-//invocacion_procedimiento: <tID> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
-void inst_invocacion_procedimiento() : {}
-{
-	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )?
+| //inst_invocacion_procedimiento()
+	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
@@ -399,7 +391,7 @@ void primario() :
 |	<tID>              //var. o func. sin pars
 |	<tCONST_INT>
 |	<tCONST_CHAR>
-|	<tCONST_STRING> //rn sf.primario_8(t);
+// |	<tCONST_STRING> //rn sf.primario_8(t);
 |	<tTRUE>
 |	<tFALSE>
 }
