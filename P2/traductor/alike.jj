@@ -1,7 +1,8 @@
 //*****************************************************************
-// File:   cl.jj
-// Author: Procesadores de Lenguajes-University of Zaragoza
-// Date:   julio 2023
+// File:   alike.jj
+// Author: Jesús López Ansón, 839922
+// Author: Javier Sin Pelayo, 843442
+// Date:   marzo 2024
 // Coms:   compilar mediante "ant"
 //*****************************************************************
 
@@ -9,7 +10,7 @@ options {
 	IGNORE_CASE = true;
 	// DEBUG_PARSER = true;
 	// COMMON_TOKEN_ACTION = true;
-	// UNICODE_INPUT = true;
+	UNICODE_INPUT = true;
 }
 
 PARSER_BEGIN(alike)
@@ -45,8 +46,9 @@ public class alike {
 	   catch (ParseException e) {
 		   System.err.println("PARSER_ERROR: " + e.getMessage());
 	   }
-	   
-	   //...
+	   catch (Exception e) {
+		   e.printStackTrace();
+	   }
    }
 }
 PARSER_END(alike)
@@ -145,7 +147,7 @@ SKIP : {
 // Programa: <tPROCEDURE> <tID> <tIS> (declaracion_variables())? (declaracion_procs_funcs())? <tBEGIN> instrucciones <tEND> <tPC> <EOF>
 void Programa() : 
 {
-	Token t;
+	// Token t;
 }
 {
 	<tPROCEDURE>
@@ -223,9 +225,9 @@ void declaracion_funcion() : {}
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-	{alike.inFunction = true;}
+		{alike.inFunction = true;}
 	(instruccion())*
-	{alike.inFunction = false;}
+		{alike.inFunction = false;}
 	<tEND>
 	<tSEMICOLON>
 }
@@ -391,7 +393,6 @@ void primario() :
 |	<tID>              //var. o func. sin pars
 |	<tCONST_INT>
 |	<tCONST_CHAR>
-// |	<tCONST_STRING> //rn sf.primario_8(t);
 |	<tTRUE>
 |	<tFALSE>
 }
