@@ -57,10 +57,5 @@ put_line("Esto es una prueba con éxito"); -- 🎭 Unicode input
     c := '"';
     c:=''';
     -- c := '\n'; -- ERROR porque solo puede haber un carácter entre las comillas simples
-
-    -- else null; end if; -- ERROR porque no hay bloque if antes
-
-    -- if _ then end if; -- ERROR porque no hay instrucciones en el bloque if
-    -- while _ loop end loop; -- ERROR porque no hay instrucciones en el bloque while
     
     end   ;
