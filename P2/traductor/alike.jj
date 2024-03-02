@@ -9,7 +9,6 @@
 options {
 	IGNORE_CASE = true;
 	// DEBUG_PARSER = true;
-	// COMMON_TOKEN_ACTION = true;
 	UNICODE_INPUT = true;
 }
 
@@ -144,11 +143,8 @@ SKIP : {
 //-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
 
 //------------ Símbolo inicial de la gramática.
-// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_variables())? (declaracion_procs_funcs())? <tBEGIN> instrucciones <tEND> <tPC> <EOF>
-void Programa() : 
-{
-	// Token t;
-}
+// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion* <tEND> <tSEMICOLON> <EOF>
+void Programa() : {}
 {
 	<tPROCEDURE>
 	<tID>
@@ -163,7 +159,7 @@ void Programa() :
    < EOF >
 }
 
-//declaracion_var: lista_ids <tCOLON> tipo_variable
+//declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
 void declaracion_var() : {}
 {
 	lista_ids()
@@ -253,7 +249,7 @@ void parametro_formal() : {}
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 
-//instruccion: inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>
+//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
 void instruccion(): {}
 {
 	(inst_leer()
@@ -263,26 +259,26 @@ void instruccion(): {}
 |   inst_invocacion_procedimiento_o_asignacion()
 |   inst_if()
 |   inst_while()
-|   LOOKAHEAD({ alike.inFunction }) inst_return()
 |   <tNULL>
+|   LOOKAHEAD({ alike.inFunction }) inst_return()
 )
 	<tSEMICOLON>
 }
 
-//inst_leer: <tGET> <tLPAREN> <tID> (<tCOMMA> <tID>)* <tRPAREN>
+//inst_leer: <tGET> <tLPAREN> <tID> (array_component)? ( <tCOMMA> <tID> (array_component)? )* <tRPAREN>
 void inst_leer() : {}
 {
 	<tGET> // Necesita parámetros
 	<tLPAREN> <tID> (array_component())? ( <tCOMMA> ( <tID> (array_component())? ) )* <tRPAREN>
 }
 
-//array_component: <tLPAREN> expresion <tRBRACKET>
+//array_component: <tLPAREN> expresion <tRPAREN>
 void array_component() : {}
 {
 	<tLPAREN> expresion() <tRPAREN>
 }
 
-//inst_escribir: <tPUT> <tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>
+//inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
 void inst_escribir() : {}
 {
 	<tPUT> // Necesita parámetros
