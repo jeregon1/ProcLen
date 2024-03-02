@@ -1,5 +1,6 @@
 procedure test_1 is
 a, b1, c_ : integer; a : character;
+-- 3p : boolean; -- ERROR porque empieza por número la variable
 
 -----------------------------------------------------------
 function vivira2 (colonia: ref array(1..80) of boolean; i: integer) return boolean is
@@ -14,12 +15,16 @@ function vivira2 (colonia: ref array(1..80) of boolean; i: integer) return boole
             if;
 
     if not  colonia(    i   ) then
-        return (vivos = 2) or (vivos = 3);
+    
+        null;
+        --return (vivos = 2) or (vivos = 3);
     else
-        return (vivos = 2) or                     (vivos = 4);
+        null;
+        -- return (vivos = 2) or                     (vivos = 4);
                         end if;
                     end;
----------------------------------------------------------     
+---------------------------------------------------------  
+
 begin     
 
     if
@@ -39,10 +44,23 @@ begin
     end
     if;
 
-put_line("Esto es una prueba exitosa"); -- 🎭 Unicode input
-    -- ERROR 1👇🏼 por falta de ;
-    --put_line("Yo soy un error!")
+put_line("Esto es una prueba con éxito"); -- 🎭 Unicode input
+    
+    -- put_line("Yo soy un error!") -- ERROR por falta de ;
+    -- skip_line(a); -- ERROR porque skip_line no puede tener argumentos
+    -- function("string"); -- ERROR porque solo put y put_line pueden recibir strings
+    -- c = a; -- ERROR porque el operador asignación es :=
+    PUT_LINE("caseInsensitive"); -- Si no fuera case insensitive no dejaría poner esta línea
+    -- integer := 3; -- ERROR porque es una palabra reservada
+    -- while (param); -- ERROR porque no pueden usarse palabras reservadas como procedures
 
-    -- skip_line(); -- ERROR por paréntesis 
+    c := '"';
+    c:=''';
+    -- c := '\n'; -- ERROR porque solo puede haber un carácter entre las comillas simples
+
+    -- else null; end if; -- ERROR porque no hay bloque if antes
+
+    -- if _ then end if; -- ERROR porque no hay instrucciones en el bloque if
+    -- while _ loop end loop; -- ERROR porque no hay instrucciones en el bloque while
     
     end   ;

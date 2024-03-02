@@ -152,7 +152,7 @@ void Programa() : {}
 	( declaracion_var() )*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-	(instruccion())*
+	(instruccion())+
 	<tEND>
 	<tSEMICOLON>
 	   
@@ -203,7 +203,7 @@ void declaracion_procedimiento() : {}
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-	(instruccion())*
+	(instruccion())+
 	<tEND>
 	<tSEMICOLON>
 }
@@ -222,7 +222,7 @@ void declaracion_funcion() : {}
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
 		{alike.inFunction = true;}
-	(instruccion())*
+	(instruccion())+
 		{alike.inFunction = false;}
 	<tEND>
 	<tSEMICOLON>
