@@ -40,10 +40,7 @@ public class alike {
 		   System.err.println ("Fichero " + args[0] + " no encontrado.");
 	   }
 	   catch (TokenMgrError e) {
-		// 🎃 👇🏼👇🏼👇🏼 🎃
-		// Tiene que quedar el mensaje así
-		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
-		   System.err.println("LEXICAL: " + e.getMessage());
+		   System.err.println("ERROR LÉXICO: " + e.getMessage());
 	   }
 	   catch (ParseException e) {
 		   System.err.println("PARSER_ERROR: " + e.getMessage());
@@ -58,7 +55,6 @@ PARSER_END(alike)
 //---------------------------------------------------------
 
 TOKEN : {
-// 🎃 En las pruebas Bobby Bob Esponja nos hizo quitar las tiles: ["á", "é", "í", "ó", "ú"]. Las ponemos again o así bien?
 	< #LETTER: (["a"-"z","A"-"Z"]) > 
 |	< #DIGIT: ["0"-"9"] >
 |   < #SKIP_AUX: " " | "\t" | "\n" | "\r" >
@@ -382,17 +378,12 @@ void factor() : {}
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-void primario() : 
-{
-	Token t; // 🎃 At this moment this is useless. Maybe after it'll have a use
-}
+void primario() : {}
 {
     <tLPAREN> expresion() <tRPAREN>
 |	<tINT2CHAR> <tLPAREN> expresion() <tRPAREN>
 |	<tCHAR2INT> <tLPAREN> expresion() <tRPAREN>
-|	LOOKAHEAD(2) // 🎃 Translate to LL(1) using left factorization?
-    <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. o comp. array
-|	<tID>              //var. o func. sin pars
+|	<tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 |	<tCONST_INT>
 |	<tCONST_CHAR>
 |	<tTRUE>
