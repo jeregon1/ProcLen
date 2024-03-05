@@ -17,6 +17,8 @@ PARSER_BEGIN(alike)
 package traductor;
 
 public class alike {
+	// Variable global necesaria para controlar la derivabilidad de la instrucción 'return' 
+	// dependiendo de si nos encontramos en una función o en un procedimiento. 
    static boolean inFunction = false;
    
    public static void main(String[] args) {
@@ -38,6 +40,7 @@ public class alike {
 		   System.err.println ("Fichero " + args[0] + " no encontrado.");
 	   }
 	   catch (TokenMgrError e) {
+		// 🎃 👇🏼👇🏼👇🏼 🎃
 		// Tiene que quedar el mensaje así
 		// ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
 		   System.err.println("LEXICAL: " + e.getMessage());
@@ -55,7 +58,8 @@ PARSER_END(alike)
 //---------------------------------------------------------
 
 TOKEN : {
-	< #LETTER: (["a"-"z","A"-"Z"]) >
+// 🎃 En las pruebas Bobby Bob Esponja nos hizo quitar las tiles: ["á", "é", "í", "ó", "ú"]. Las ponemos again o así bien?
+	< #LETTER: (["a"-"z","A"-"Z"]) > 
 |	< #DIGIT: ["0"-"9"] >
 |   < #SKIP_AUX: " " | "\t" | "\n" | "\r" >
 
@@ -221,9 +225,9 @@ void declaracion_funcion() : {}
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-		{alike.inFunction = true;}
+		{alike.inFunction = true;}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
 	(instruccion())+
-		{alike.inFunction = false;}
+		{alike.inFunction = false;} // Se vuelve a establecer como false
 	<tEND>
 	<tSEMICOLON>
 }
@@ -250,6 +254,7 @@ void parametro_formal() : {}
 
 
 //instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
+// 'inst_return' solamente es derivable si estamos dentro de una función. Este comportamiento se consigue gracias al LOOKAHEAD sintáctico.
 void instruccion(): {}
 {
 	(inst_leer()
@@ -296,12 +301,12 @@ void inst_escribir_linea() : {}
 void inst_invocacion_procedimiento_o_asignacion() : {}
 {
 	<tID> 
-( //inst_asignacion() 
-	LOOKAHEAD( (array_component())? <tASSIGN> ) 
+( // inst_asignacion() 
+	LOOKAHEAD( (array_component())? <tASSIGN> ) // LOOKAHEAD sintáctico para evitar ambigüedad
 	(array_component())?
 	<tASSIGN>
 	expresion()
-| //inst_invocacion_procedimiento()
+| // inst_invocacion_procedimiento()
 	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
 }
 
@@ -375,16 +380,17 @@ void factor() : {}
 	( <tNOT> )? primario()
 }
 
-//primario: <tLPAREN> expresion <tRPAREN> | <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tCONST_STRING> | <tTRUE> | <tFALSE>
+//primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
+//			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
 void primario() : 
 {
-	Token t;
+	Token t; // 🎃 At this moment this is useless. Maybe after it'll have a use
 }
 {
     <tLPAREN> expresion() <tRPAREN>
 |	<tINT2CHAR> <tLPAREN> expresion() <tRPAREN>
 |	<tCHAR2INT> <tLPAREN> expresion() <tRPAREN>
-|	LOOKAHEAD(2)
+|	LOOKAHEAD(2) // 🎃 Translate to LL(1) using left factorization?
     <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. o comp. array
 |	<tID>              //var. o func. sin pars
 |	<tCONST_INT>
