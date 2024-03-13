@@ -1,0 +1,465 @@
+//*****************************************************************
+// File:   alike.jj
+// Author: Jesús López Ansón, 839922
+// 		   Javier Sin Pelayo, 843442
+// Date:   marzo 2024
+// Coms:   compilar mediante "ant"
+// Doc:    https://javacc.github.io/javacc/
+//*****************************************************************
+
+options {
+	IGNORE_CASE = true;
+	UNICODE_INPUT = true;
+	// DEBUG_PARSER = true;
+}
+
+PARSER_BEGIN(alike)
+
+package traductor;
+
+import lib.symbolTable.*;
+import lib.symbolTable.exceptions.*;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class alike {
+	// Tabla de símbolos global
+	static SymbolTable st;
+
+	// Variable global necesaria para controlar la derivabilidad de la instrucción 'return' 
+	// dependiendo de si nos encontramos en una función o en un procedimiento. 
+   static boolean inFunction = false;
+   
+   public static void main(String[] args) {
+	   alike parser = null;
+
+	   st = new SymbolTable();
+	   
+	   try {
+		   if(args.length == 0) {
+			   parser = new alike(System.in);
+		   }
+		   else {
+			   parser = new alike(new java.io.FileInputStream(args[0]));
+		   }
+		   //Programa es el símbolo inicial de la gramática
+		   parser.Programa();
+		   //...
+		   System.out.println("***** Análisis terminado con éxito *****");
+	   }
+	   catch (java.io.FileNotFoundException e) {
+		   System.err.println ("Fichero " + args[0] + " no encontrado.");
+	   }
+	   catch (TokenMgrError e) {
+		   System.err.println("ERROR LÉXICO: " + e.getMessage());
+	   }
+	   catch (ParseException e) {
+		   System.err.println("PARSER_ERROR: " + e.getMessage());
+	   }
+	   catch (Exception e) {
+		   e.printStackTrace();
+	   }
+   }
+}
+PARSER_END(alike)
+
+//---------------------------------------------------------
+
+TOKEN : {
+	< #LETTER: (["a"-"z","A"-"Z"]) > 
+|	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
+|	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
+|	< tCOMMA: "," >
+
+	// Delimitadores
+|	< tLPAREN: "(" >
+|	< tRPAREN: ")" >
+
+	// Tipos de datos
+|	< tINT: "integer" >
+|	< tCHAR: "character" >
+|	< tBOOL: "boolean" >
+
+	// Palabras reservadas
+|	< tWHILE: "while" > 
+|   < tLOOP: "loop" >
+|	< tIF: "if" >
+|	< tTHEN: "then" >
+|	< tELSIF: "elsif" >
+|	< tELSE: "else" >
+
+|   < tPROCEDURE: "procedure" >
+|   < tFUNCTION: "function" >
+|   < tREF: "ref" >
+|   < tIS: "is" >
+|   < tBEGIN: "begin" >
+|   < tEND: "end" >
+|	< tRETURN: "return" > 
+
+|   < tARRAY: "array" >
+| 	< tOF: "of" >
+|	< tRANGE: ".." >
+
+	// Funciones estándar
+| 	< tPUT: "put" >
+| 	< tPUT_LINE: "put_line" >
+|	< tGET: "get" >
+|	< tSKIP_LINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tEXIT: "exit" >
+|	< tNULL: "null" >
+
+	// Literales
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tCONST_INT: (<DIGIT>)+ >
+|	< tCONST_CHAR: "'"~[]"'" >
+|	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
+
+	// Operadores
+|	< tASSIGN: ":=" > 
+|	< tAND: "and" >
+|	< tOR: "or" >
+|	< tNOT: "not" >
+|	< tEQ: "=" >
+|	< tNEQ: "/=" >
+|	< tLT: "<" >
+|	< tLE: "<=" >
+|	< tGT: ">" >
+|	< tGE: ">=" >
+|	< tPLUS: "+" >
+|	< tMINUS: "-" >
+|	< tMULT: "*" >
+|	< tDIV: "/" >
+|	< tMOD: "mod" >
+
+	// Otros
+|	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
+
+}
+
+SKIP : { 
+	" " | "\t" | "\n" | "\r" 
+	|  <COMMENT: "--" (~["\n", "\r"])*> 
+}
+
+
+//-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
+
+//------------ Símbolo inicial de la gramática.
+// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion* <tEND> <tSEMICOLON> <EOF>
+void Programa() : {}
+{
+	<tPROCEDURE>
+	<tID>
+	<tIS>
+	( declaracion_var() )*
+	( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+	(instruccion())+
+	<tEND>
+	<tSEMICOLON>
+
+   < EOF >
+}
+
+//declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
+void declaracion_var() : 
+{
+	List<Token> t = new ArrayList<Token>();
+}
+{
+	lista_ids(t)
+	<tCOLON>
+	tipo_variable(t, Symbol.ParameterClass.NONE)
+	<tSEMICOLON>
+}
+
+//lista_ids: <tID> (<tCOMMA> <tID>)*
+void lista_ids(List<Token> tokens) : 
+{
+	Token t;
+}
+{
+	t = <tID> {tokens.add(t);}
+	(<tCOMMA> 
+	t = <tID> {tokens.add(t);} 
+	)*
+}
+
+//tipo_variable: (tipo_variable_simple | tipo_variable_array)
+void tipo_variable(List<Token> t, Symbol.ParameterClass paramClass) : {}
+{
+	( tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramClass) )
+}
+
+//tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
+void tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass) : 
+{
+	Symbol.Types type = null;
+}
+{
+	( <tINT>  { type = Symbol.Types.INT; }
+	| <tCHAR> { type = Symbol.Types.CHAR;}
+	| <tBOOL> { type = Symbol.Types.BOOL; }
+	)
+	{
+		if (baseArray != null) {
+			baseArray.baseType = type;
+			for (Token id : t) {
+				SymbolArray newArray = baseArray.clone();
+				newArray.name = id.image;
+				st.insertSymbol(newArray);
+			}
+		} else {
+			for (Token id : t) {
+				switch (type) {
+					case INT:  st.insertSymbol(new SymbolInt(id.image, paramClass));	break;				
+					case CHAR: st.insertSymbol(new SymbolChar(id.image, paramClass));	break;
+					case BOOL: st.insertSymbol(new SymbolBool(id.image, paramClass));	break;
+				}
+			}
+		}
+	}
+}
+
+//tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
+void tipo_variable_array(List<Token> t, Symbol.ParameterClass paramClass) : 
+{
+	Token min, max;
+}
+{
+	<tARRAY> <tLPAREN> min = <tCONST_INT> <tRANGE> max = <tCONST_INT> <tRPAREN> 
+	{
+		SymbolArray baseArray = new SymbolArray("", Integer.parseInt(min.image), Integer.parseInt(max.image), Symbol.Types.UNDEFINED, paramClass);
+	}
+	<tOF> tipo_variable_simple(t, baseArray, null)
+}
+
+//declaracion_procedimiento: cabecera_procedimiento (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+void declaracion_procedimiento() : 
+{
+	Token id;
+}
+{
+	<tPROCEDURE>
+	id = <tID> // Puede NO tener parámetros
+	{st.insertSymbol(new SymbolProcedure(id.image));
+	 st.insertBlock();
+	}
+	( <tLPAREN> lista_parametros() <tRPAREN> )?
+	<tIS>
+
+	(declaracion_var())*
+	( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+	(instruccion())+
+	<tEND>
+	<tSEMICOLON>
+	{st.removeBlock();}
+}
+
+//declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+void declaracion_funcion() : 
+{
+	Token id;
+	Symbol.Types returnType;
+}
+{
+	<tFUNCTION>
+	id = <tID> // Puede NO tener parámetros
+	{ st.insertBlock(); }
+	( <tLPAREN> lista_parametros() <tRPAREN> )?
+	<tRETURN>
+	returnType = tipo_variable_simple(t, null, Symbol.ParameterClass.NONE)
+	<tIS> // Rellenar el tipo de retorno de la función del bloque actual
+
+	(declaracion_var())*
+	( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+		{alike.inFunction = true;}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
+	(instruccion())+
+		{alike.inFunction = false;} // Se vuelve a establecer como false
+	<tEND>
+	<tSEMICOLON>
+	{
+		st.removeBlock();
+		st.insertSymbol(new SymbolFunction(id.image, returnType));
+	}
+}
+
+
+//lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
+void lista_parametros() : {}
+{
+	parametro_formal()
+	( <tSEMICOLON> parametro_formal() )*
+}
+
+//parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
+void parametro_formal() : 
+{
+	List<Token> t = new ArrayList<Token>();
+	Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
+}
+{
+	lista_ids(t)
+	<tCOLON>
+	(<tREF> {paramClass = Symbol.ParameterClass.REF;})?
+	tipo_variable(t, true, paramClass)
+}
+
+/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
+
+
+//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
+// 'inst_return' solamente es derivable si estamos dentro de una función. Este comportamiento se consigue gracias al LOOKAHEAD sintáctico.
+void instruccion(): {}
+{
+	(inst_leer()
+|	<tSKIP_LINE> // Nunca recibe argumentos
+|   inst_escribir()
+|   inst_escribir_linea()
+|   inst_invocacion_procedimiento_o_asignacion()
+|   inst_if()
+|   inst_while()
+|   <tNULL>
+|   LOOKAHEAD({ alike.inFunction }) inst_return()
+)
+	<tSEMICOLON>
+}
+
+//inst_leer: <tGET> <tLPAREN> <tID> (array_component)? ( <tCOMMA> <tID> (array_component)? )* <tRPAREN>
+void inst_leer() : {}
+{
+	<tGET> // Necesita parámetros
+	<tLPAREN> <tID> (array_component())? ( <tCOMMA> ( <tID> (array_component())? ) )* <tRPAREN>
+}
+
+//array_component: <tLPAREN> expresion <tRPAREN>
+void array_component() : {}
+{
+	<tLPAREN> expresion() <tRPAREN>
+}
+
+//inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
+void inst_escribir() : {}
+{
+	<tPUT> // Necesita parámetros
+	<tLPAREN> (<tCONST_STRING> | expresion()) ( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>
+}
+
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
+void inst_escribir_linea() : {}
+{
+	<tPUT_LINE> // Puede NO tener parámetros
+	(<tLPAREN> (<tCONST_STRING> | expresion()) ( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>)?
+}
+
+//inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
+void inst_invocacion_procedimiento_o_asignacion() : {}
+{
+	<tID> 
+( // inst_asignacion() 
+	LOOKAHEAD( (array_component())? <tASSIGN> ) // LOOKAHEAD sintáctico para evitar ambigüedad
+	(array_component())?
+	<tASSIGN>
+	expresion()
+| // inst_invocacion_procedimiento()
+	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
+}
+
+//inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
+void inst_if() : {}
+{
+	<tIF>	  expresion() <tTHEN> ( instruccion() )+
+	(<tELSIF> expresion() <tTHEN> ( instruccion() )+ )* 
+	(<tELSE> 					  ( instruccion() )+ )? 
+	<tEND> <tIF>
+}
+
+//inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
+void inst_while() : {}
+{
+	<tWHILE> expresion() <tLOOP>
+	(instruccion())+
+	<tEND> <tLOOP>
+}
+
+//inst_return: <tRETURN> (expresion)?
+void inst_return() : {}
+{
+	<tRETURN> ( expresion() )?
+}
+
+/*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
+
+//expresion: relacion ((<tAND> | <tOR>) relacion)*
+void expresion() : {}
+{
+	relacion() ((<tAND> | <tOR>) relacion())*
+}
+
+//relacion: expresion_simple (operador_relacional expresion_simple)?
+void relacion() : {}
+{
+	expresion_simple()
+ 	( operador_relacional() expresion_simple() )?
+}
+
+//operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
+void operador_relacional() : {}
+{
+	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>
+}
+
+//expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
+void expresion_simple() : {}
+{
+    ( <tPLUS> |	<tMINUS> )? 
+    termino()
+	( ( <tPLUS> | <tMINUS> ) termino() )*
+}
+
+//termino: factor (operador_multiplicativo factor)*
+void termino() : {}
+{
+    factor() ( operador_multiplicativo() factor() )*
+}
+
+//operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
+void operador_multiplicativo() : {}
+{
+	(<tMULT> | <tDIV> | <tMOD>)
+}
+
+//factor: (<tNOT>)? primario
+void factor() : {}
+{
+	( <tNOT> )? primario()
+}
+
+//primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
+//			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
+void primario() : {}
+{
+    <tLPAREN> expresion() <tRPAREN>
+|	<tINT2CHAR> <tLPAREN> expresion() <tRPAREN>
+|	<tCHAR2INT> <tLPAREN> expresion() <tRPAREN>
+|	<tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
+|	<tCONST_INT>
+|	<tCONST_CHAR>
+|	<tTRUE>
+|	<tFALSE>
+}
+
+//lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
+void lista_una_o_mas_exps(): {}
+{
+	expresion() ( <tCOMMA> expresion() )*
+}

@@ -22,12 +22,12 @@ abstract public class Symbol implements Cloneable {
 
     public String name;
     //será NONE para no parámetros
-    public ParameterClass parClass; 
+    public ParameterClass parClass;
     //dirección en memoria. Para func/proc, dirección de la primera instrucción
-    public long dir; 
+    public long dir;
     //mi tipo
     public Types type;
-    // es constante?  
+    // es constante?
     public boolean constant;
     public int nivel; //nivel dentro de la TS
 
@@ -59,4 +59,3 @@ abstract public class Symbol implements Cloneable {
     abstract public String toString();
 
 }
-
