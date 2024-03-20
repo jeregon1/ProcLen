@@ -61,7 +61,18 @@ public class alike {
 		   e.printStackTrace();
 	   }
    }
+
+	static void insertSymbol(Symbol s, Token id) {
+		try {
+			st.insertSymbol(s);
+		}
+		catch (AlreadyDefinedSymbolException e) {
+			System.err.println("ERROR: El símbolo " + id.image + " ya está definido.");
+		}
+	}
 }
+
+
 PARSER_END(alike)
 
 //---------------------------------------------------------
@@ -177,7 +188,7 @@ void declaracion_var() :
 	lista_ids(t)
 	<tCOLON>
 	tipo_variable(t, Symbol.ParameterClass.NONE)
-	<tSEMICOLON>
+	<tSEMICOLON> 
 }
 
 //lista_ids: <tID> (<tCOMMA> <tID>)*
@@ -205,7 +216,7 @@ void tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.Parameter
 }
 {
 	( <tINT>  { type = Symbol.Types.INT; }
-	| <tCHAR> { type = Symbol.Types.CHAR;}
+	| <tCHAR> { type = Symbol.Types.CHAR; }
 	| <tBOOL> { type = Symbol.Types.BOOL; }
 	)
 	{
@@ -214,14 +225,20 @@ void tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.Parameter
 			for (Token id : t) {
 				SymbolArray newArray = baseArray.clone();
 				newArray.name = id.image;
-				st.insertSymbol(newArray);
+				insertSymbol(newArray, id);
 			}
 		} else {
 			for (Token id : t) {
 				switch (type) {
-					case INT:  st.insertSymbol(new SymbolInt(id.image, paramClass));	break;				
-					case CHAR: st.insertSymbol(new SymbolChar(id.image, paramClass));	break;
-					case BOOL: st.insertSymbol(new SymbolBool(id.image, paramClass));	break;
+					case INT:  
+						insertSymbol(new SymbolInt(id.image, paramClass), id);
+						break;
+					case CHAR: 
+						insertSymbol(new SymbolChar(id.image, paramClass), id);
+						break;
+					case BOOL:
+						insertSymbol(new SymbolBool(id.image, paramClass), id);
+						break;
 				}
 			}
 		}
@@ -245,23 +262,28 @@ void tipo_variable_array(List<Token> t, Symbol.ParameterClass paramClass) :
 void declaracion_procedimiento() : 
 {
 	Token id;
+	List <Symbol> params = new ArrayList<Symbol>();
 }
 {
 	<tPROCEDURE>
 	id = <tID> // Puede NO tener parámetros
-	{st.insertSymbol(new SymbolProcedure(id.image));
-	 st.insertBlock();
+	( <tLPAREN> lista_parametros(params) <tRPAREN> )?
+	{
+		insertSymbol(new SymbolProcedure(id.image, params), id);
+		st.insertBlock();
 	}
-	( <tLPAREN> lista_parametros() <tRPAREN> )?
 	<tIS>
-
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
 	(instruccion())+
 	<tEND>
 	<tSEMICOLON>
-	{st.removeBlock();}
+	{
+		System.err.println(st.toString()); // Impresión de la tabla de símbolos
+		st.removeBlock(); // Eliminación del bloque actual
+
+	}
 }
 
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
@@ -269,14 +291,18 @@ void declaracion_funcion() :
 {
 	Token id;
 	Symbol.Types returnType;
+	List <Symbol> params = new ArrayList<Symbol>();
 }
 {
 	<tFUNCTION>
-	id = <tID> // Puede NO tener parámetros
-	{ st.insertBlock(); }
-	( <tLPAREN> lista_parametros() <tRPAREN> )?
+	id = <tID>
+	( <tLPAREN> lista_parametros(params) <tRPAREN> )? // Puede NO tener parámetros
 	<tRETURN>
 	returnType = tipo_variable_simple(t, null, Symbol.ParameterClass.NONE)
+	{
+		st.insertSymbol(new SymbolFunction(id.image, params, returnType), id);
+		st.insertBlock();
+	}
 	<tIS> // Rellenar el tipo de retorno de la función del bloque actual
 
 	(declaracion_var())*
@@ -288,21 +314,23 @@ void declaracion_funcion() :
 	<tEND>
 	<tSEMICOLON>
 	{
-		st.removeBlock();
-		st.insertSymbol(new SymbolFunction(id.image, returnType));
+		System.err.println(st.toString()); // Impresión de la tabla de símbolos
+		st.removeBlock(); // Eliminación del bloque actual
 	}
 }
 
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
-void lista_parametros() : {}
+void lista_parametros(List<Symbol> params) : {}
 {
-	parametro_formal()
-	( <tSEMICOLON> parametro_formal() )*
+	parametro_formal(params)
+	( <tSEMICOLON> 
+	parametro_formal(params) 
+	)*
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
-void parametro_formal() : 
+void parametro_formal(List<Symbol> params) : 
 {
 	List<Token> t = new ArrayList<Token>();
 	Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
@@ -312,6 +340,24 @@ void parametro_formal() :
 	<tCOLON>
 	(<tREF> {paramClass = Symbol.ParameterClass.REF;})?
 	tipo_variable(t, true, paramClass)
+	{
+		for (Token id : t) {
+			switch (type) {
+				case INT:  
+					params.add(new SymbolInt(id.image, paramClass));
+					break;
+				case CHAR: 
+					params.add(new SymbolChar(id.image, paramClass));
+					break;
+				case BOOL:
+					params.add(new SymbolBool(id.image, paramClass));
+					break;
+				case ARRAY:
+					params.add(new SymbolArray(id.image, paramClass));
+					break;
+			}
+		}
+	}
 }
 
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
@@ -321,7 +367,7 @@ void parametro_formal() :
 // 'inst_return' solamente es derivable si estamos dentro de una función. Este comportamiento se consigue gracias al LOOKAHEAD sintáctico.
 void instruccion(): {}
 {
-	(inst_leer()
+(	inst_leer()
 |	<tSKIP_LINE> // Nunca recibe argumentos
 |   inst_escribir()
 |   inst_escribir_linea()
