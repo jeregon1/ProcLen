@@ -235,9 +235,15 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 	boolean isParameter = (paramClass != Symbol.ParameterClass.NONE);
 }
 {
-	<tARRAY> <tLPAREN> min = <tCONST_INT> <tRANGE> max = <tCONST_INT> <tRPAREN> 
+	<tARRAY> <tLPAREN> min = <tCONST_INT> <tRANGE> max = <tCONST_INT> <tRPAREN>
 	{
+		if (min>max) {
+			System.err.println("ERROR: Los vectores deben tener un rango no vacío de enteros, se ha encontrado [" + min.image + ".." + max.image + "]");
+		}
 		if (!isParameter) { // Declaración variable ARRAY
+			// if (!min.constant || !max.constant) {
+			// 	System.err.println("ERROR: Los límites de un array deben ser constantes.");
+			// }
 
 			baseArray = new SymbolArray("", Integer.parseInt(min.image), Integer.parseInt(max.image), 
 					Symbol.Types.UNDEFINED, paramClass);
@@ -510,7 +516,10 @@ void operador_relacional() : {}
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
-void expresion_simple() : {}
+void expresion_simple() : 
+{
+	// Token t;
+}
 {
     ( <tPLUS> |	<tMINUS> )? 
     termino()
@@ -518,9 +527,22 @@ void expresion_simple() : {}
 }
 
 //termino: factor (operador_multiplicativo factor)*
-void termino() : {}
+void termino() : 
 {
-    factor() ( operador_multiplicativo() factor() )*
+	ArrayList<Token> terminos = new ArrayList<Token>();
+	Token first_t, t;
+}
+{
+    first_t = factor() { terminos.add(first_t); }
+	( operador_multiplicativo() t = factor() { terminos.add(t); } )*
+	{
+		// Check if all the factors are of the same type
+		for (Token t : terminos) {
+			if (t.kind != first_t.kind) {
+				System.err.println("ERROR: Los factores de una expresión deben ser del mismo tipo.");
+			}
+		}
+	}
 }
 
 //operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
@@ -530,23 +552,36 @@ void operador_multiplicativo() : {}
 }
 
 //factor: (<tNOT>)? primario
-void factor() : {}
+Token factor() : 
 {
-	( <tNOT> )? primario()
+	Token t; 
+}
+{	// Falta tener en cuenta el not
+	( <tNOT> )? t = primario() 
+	{
+		return t;
+	}
 }
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-void primario() : {}
+Token primario() : 
 {
+	Token t;
+}
+{	// 🎃 TODO: hacer las 4 primeras producciones
     <tLPAREN> expresion() <tRPAREN>
 |	<tINT2CHAR> <tLPAREN> expresion() <tRPAREN>
 |	<tCHAR2INT> <tLPAREN> expresion() <tRPAREN>
 |	<tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
-|	<tCONST_INT>
-|	<tCONST_CHAR>
-|	<tTRUE>
-|	<tFALSE>
+|	t = <tCONST_INT>
+|	t = <tCONST_CHAR>
+|	t = <tTRUE>
+|	t = <tFALSE>
+{
+	return t;
+
+}
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
