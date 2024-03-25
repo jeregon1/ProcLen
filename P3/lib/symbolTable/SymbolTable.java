@@ -46,7 +46,7 @@ public class SymbolTable {
         st.remove(st.size()-1);
         level--;
     }
-    
+
     //Si un símbolo con el mismo nombre está, excepción. 
     //Si no, se inserta
     public void insertSymbol(Symbol s) throws AlreadyDefinedSymbolException {
@@ -67,12 +67,12 @@ public class SymbolTable {
         }
         return result; 
     }
-    
+
     // comprueba si está el símbolo 
     public boolean containsSymbol (String name) {
     	return findSymbol(name) != null; 
     }
-    
+
     //para usar en "getSymbol" y "containsSymbol"
     private Symbol findSymbol (String name) {
     	for (int i=st.size()-1; i>=0; i--) {
@@ -89,7 +89,7 @@ public class SymbolTable {
     	StringBuilder builder = new StringBuilder(); 
         builder.append(linea); 
         String tabs = "";
-        for (int i=0; i<st.size(); i++) {
+        for (int i=0; i < st.size(); i++) {
             for (Map.Entry entry : st.get(i).entrySet()) {
 				//crear secuencia de tabuladores
                 tabs = new String(new char[i]).replace("\0", "\t");
@@ -97,6 +97,24 @@ public class SymbolTable {
                 builder.append(entry.toString()); 
                 builder.append("\n"); 
             }
+        }
+        builder.append(linea); 
+        return builder.toString();
+    }
+
+    //devuelve la tabla del nivel actual como un string
+    public String toStringCurrentLevel(String id) {
+    	final String linea = "Cerrando el bloque de \'" + id + "\'\n";
+    	final String sep = "------------------------------------------------\n";
+    	StringBuilder builder = new StringBuilder(); 
+        builder.append(linea); 
+        builder.append(sep);
+        String tabs = "";
+        for (Map.Entry entry : st.get(st.size()-1).entrySet()) {
+            tabs = new String(new char[st.size()-1]).replace("\0", "\t");
+            builder.append(tabs); 
+            builder.append(entry.toString()); 
+            builder.append("\n"); 
         }
         builder.append(linea); 
         return builder.toString();
