@@ -18,10 +18,68 @@ import lib.errores.*;
 
 public class SemanticFunctions {
 	private ErrorSemantico errSem; //clase común de errores semánticos
+	private SymbolTable st; //tabla de símbolos
 
-	public SemanticFunctions() {
+	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
+		this.st = st;
 	}
 
-	//COMPLETAR 🎃
+	// -------------------------- ERRORES SEMÁNTICOS --------------------------------
+
+	public void error(Token token, String msg) {
+		errSem.print(token, msg);
+	}
+
+	public boolean hayErrores() {
+		return errSem.hayError();
+	}
+
+	// -------------------------- TABLA DE SÍMBOLOS --------------------------------
+
+	public void insertSymbol(Symbol s) {
+		try {
+			st.insertSymbol(s);
+		}
+		catch (AlreadyDefinedSymbolException e) {
+			System.err.println("ERROR: El símbolo " + s.name + " ya está definido.");
+		}
+	}
+
+	public Symbol getSymbol(String name) {
+		try {
+			return st.getSymbol(name);
+		}
+		catch (SymbolNotFoundException e) {
+			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+			return null;
+		}
+	}
+
+	public Symbol.Types getSymbolType(String name) {
+		try {
+			return st.getSymbol(name).type;
+		}
+		catch (SymbolNotFoundException e) {
+			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+			return Symbol.Types.UNDEFINED;
+		}
+	}
+
+	public Symbol.Types getArrayBaseType(String name) {
+		try {
+			Symbol array = st.getSymbol(name);
+			if (array instanceof SymbolArray) {
+				return ((SymbolArray) array).baseType;
+			}
+			else {
+				System.err.println("ERROR: El símbolo " + name + " no es un array.");
+				return Symbol.Types.UNDEFINED;
+			}
+		}
+		catch (SymbolNotFoundException e) {
+			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+			return Symbol.Types.UNDEFINED;
+		}
+	}
 }
