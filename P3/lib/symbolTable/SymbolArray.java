@@ -48,8 +48,8 @@ public class SymbolArray extends Symbol implements Cloneable {
     }
 
     public String toString() {
-        return "(" + name + "," + type +  "," +  minInd + "," + maxInd + "," + 
-                     baseType + "," + parClass + "," + nivel + ")";
+        return "(" + name + "," + type +  "," +  minInd + ".." + maxInd + ", base:" + 
+                     baseType + ", " + parClass + ", lvl " + nivel + ")";
     }
     
     public SymbolArray clone () {

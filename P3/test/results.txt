@@ -1,0 +1,32 @@
+Cerrando el bloque de 'dato'
+------------------------------------------------
+  calcular_mcd = (calcular_mcd,PROCEDURE, [], lvl 0)
+    i = (i,INT,0,NONE, lvl 1)
+    j = (j,INT,0,NONE, lvl 1)
+    dato = (dato,PROCEDURE, [(d,INT,0,REF, lvl 2)], lvl 1)
+      d = (d,INT,0,REF, lvl 2)
+------------------------------------------------
+
+Cerrando el bloque de 'mcd'
+------------------------------------------------
+  calcular_mcd = (calcular_mcd,PROCEDURE, [], lvl 0)
+    i = (i,INT,0,NONE, lvl 1)
+    j = (j,INT,0,NONE, lvl 1)
+    mcd = (mcd,FUNCTION, [(a,INT,0,VAL, lvl 2), (b,INT,0,VAL, lvl 2)], retTyp:INT,NONE, lvl 1)
+    dato = (dato,PROCEDURE, [(d,INT,0,REF, lvl 2)], lvl 1)
+      a = (a,INT,0,VAL, lvl 2)
+      b = (b,INT,0,VAL, lvl 2)
+      i = (i,INT,0,NONE, lvl 2)
+      j = (j,INT,0,NONE, lvl 2)
+      k = (k,INT,0,NONE, lvl 2)
+------------------------------------------------
+
+Cerrando el bloque de 'calcular_mcd'
+------------------------------------------------
+  calcular_mcd = (calcular_mcd,PROCEDURE, [], lvl 0)
+    i = (i,INT,0,NONE, lvl 1)
+    j = (j,INT,0,NONE, lvl 1)
+    mcd = (mcd,FUNCTION, [(a,INT,0,VAL, lvl 2), (b,INT,0,VAL, lvl 2)], retTyp:INT,NONE, lvl 1)
+    dato = (dato,PROCEDURE, [(d,INT,0,REF, lvl 2)], lvl 1)
+------------------------------------------------
+

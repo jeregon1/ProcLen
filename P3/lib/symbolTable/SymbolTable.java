@@ -84,39 +84,23 @@ public class SymbolTable {
     }
 
     //devuelve la tabla como un string
-    public String toString() {
-    	final String linea = "------------------------------------------------\n";
-    	StringBuilder builder = new StringBuilder(); 
-        builder.append(linea); 
-        String tabs = "";
-        for (int i=0; i < st.size(); i++) {
-            for (Map.Entry entry : st.get(i).entrySet()) {
-				//crear secuencia de tabuladores
-                tabs = new String(new char[i]).replace("\0", "\t");
-                builder.append(tabs); 
-                builder.append(entry.toString()); 
-                builder.append("\n"); 
-            }
-        }
-        builder.append(linea); 
-        return builder.toString();
-    }
-
-    //devuelve la tabla del nivel actual como un string
-    public String toStringCurrentLevel(String id) {
+    public String toString(String id) {
     	final String linea = "Cerrando el bloque de \'" + id + "\'\n";
     	final String sep = "------------------------------------------------\n";
     	StringBuilder builder = new StringBuilder(); 
         builder.append(linea); 
         builder.append(sep);
         String tabs = "";
-        for (Map.Entry entry : st.get(st.size()-1).entrySet()) {
-            tabs = new String(new char[st.size()-1]).replace("\0", "\t");
-            builder.append(tabs); 
-            builder.append(entry.toString()); 
-            builder.append("\n"); 
+        for (int i=0; i < st.size(); i++) {
+            for (Map.Entry entry : st.get(i).entrySet()) {
+				//crear secuencia de tabuladores
+                tabs = "  ".repeat(i+1);
+                builder.append(tabs); 
+                builder.append(entry.getKey() + " = " + entry.getValue().toString());
+                builder.append("\n"); 
+            }
         }
-        builder.append(linea); 
+        builder.append(sep);
         return builder.toString();
     }
 }

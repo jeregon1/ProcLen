@@ -28,7 +28,7 @@ public class SymbolChar extends Symbol implements Cloneable {
     }
 
     public String toString() {
-        return "(" + name + "," + type + "," + value + "," + parClass + "," + nivel + ")";
+        return "(" + name + "," + type + "," + value + "," + parClass + ", lvl " + nivel + ")";
     }
     
     public SymbolChar clone () {

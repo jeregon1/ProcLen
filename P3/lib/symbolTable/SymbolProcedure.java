@@ -24,7 +24,7 @@ public class SymbolProcedure extends Symbol implements Cloneable {
     }
 
     public String toString() {
-        return "(" + name + "," + type + "," + parList + "," + nivel + ")";
+        return "(" + name + "," + type + ", " + parList + ", lvl " + nivel + ")";
     }
 
     public SymbolProcedure clone () {

@@ -62,12 +62,12 @@ public class alike {
 	   }
    }
 
-	static void insertSymbol(Symbol s, Token id) {
+	static void insertSymbol(Symbol s) {
 		try {
 			st.insertSymbol(s);
 		}
 		catch (AlreadyDefinedSymbolException e) {
-			System.err.println("ERROR: El símbolo " + id.image + " ya está definido.");
+			System.err.println("ERROR: El símbolo " + s.name + " ya está definido.");
 		}
 	}
 }
@@ -170,10 +170,10 @@ void Programa() :
 }
 {
 	<tPROCEDURE> 
-	id = <tID> 
-	{ // Creación del bloque principal
-		insertSymbol(new SymbolProcedure(id.image, null), id);
-		st.insertBlock();
+	id = <tID>
+	{	// Procedimiento principal
+		insertSymbol(new SymbolProcedure(id.image, new ArrayList<Symbol>()));
+		st.insertBlock(); // Bloque 0
 	}
 	<tIS>
 	( declaracion_var() )*
@@ -183,8 +183,8 @@ void Programa() :
 	<tEND>
 	<tSEMICOLON>
 	{
-		System.err.println(st.toStringCurrentLevel(id.image)); // Impresión de la tabla de símbolos
-		st.removeBlock(); // Eliminación del bloque actual
+		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
+		st.removeBlock(); // Eliminación del bloque principal
 	}
 
    < EOF >
@@ -217,12 +217,12 @@ void lista_ids(List<Token> tokens) :
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
 Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
 {
-	Symbol.Types returnType = Symbol.Types.ARRAY;
+	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
 }
 {
-	( returnType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
+	( baseType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
 	{
-		return returnType;
+		return baseType; // Si es un tipo simple, se devuelve el tipo de la variable
 	}
 }
 
@@ -230,24 +230,40 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
 void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
 {
 	Token min, max;
+	Symbol.Types baseType;
 	SymbolArray baseArray = null;
+	boolean isParameter = (paramClass != Symbol.ParameterClass.NONE);
 }
 {
 	<tARRAY> <tLPAREN> min = <tCONST_INT> <tRANGE> max = <tCONST_INT> <tRPAREN> 
 	{
-		if (paramClass != Symbol.ParameterClass.NONE) { // Queremos completar la información de un parámetro array
-			paramArray = new SymbolArray("", Integer.parseInt(min.image), Integer.parseInt(max.image), Symbol.Types.UNDEFINED, paramClass);
-		} else { // Declaración de variables
-			baseArray = new SymbolArray("", Integer.parseInt(min.image), Integer.parseInt(max.image), Symbol.Types.UNDEFINED, paramClass);
+		if (!isParameter) { // Declaración variable ARRAY
+
+			baseArray = new SymbolArray("", Integer.parseInt(min.image), Integer.parseInt(max.image), 
+					Symbol.Types.UNDEFINED, paramClass);
+			// baseArray se crea aquí para que en tipo_variable_simple se pueda insertar en la 
+			// tabla de símbolos con los valores de min y max
 		}
 	}
-	<tOF> tipo_variable_simple(t, baseArray, null)
+	<tOF> baseType = tipo_variable_simple(t, baseArray, null)
+	{
+		if (isParameter){ // Parámetro ARRAY
+			// paramArray se ha creado en parametro_formal para rellenarse aquí
+			paramArray.minInd = Integer.parseInt(min.image);
+			paramArray.maxInd = Integer.parseInt(max.image);
+			paramArray.parClass = paramClass;
+			paramArray.baseType = baseType;
+		}
+	}
 }
 
 //tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
 Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass) : 
 {
 	Symbol.Types type = null;
+	boolean isArray = (baseArray != null);
+	// Si baseArray no es null, estamos en una declaración de array y 
+	// contiene los valores de min, max y paramClass
 }
 {
 	( <tINT>  { type = Symbol.Types.INT; }
@@ -255,31 +271,28 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 	| <tBOOL> { type = Symbol.Types.BOOL; }
 	)
 	{
-		if (t == null) {
-			return type; // Si no hay tokens, devolver el tipo de la variable
+		if (t == null) { // Parámetros
+			// Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
+			// y estos se insertan en st en declaracion_procedimiento y declaracion_funcion
+			return type;
 		}
-		else if (baseArray != null) {
+		else if (isArray) { // Declaración de variables arrays
 			baseArray.baseType = type;
 			for (Token id : t) {
 				SymbolArray newArray = baseArray.clone();
 				newArray.name = id.image;
-				insertSymbol(newArray, id);
+				insertSymbol(newArray);
 			}
-		} else {
+		} else { // Declaración de variables simples
 			for (Token id : t) {
 				switch (type) {
-					case INT:  
-						insertSymbol(new SymbolInt(id.image, paramClass), id);
-						break;
-					case CHAR: 
-						insertSymbol(new SymbolChar(id.image, paramClass), id);
-						break;
-					case BOOL:
-						insertSymbol(new SymbolBool(id.image, paramClass), id);
-						break;
+					case INT:  insertSymbol(new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: insertSymbol(new SymbolChar(id.image, paramClass)); break;
+					case BOOL: insertSymbol(new SymbolBool(id.image, paramClass)); break;
 				}
 			}
 		}
+		return type;
 	}
 }
 
@@ -294,8 +307,11 @@ void declaracion_procedimiento() :
 	id = <tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros(params) <tRPAREN> )?
 	{
-		insertSymbol(new SymbolProcedure(id.image, params), id);
+		insertSymbol(new SymbolProcedure(id.image, params));
 		st.insertBlock();
+		for (Symbol s : params) { // insertar params en la tabla de símbolos tras crear un nuevo bloque
+			insertSymbol(s);
+		}
 	}
 	<tIS>
 	(declaracion_var())*
@@ -305,7 +321,7 @@ void declaracion_procedimiento() :
 	<tEND>
 	<tSEMICOLON>
 	{
-		System.err.println(st.toStringCurrentLevel(id.image)); // Impresión de la tabla de símbolos
+		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque actual
 	}
 }
@@ -324,8 +340,11 @@ void declaracion_funcion() :
 	<tRETURN>
 	returnType = tipo_variable_simple(null, null, Symbol.ParameterClass.NONE)
 	{
-		insertSymbol(new SymbolFunction(id.image, params, returnType), id);
+		insertSymbol(new SymbolFunction(id.image, params, returnType));
 		st.insertBlock();
+		for (Symbol s : params) { // insertar params en la tabla de símbolos tras crear un nuevo bloque
+			insertSymbol(s);
+		}
 	}
 	<tIS> // Rellenar el tipo de retorno de la función del bloque actual
 
@@ -338,7 +357,7 @@ void declaracion_funcion() :
 	<tEND>
 	<tSEMICOLON>
 	{
-		System.err.println(st.toStringCurrentLevel(id.image)); // Impresión de la tabla de símbolos
+		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque actual
 	}
 }
@@ -347,56 +366,47 @@ void declaracion_funcion() :
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
 void lista_parametros(List<Symbol> params) : {}
 {
-	parametro_formal(params)
-	( <tSEMICOLON> 
-	parametro_formal(params)
-	)*
+	parametro_formal(params) 
+	( <tSEMICOLON> parametro_formal(params) )*
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
 void parametro_formal(List<Symbol> params) : 
 {
 	List<Token> t = new ArrayList<Token>();
-	SymbolArray paramArray = null; // Usado para parámetros array
-	Symbol.Types returnType;
+	SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
+	Symbol.Types baseType;
 	Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
-	int min, max;
 }
 {
 	lista_ids(t)
 	<tCOLON>
 	( <tREF> {paramClass = Symbol.ParameterClass.REF;} )?
-	returnType = tipo_variable(null, paramArray, paramClass) 
-	// Aquí es el único lugar donde se utiliza paramArray
+	baseType = tipo_variable(null, paramArray, paramClass) 
+	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
 	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se crea un símbolo array en paramArray con min, max y paramClass
 	{
-		if (paramArray != null) { // Si realmente es un parámetro de tipo array, se añaden los símbolos correspondientes a 'st'
-			paramArray.baseType = returnType;
+		if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 			for (Token id : t) {
 				SymbolArray newArray = paramArray.clone();
 				newArray.name = id.image;
 				params.add(newArray);
 			}
-		} else {
+		} else { // Parámetros simples
 			for (Token id : t) {
-				switch (returnType) {
-					case INT:
-						params.add(new SymbolInt(id.image, paramClass));
-						break;
-					case CHAR: 
-						params.add(new SymbolChar(id.image, paramClass));
-						break;
-					case BOOL:
-						params.add(new SymbolBool(id.image, paramClass));
-						break;
+				switch (baseType) {
+					case INT:  params.add(new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: params.add(new SymbolChar(id.image, paramClass)); break;
+					case BOOL: params.add(new SymbolBool(id.image, paramClass)); break;
+					default: System.err.println("ERROR: Tipo de parámetro no válido."); break;
 				}
 			}
 		}
 	}
 }
 
-/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
+/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 //instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
 // 'inst_return' solamente es derivable si estamos dentro de una función. Este comportamiento se consigue gracias al LOOKAHEAD sintáctico.

@@ -26,7 +26,7 @@ public class SymbolInt extends Symbol implements Cloneable {
     }
 
     public String toString() {
-        return "(" + name + "," + type + "," + value + "," + parClass + "," + nivel + ")";
+        return "(" + name + "," + type + "," + value + "," + parClass + ", lvl " + nivel + ")";
     }
     
     public SymbolInt clone () {
