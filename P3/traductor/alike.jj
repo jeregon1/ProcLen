@@ -358,14 +358,13 @@ void declaracion_funcion() :
 			semantic.insertSymbol(s);
 		}
 	}
-	<tIS> // Rellenar el tipo de retorno de la función del bloque actual
-
+	<tIS>
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-		{alike.inFunction = true;}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
+		{semantic.enterFunction(returnType);}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
 	(instruccion())+
-		{alike.inFunction = false;} // Se vuelve a establecer como false
+		{semantic.exitFunction();} // Se vuelve a establecer como false
 	<tEND>
 	<tSEMICOLON>
 	{
@@ -431,7 +430,7 @@ void instruccion(): {}
 	|   inst_if()
 	|   inst_while()
 	|   <tNULL>
-	|   LOOKAHEAD({ alike.inFunction }) inst_return()
+	|   LOOKAHEAD({ semantic.inFunction() }) inst_return()
 	)
 	<tSEMICOLON>
 }
@@ -444,9 +443,19 @@ void inst_leer() : {}
 }
 
 //array_component: <tLPAREN> expresion <tRPAREN>
-void array_component() : {}
+void array_component() : 
 {
-	<tLPAREN> expresion() <tRPAREN>
+	Symbol.Types type;
+}
+{
+	<tLPAREN> type = expresion() 
+	{
+		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
+			semantic.error(getToken(0), "El índice de un array debe ser de tipo integer.");
+		}
+		// No hace falta comprobar que el índice esté dentro del rango del array porque no lo piden
+	}
+	<tRPAREN>
 }
 
 //inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
@@ -507,7 +516,10 @@ void inst_return() :
 	<tRETURN> returnType = expresion() 
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
-		
+		if (returnType != semantic.getCurrentFunctionReturnType()) {
+			semantic.error(getToken(0), "El tipo de retorno de la función (" + semantic.getCurrentFunctionReturnType() + 
+					") no coincide con el tipo de la expresión de retorno (" + returnType + ")");
+		}
 	}
 }
 
@@ -560,7 +572,7 @@ Symbol.Types relacion() :
 //operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
 void operador_relacional() : {}
 {
-	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>
+	(<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*

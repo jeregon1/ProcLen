@@ -19,10 +19,32 @@ import lib.errores.*;
 public class SemanticFunctions {
 	private ErrorSemantico errSem; //clase común de errores semánticos
 	private SymbolTable st; //tabla de símbolos
+	private boolean inFunction = false; //indica si estamos dentro de una función
+
+	private Queue<Symbol.Types> functionReturnTypes = new LinkedList<>();
 
 	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
 		this.st = st;
+	}
+
+	// -------------------------- FUNCIONES --------------------------------
+	public void enterFunction(Symbol.Types returnType) {
+		inFunction = true;
+		functionReturnTypes.add(returnType);
+	}
+
+	public boolean inFunction() {
+		return inFunction;
+	}
+
+	public void exitFunction() {
+		inFunction = false;
+		functionReturnTypes.poll();
+	}
+
+	public Symbol.Types getCurrentFunctionReturnType() {
+		return functionReturnTypes.peek();
 	}
 
 	// -------------------------- ERRORES SEMÁNTICOS --------------------------------
