@@ -68,6 +68,13 @@ public class SymbolTable {
         return result; 
     }
 
+    public Symbol getPreviousBlockSymbol (String name){
+        if (level == 0) {
+            return null;
+        }
+        return st.get(level - 1).get(name);
+    }
+
     // comprueba si está el símbolo 
     public boolean containsSymbol (String name) {
     	return findSymbol(name) != null; 
@@ -75,7 +82,7 @@ public class SymbolTable {
 
     //para usar en "getSymbol" y "containsSymbol"
     private Symbol findSymbol (String name) {
-    	for (int i=st.size()-1; i>=0; i--) {
+    	for (int i = st.size()-1; i >= 0; i--) {
             if (st.get(i).containsKey(name)) {
                 return st.get(i).get(name);
             }

@@ -1,8 +1,8 @@
 procedure a is
 
-function b (b: array (+0..-1) of integer) return integer is
+function bb (b: array (+0..1) of integer) return integer is
 begin
-    return 1;
+    return true;
 end;
 
 procedure c is

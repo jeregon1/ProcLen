@@ -363,7 +363,7 @@ void declaracion_funcion() :
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-		{semantic.enterFunction(returnType);}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
+		{semantic.enterFunction(id.image);}
 	(instruccion())+
 		{semantic.exitFunction();} // Se vuelve a establecer como false
 	<tEND>
@@ -517,9 +517,23 @@ void inst_return() :
 	<tRETURN> returnType = expresion() 
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
-		if (returnType != semantic.getCurrentFunctionReturnType()) {
-			semantic.error(getToken(0), "El tipo de retorno de la función (" + semantic.getCurrentFunctionReturnType() + 
-					") no coincide con el tipo de la expresión de retorno (" + returnType + ")");
+		SymbolFunction function = semantic.getCurrentFunctionSymbol();
+		if (returnType != function.returnType) {
+			String returnTypeStr, expectedTypeStr;
+			switch (returnType) {
+				case INT:  returnTypeStr = tokenImage[tINT]; break;
+				case CHAR: returnTypeStr = tokenImage[tCHAR]; break;
+				case BOOL: returnTypeStr = tokenImage[tBOOL]; break;
+				default:   returnTypeStr = "indefinido"; break;
+			}
+			switch (function.returnType) {
+				case INT:  expectedTypeStr = tokenImage[tINT]; break;
+				case CHAR: expectedTypeStr = tokenImage[tCHAR]; break;
+				case BOOL: expectedTypeStr = tokenImage[tBOOL]; break;
+				default:   expectedTypeStr = "indefinido"; break;
+			}
+			semantic.error(getToken(0), "El tipo de retorno " + expectedTypeStr + " de la función '" + function.name +
+					"' no coincide con el tipo " + returnTypeStr + " de la expresión de retorno ");
 		}
 	}
 }
@@ -584,7 +598,7 @@ Symbol.Types expresion_simple() :
 	boolean sign1 = false;
 }
 {
-     ( <tPLUS> | <tMINUS> )? {sign1 = true;} type = termino() {terminos.add(type);}
+     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino() {terminos.add(type);}
 	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type);} )*
 	{
 		// Si hay más de un término, deben ser todos INT

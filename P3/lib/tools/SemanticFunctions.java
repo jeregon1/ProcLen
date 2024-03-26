@@ -21,7 +21,7 @@ public class SemanticFunctions {
 	private SymbolTable st; //tabla de símbolos
 	private boolean inFunction = false; //indica si estamos dentro de una función
 
-	private Queue<Symbol.Types> functionReturnTypes = new LinkedList<>();
+	private Queue<String> functions = new LinkedList<>();
 
 	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
@@ -29,9 +29,9 @@ public class SemanticFunctions {
 	}
 
 	// -------------------------- FUNCIONES --------------------------------
-	public void enterFunction(Symbol.Types returnType) {
+	public void enterFunction(String functionName) {
 		inFunction = true;
-		functionReturnTypes.add(returnType);
+		functions.add(functionName);
 	}
 
 	public boolean inFunction() {
@@ -40,11 +40,25 @@ public class SemanticFunctions {
 
 	public void exitFunction() {
 		inFunction = false;
-		functionReturnTypes.poll();
+		functions.poll();
 	}
 
-	public Symbol.Types getCurrentFunctionReturnType() {
-		return functionReturnTypes.peek();
+	public SymbolFunction getCurrentFunctionSymbol() {
+		try {
+			Symbol s = st.getPreviousBlockSymbol(functions.peek());
+			// problema: se puede encontrar antes un símbolo de este bloque con el mismo nombre que no sea la función
+			if (s instanceof SymbolFunction) {
+				return (SymbolFunction) s;
+			}
+			else {
+				System.err.println("Error: El símbolo " + functions.peek() + " no es una función.");
+				return null;
+			}
+		}
+		catch (SymbolNotFoundException e) {
+			System.err.println("Error: La función " + functions.peek() + " no está definida.");
+			return null;
+		}
 	}
 
 	// -------------------------- ERRORES SEMÁNTICOS --------------------------------
