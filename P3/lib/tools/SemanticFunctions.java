@@ -29,6 +29,7 @@ public class SemanticFunctions {
 	}
 
 	// -------------------------- FUNCIONES --------------------------------
+	
 	public void enterFunction(String functionName) {
 		inFunction = true;
 		functions.add(functionName);

@@ -4,13 +4,23 @@ if [ $(whoami) == "jesus" ]
 then
     dir="/mnt/c/Users/jesus/OneDrive/Documentos/3ºCarrera/ProLen/Practicas/P3"
 else
-    dir="~/PL/P1"
+    dir="~/PL/P3"
 fi
 
-# Si hay un argumento, se ejecuta el programa con el argumento, si no, con el fichero ../other/tests/cambio_base.al
-if [ -z "$1" ]
+# Comprobar que hay dos parámetros: el fichero alike.jar y el fichero de prueba
+if [ $# -ne 2 ] || [ "$1" != "bobi" ] && [ "$1" != "corni" ]
 then
-    java -jar "$dir/dist/alike.jar" "../other/tests/cambio_base.al"
-else
-    java -jar "$dir/dist/alike.jar" "../other/tests/$1"
+    echo "Uso: ./run.sh <bobi|corni> <fichero.al>"
+    exit 1
 fi
+
+# Si el primer parámetro es "bobi", se ejecuta el compilador $dir/../other/alike/alike.jar
+if [ $1 = "bobi" ]
+then
+    java -jar $dir/../other/alike/alike.jar "$2"
+else
+    # Si el primer parámetro es "corni", se ejecuta el compilador $dir/dist/alike.jar
+    java -jar $dir/dist/alike.jar "$2"
+fi
+
+# Su compilador--> java -jar ../other/alike/alike.jar p

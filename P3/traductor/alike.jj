@@ -398,14 +398,19 @@ void parametro_formal(List<Symbol> params) :
 	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
 	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se crea un símbolo array en paramArray con min, max y paramClass
 	{
-		if (baseType == Symbol.Types.ARRAY) { // Parámetros array
-			for (Token id : t) {
+		for (Token id : t) {
+			// Comprobar si hay algún parámetro con el mismo nombre
+			for (Symbol s : params) {
+				if (s.name.equals(id.image)) {
+					semantic.error(id, "El símbolo '" + id.image + "' ya está definido.");
+				}
+			}
+
+			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
 				newArray.name = id.image;
 				params.add(newArray);
-			}
-		} else { // Parámetros simples
-			for (Token id : t) {
+			} else { // Parámetros simples
 				switch (baseType) {
 					case INT:  params.add(new  SymbolInt(id.image, paramClass)); break;
 					case CHAR: params.add(new SymbolChar(id.image, paramClass)); break;
@@ -483,7 +488,7 @@ void inst_invocacion_procedimiento_o_asignacion() : {}
 {
 	<tID> 
 	( // inst_asignacion() 
-	LOOKAHEAD( (array_component())? <tASSIGN> ) // LOOKAHEAD sintáctico para evitar ambigüedad
+		LOOKAHEAD( (array_component())? <tASSIGN> ) // LOOKAHEAD sintáctico para comprobar si es una asignación
 	(array_component())?
 	<tASSIGN>
 	expresion()
@@ -711,8 +716,17 @@ Symbol.Types primario() :
 		}
 		type = Symbol.Types.INT;
 	}// 🎃 SOLO QUEDA ESTA
-	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
-	{ 
+	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps(id) <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
+	{
+		// Comprobar el tipo de la variable id
+		Symbol idSymbol = semantic.getSymbol(id.image);
+		switch (idSymbol.type) {
+			case ARRAY:     type = idSymbol.baseType; break;
+			case FUNCTION:  type = ((SymbolFunction) idSymbol).returnType; break;
+			case PROCEDURE: semantic.error(id, "No se puede usar un procedimiento en una expresión."); break;
+			case UNDEFINED: semantic.error(id, "El símbolo " + id.image + " no está definido."); break;
+			default: type = idSymbol.type; break;
+		}
 		type = semantic.getSymbolType(id.image);
 	}
 	|	<tCONST_INT> {type = Symbol.Types.INT;}
@@ -726,7 +740,40 @@ Symbol.Types primario() :
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
-void lista_una_o_mas_exps(): {} // return List<...> ???🎃
+void lista_una_o_mas_exps(Token id) : 
 {
-	expresion() ( <tCOMMA> expresion() )*
+	List<Symbol.Types> types = new ArrayList<>();
+	Symbol.Types type;
+}
+{
+
+	type = expresion() {types.add(type);}
+	( <tCOMMA> type = expresion() {types.add(type);} )*
+	{
+		// comprobar que el número de parámetros coincide
+		SymbolFunction function = (SymbolFunction) semantic.getSymbol(id.image);
+		if (types.size() != function.parameters.size()) {
+			semantic.error(id, "El número de parámetros no coincide con la definición de la función '" + id.image + "'.");
+		}
+
+		// comprobar que los tipos de los parámetros coinciden (un vector es del mismo tipo que otro si coincide su tipo base y rango)
+		for (int i = 0; i < types.size(); i++) {
+			Symbol expectedSymbol = function.parameters.get(i);
+			Symbol actualSymbol = types.get(i);
+
+			if (expectedSymbol instanceof SymbolArray && actualSymbol instanceof SymbolArray) {
+				SymbolArray expectedArray = (SymbolArray) expectedSymbol;
+				SymbolArray actualArray = (SymbolArray) actualSymbol;
+			
+				if (!expectedArray.baseType.equals(actualArray.baseType) || 
+					 expectedArray.minInd != actualArray.minInd || 
+					 expectedArray.maxInd != actualArray.maxInd) {
+					semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
+				}
+			} else if (expectedSymbol.type != actualSymbol.type) {
+				semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
+			}
+		}
+
+	}
 }
