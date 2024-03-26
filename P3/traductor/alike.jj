@@ -64,7 +64,8 @@ public class alike {
 			System.err.println("ERROR LÉXICO: " + e.getMessage());
 		}
 		catch (ParseException e) {
-			System.err.println("Syntax error: " + e.getMessage());
+			System.err.println("----------------------------------------");
+			System.err.println(e.getMessage());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
