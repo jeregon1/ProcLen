@@ -358,14 +358,13 @@ void declaracion_funcion() :
 			semantic.insertSymbol(s);
 		}
 	}
-	<tIS> // Rellenar el tipo de retorno de la función del bloque actual
-
+	<tIS>
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-		{alike.inFunction = true;}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
+		{semantic.enterFunction(returnType);}  // Se establece la variable alike.inFunction a true para que las instrucciones puedan derivar el 'return' posteriormente
 	(instruccion())+
-		{alike.inFunction = false;} // Se vuelve a establecer como false
+		{semantic.exitFunction();} // Se vuelve a establecer como false
 	<tEND>
 	<tSEMICOLON>
 	{
@@ -431,7 +430,7 @@ void instruccion(): {}
 	|   inst_if()
 	|   inst_while()
 	|   <tNULL>
-	|   LOOKAHEAD({ alike.inFunction }) inst_return()
+	|   LOOKAHEAD({ semantic.inFunction() }) inst_return()
 	)
 	<tSEMICOLON>
 }
@@ -444,9 +443,19 @@ void inst_leer() : {}
 }
 
 //array_component: <tLPAREN> expresion <tRPAREN>
-void array_component() : {}
+void array_component() : 
 {
-	<tLPAREN> expresion() <tRPAREN>
+	Symbol.Types type;
+}
+{
+	<tLPAREN> type = expresion() 
+	{
+		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
+			semantic.error(getToken(0), "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
+		}
+		// No hace falta comprobar que el índice esté dentro del rango del array porque no lo piden
+	}
+	<tRPAREN>
 }
 
 //inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
@@ -507,7 +516,10 @@ void inst_return() :
 	<tRETURN> returnType = expresion() 
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
-		
+		if (returnType != semantic.getCurrentFunctionReturnType()) {
+			semantic.error(getToken(0), "El tipo de retorno de la función (" + semantic.getCurrentFunctionReturnType() + 
+					") no coincide con el tipo de la expresión de retorno (" + returnType + ")");
+		}
 	}
 }
 
@@ -527,7 +539,7 @@ Symbol.Types expresion() :
 		if (relaciones.size() > 1) {
 			for (Symbol.Types t : relaciones) {
 				if (t != Symbol.Types.BOOL) {
-					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo boolean.");
+					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".");
 				}
 			}
 		}
@@ -560,7 +572,7 @@ Symbol.Types relacion() :
 //operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
 void operador_relacional() : {}
 {
-	<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>
+	(<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
@@ -568,23 +580,28 @@ Symbol.Types expresion_simple() :
 {
 	ArrayList<Symbol.Types> terminos = new ArrayList<>();
 	Symbol.Types type;
+	boolean sign1 = false;
 }
 {
-     ( <tPLUS> | <tMINUS> )? type = termino() {terminos.add(type);}
+     ( <tPLUS> | <tMINUS> )? {sign1 = true;} type = termino() {terminos.add(type);}
 	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type);} )*
 	{
 		// Si hay más de un término, deben ser todos INT
 		if (terminos.size() > 1) {
 			for (Symbol.Types t : terminos) {
 				if (t != Symbol.Types.INT) {
-					semantic.error(getToken(0), "Los términos de una suma o resta deben ser de tipo integer.");
+					semantic.error(getToken(0), 
+							"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ".");
 				}
 			}
+		} else if (sign1 && terminos.get(0) != Symbol.Types.INT) {
+			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
+					" solo se puede usar con variables de tipo " + tokenImage[tINT] + ".");
 		}
 		return terminos.get(0);
 	}
 }
-
+                                                                                                                                                                         
 //termino: factor (operador_multiplicativo factor)*
 Symbol.Types termino() : 
 {
@@ -599,7 +616,8 @@ Symbol.Types termino() :
 		if (factores.size() > 1) {
 			for (Symbol.Types t : factores) {
 				if (t != Symbol.Types.INT) {
-					semantic.error(getToken(0), "Los factores de una multiplicación, división y módulo deben ser de tipo integer.");
+					semantic.error(getToken(0), 
+							"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ".");
 				}
 			}
 		}
@@ -623,7 +641,8 @@ Symbol.Types factor() :
 	( <tNOT> {not = true;} )? type = primario() 
 	{
 		if (not && type != Symbol.Types.BOOL) {
-			semantic.error(getToken(0), "El operador 'not' solo se puede usar con variables de tipo boolean.");
+			semantic.error(getToken(0), "El operador " + tokenImage[tNOT] + 
+					" solo se puede usar con variables de tipo " + tokenImage[tBOOL] + ".");
 		}
 		return type;
 	}
@@ -636,13 +655,13 @@ Symbol.Types primario() :
 	Symbol.Types type;
 	Token id;
 }
-{	// 🎃 TODO: hacer las 4 primeras producciones
-	(	<tLPAREN> type = expresion() <tRPAREN>
+{
+	(	<tLPAREN> type = expresion() <tRPAREN> // Aquí no hay que comprobar nada
 	|	<tINT2CHAR> <tLPAREN> type = expresion() <tRPAREN>
 	{
 		// Comprobar que la expresión es de tipo INT
 		if (type != Symbol.Types.INT) {
-			semantic.error(getToken(0), "La expresión debe ser de tipo INT.");
+			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		type = Symbol.Types.CHAR;
 	}
@@ -650,10 +669,10 @@ Symbol.Types primario() :
 	{ 
 		// Comprobar que la expresion() es de tipo CHAR
 		if (type != Symbol.Types.CHAR) {
-			semantic.error(getToken(0), "La expresión debe ser de tipo INT.");
+			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		type = Symbol.Types.INT;
-	}
+	}// 🎃 SOLO QUEDA ESTA
 	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 	{ 
 		type = semantic.getSymbolType(id.image);
