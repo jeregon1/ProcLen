@@ -451,7 +451,7 @@ void array_component() :
 	<tLPAREN> type = expresion() 
 	{
 		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
-			semantic.error(getToken(0), "El índice de un array debe ser de tipo integer.");
+			semantic.error(getToken(0), "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		// No hace falta comprobar que el índice esté dentro del rango del array porque no lo piden
 	}
@@ -539,7 +539,7 @@ Symbol.Types expresion() :
 		if (relaciones.size() > 1) {
 			for (Symbol.Types t : relaciones) {
 				if (t != Symbol.Types.BOOL) {
-					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo boolean.");
+					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".");
 				}
 			}
 		}
@@ -590,11 +590,13 @@ Symbol.Types expresion_simple() :
 		if (terminos.size() > 1) {
 			for (Symbol.Types t : terminos) {
 				if (t != Symbol.Types.INT) {
-					semantic.error(getToken(0), "Los términos de una suma o resta deben ser de tipo integer.");
+					semantic.error(getToken(0), 
+							"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ".");
 				}
 			}
 		} else if (sign1 && terminos.get(0) != Symbol.Types.INT) {
-			semantic.error(getToken(0), "El signo de más y menos solo se puede usar con variables de tipo integer.");
+			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
+					" solo se puede usar con variables de tipo " + tokenImage[tINT] + ".");
 		}
 		return terminos.get(0);
 	}
@@ -614,7 +616,8 @@ Symbol.Types termino() :
 		if (factores.size() > 1) {
 			for (Symbol.Types t : factores) {
 				if (t != Symbol.Types.INT) {
-					semantic.error(getToken(0), "Los factores de una multiplicación, división y módulo deben ser de tipo integer.");
+					semantic.error(getToken(0), 
+							"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ".");
 				}
 			}
 		}
@@ -638,7 +641,8 @@ Symbol.Types factor() :
 	( <tNOT> {not = true;} )? type = primario() 
 	{
 		if (not && type != Symbol.Types.BOOL) {
-			semantic.error(getToken(0), "El operador 'not' solo se puede usar con variables de tipo boolean.");
+			semantic.error(getToken(0), "El operador " + tokenImage[tNOT] + 
+					" solo se puede usar con variables de tipo " + tokenImage[tBOOL] + ".");
 		}
 		return type;
 	}
@@ -651,13 +655,13 @@ Symbol.Types primario() :
 	Symbol.Types type;
 	Token id;
 }
-{	// 🎃 TODO: hacer las 4 primeras producciones
-	(	<tLPAREN> type = expresion() <tRPAREN>
+{
+	(	<tLPAREN> type = expresion() <tRPAREN> // Aquí no hay que comprobar nada
 	|	<tINT2CHAR> <tLPAREN> type = expresion() <tRPAREN>
 	{
 		// Comprobar que la expresión es de tipo INT
 		if (type != Symbol.Types.INT) {
-			semantic.error(getToken(0), "La expresión debe ser de tipo INT.");
+			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		type = Symbol.Types.CHAR;
 	}
@@ -665,10 +669,10 @@ Symbol.Types primario() :
 	{ 
 		// Comprobar que la expresion() es de tipo CHAR
 		if (type != Symbol.Types.CHAR) {
-			semantic.error(getToken(0), "La expresión debe ser de tipo INT.");
+			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		type = Symbol.Types.INT;
-	}
+	}// 🎃 SOLO QUEDA ESTA
 	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps() <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 	{ 
 		type = semantic.getSymbolType(id.image);
