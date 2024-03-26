@@ -492,20 +492,43 @@ void inst_invocacion_procedimiento_o_asignacion() : {}
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
-void inst_if() : {}
+void inst_if() : 
 {
-	<tIF>	  expresion() <tTHEN> ( instruccion() )+
-	(<tELSIF> expresion() <tTHEN> ( instruccion() )+ )* 
-	(<tELSE> 					  ( instruccion() )+ )? 
+	Symbol.Types type;
+	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
+			 tokenImage[tELSIF] + " debe ser de tipo " + tokenImage[tBOOL] + ".";
+}
+{
+	<tIF>	  type = expresion() 
+	{
+		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
+			semantic.error(getToken(0), errorMsg);
+		}
+	}
+	<tTHEN> ( instruccion() )+
+	(<tELSIF> type = expresion()
+	{
+		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
+			semantic.error(getToken(0), errorMsg);
+		}
+	} <tTHEN> ( instruccion() )+ )* 
+	(<tELSE> ( instruccion() )+ )? 
 	<tEND> <tIF>
 }
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
-void inst_while() : {}
+void inst_while() : 
 {
-	<tWHILE> expresion() <tLOOP>
-	(instruccion())+
-	<tEND> <tLOOP>
+	Symbol.Types type;
+}
+{
+	<tWHILE> type = expresion() 
+	{
+		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
+			semantic.error(getToken(0), "La guarda de un bucle " + tokenImage[tWHILE] + " debe ser de tipo " + tokenImage[tBOOL] + ".");
+		}
+	}
+	<tLOOP> ( instruccion() )+ <tEND> <tLOOP>
 }
 
 //inst_return: <tRETURN> (expresion)?

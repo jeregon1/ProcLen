@@ -1,8 +1,9 @@
 procedure a is
 
 function bb (b: array (+0..1) of integer) return integer is
+b, c, a: integer;
 begin
-    return true;
+  return 1;
 end;
 
 procedure c is
