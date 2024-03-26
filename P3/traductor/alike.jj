@@ -580,9 +580,10 @@ Symbol.Types expresion_simple() :
 {
 	ArrayList<Symbol.Types> terminos = new ArrayList<>();
 	Symbol.Types type;
+	boolean sign1 = false;
 }
 {
-     ( <tPLUS> | <tMINUS> )? type = termino() {terminos.add(type);}
+     ( <tPLUS> | <tMINUS> )? {sign1 = true;} type = termino() {terminos.add(type);}
 	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type);} )*
 	{
 		// Si hay más de un término, deben ser todos INT
@@ -592,11 +593,13 @@ Symbol.Types expresion_simple() :
 					semantic.error(getToken(0), "Los términos de una suma o resta deben ser de tipo integer.");
 				}
 			}
+		} else if (sign1 && terminos.get(0) != Symbol.Types.INT) {
+			semantic.error(getToken(0), "El signo de más y menos solo se puede usar con variables de tipo integer.");
 		}
 		return terminos.get(0);
 	}
 }
-
+                                                                                                                                                                         
 //termino: factor (operador_multiplicativo factor)*
 Symbol.Types termino() : 
 {
