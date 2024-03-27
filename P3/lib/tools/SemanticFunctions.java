@@ -23,6 +23,13 @@ public class SemanticFunctions {
 
 	private Queue<String> functions = new LinkedList<>();
 
+	// declaramos la lista de tipos asignables
+	private final List<Symbol.Types> assignableTypes = Arrays.asList(
+		Symbol.Types.INT,
+		Symbol.Types.CHAR,
+		Symbol.Types.BOOL
+	);
+
 	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
 		this.st = st;
@@ -83,39 +90,46 @@ public class SemanticFunctions {
 		}
 	}
 
-	public Symbol getSymbol(String name) {
+	public boolean isSymbolDefined(Token id) {
 		try {
-			return st.getSymbol(name);
+			st.getSymbol(id.image);
+			return true;
 		}
 		catch (SymbolNotFoundException e) {
-			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+			this.error(id, "El símbolo " + id.image + " no está definido.");
+			return false;
+		}
+	}
+
+	public Symbol getSymbol(Token id) {
+		if (isSymbolDefined(id)) {
+			return st.getSymbol(id.image);
+		} else {
 			return null;
 		}
 	}
 
-	public Symbol.Types getSymbolType(String name) {
-		try {
-			return st.getSymbol(name).type;
-		}
-		catch (SymbolNotFoundException e) {
-			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+	public Symbol.Types getSymbolType(Token id) {
+		Symbol s = this.getSymbol(id);
+		if (s == null) {
 			return Symbol.Types.UNDEFINED;
+		}
+		else {
+			return s.type;
 		}
 	}
 
-	public Symbol.Types getArrayBaseType(String name) {
-		try {
-			Symbol array = st.getSymbol(name);
-			if (array instanceof SymbolArray) {
-				return ((SymbolArray) array).baseType;
-			}
-			else {
-				System.err.println("ERROR: El símbolo " + name + " no es un array.");
-				return Symbol.Types.UNDEFINED;
-			}
+	public Symbol.Types getArrayBaseType(Token id) {
+
+		Symbol s = this.getSymbol(id);
+		if (s == null) {
+			return Symbol.Types.UNDEFINED;
 		}
-		catch (SymbolNotFoundException e) {
-			System.err.println("ERROR: El símbolo " + name + " no está definido.");
+		else if (s instanceof SymbolArray) {
+			return ((SymbolArray) s).baseType;
+		}
+		else {
+			this.error(id, "El símbolo " + id.image + " no es un array.");
 			return Symbol.Types.UNDEFINED;
 		}
 	}
