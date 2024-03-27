@@ -6,6 +6,8 @@ import lib.symbolTable.exceptions.*;
 import lib.tools.SemanticFunctions.SemanticFunctions;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /** Token Manager. */
 @SuppressWarnings ("unused")

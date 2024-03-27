@@ -23,6 +23,8 @@ import lib.tools.SemanticFunctions.SemanticFunctions;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class alike {
 	// Tabla de símbolos global
@@ -173,7 +175,7 @@ void Programa() :
 	<tPROCEDURE> 
 	id = <tID>
 	{	// Procedimiento principal
-		semantic.insertSymbol(new SymbolProcedure(id.image, new ArrayList<Symbol>()));
+		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
 		st.insertBlock(); // Bloque 0
 	}
 	<tIS>
@@ -294,14 +296,14 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 			for (Token id : t) {
 				SymbolArray newArray = baseArray.clone();
 				newArray.name = id.image;
-				semantic.insertSymbol(newArray);
+				semantic.insertSymbol(id, newArray);
 			}
 		} else { // Declaración de variables simples
 			for (Token id : t) {
 				switch (type) {
-					case INT:  semantic.insertSymbol(new  SymbolInt(id.image, paramClass)); break;
-					case CHAR: semantic.insertSymbol(new SymbolChar(id.image, paramClass)); break;
-					case BOOL: semantic.insertSymbol(new SymbolBool(id.image, paramClass)); break;
+					case INT:  semantic.insertSymbol(id, new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: semantic.insertSymbol(id, new SymbolChar(id.image, paramClass)); break;
+					case BOOL: semantic.insertSymbol(id, new SymbolBool(id.image, paramClass)); break;
 				}
 			}
 		}
@@ -313,17 +315,18 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 void declaracion_procedimiento() : 
 {
 	Token id;
-	ArrayList <Symbol> params = new ArrayList<Symbol>();
+	Map <Token,Symbol> params = new HashMap<Token,Symbol>();
 }
 {
 	<tPROCEDURE>
 	id = <tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros(params) <tRPAREN> )?
 	{
-		semantic.insertSymbol(new SymbolProcedure(id.image, params));
+		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>(params.values())));
 		st.insertBlock();
-		for (Symbol s : params) { // insertar params en la tabla de símbolos tras crear un nuevo bloque
-			semantic.insertSymbol(s);
+		// insertar params con los tokens en la tabla de símbolos tras crear un nuevo bloque
+		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+			semantic.insertSymbol(entry.getKey() ,entry.getValue());
 		}
 	}
 	<tIS>
@@ -344,7 +347,7 @@ void declaracion_funcion() :
 {
 	Token id;
 	Symbol.Types returnType;
-	ArrayList <Symbol> params = new ArrayList<Symbol>();
+	Map <Token,Symbol> params = new HashMap<Token,Symbol>();
 }
 {
 	<tFUNCTION>
@@ -353,10 +356,11 @@ void declaracion_funcion() :
 	<tRETURN>
 	returnType = tipo_variable_simple(null, null, Symbol.ParameterClass.NONE)
 	{
-		semantic.insertSymbol(new SymbolFunction(id.image, params, returnType));
+		semantic.insertSymbol(id, new SymbolFunction(id.image,  new ArrayList<Symbol>(params.values()), returnType));
 		st.insertBlock();
-		for (Symbol s : params) { // insertar params en la tabla de símbolos tras crear un nuevo bloque
-			semantic.insertSymbol(s);
+		// insertar params con los tokens en la tabla de símbolos tras crear un nuevo bloque
+		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+			semantic.insertSymbol(entry.getKey() ,entry.getValue());
 		}
 	}
 	<tIS>
@@ -376,14 +380,14 @@ void declaracion_funcion() :
 
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
-void lista_parametros(List<Symbol> params) : {}
+void lista_parametros(Map<Token,Symbol> params) : {}
 {
 	parametro_formal(params) 
 	( <tSEMICOLON> parametro_formal(params) )*
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
-void parametro_formal(List<Symbol> params) : 
+void parametro_formal(Map<Token,Symbol> params) : 
 {
 	List<Token> t = new ArrayList<Token>();
 	SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
@@ -400,21 +404,16 @@ void parametro_formal(List<Symbol> params) :
 	{
 		for (Token id : t) {
 			// Comprobar si hay algún parámetro con el mismo nombre
-			for (Symbol s : params) {
-				if (s.name.equals(id.image)) {
-					semantic.error(id, "El símbolo '" + id.image + "' ya está definido.");
-				}
-			}
 
 			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
 				newArray.name = id.image;
-				params.add(newArray);
+				params.put(id, newArray);
 			} else { // Parámetros simples
 				switch (baseType) {
-					case INT:  params.add(new  SymbolInt(id.image, paramClass)); break;
-					case CHAR: params.add(new SymbolChar(id.image, paramClass)); break;
-					case BOOL: params.add(new SymbolBool(id.image, paramClass)); break;
+					case INT:  params.put(id, new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: params.put(id, new SymbolChar(id.image, paramClass)); break;
+					case BOOL: params.put(id, new SymbolBool(id.image, paramClass)); break;
 				}
 			}
 		}
@@ -721,7 +720,7 @@ Symbol.Types primario() :
 		// Comprobar el tipo de la variable id
 		Symbol idSymbol = semantic.getSymbol(id.image);
 		switch (idSymbol.type) {
-			case ARRAY:     type = idSymbol.baseType; break;
+			case ARRAY:     type = ((SymbolArray) idSymbol).baseType; break;
 			case FUNCTION:  type = ((SymbolFunction) idSymbol).returnType; break;
 			case PROCEDURE: semantic.error(id, "No se puede usar un procedimiento en una expresión."); break;
 			case UNDEFINED: semantic.error(id, "El símbolo " + id.image + " no está definido."); break;
@@ -752,27 +751,26 @@ void lista_una_o_mas_exps(Token id) :
 	{
 		// comprobar que el número de parámetros coincide
 		SymbolFunction function = (SymbolFunction) semantic.getSymbol(id.image);
-		if (types.size() != function.parameters.size()) {
+		if (types.size() != function.parList.size()) {
 			semantic.error(id, "El número de parámetros no coincide con la definición de la función '" + id.image + "'.");
 		}
 
 		// comprobar que los tipos de los parámetros coinciden (un vector es del mismo tipo que otro si coincide su tipo base y rango)
 		for (int i = 0; i < types.size(); i++) {
-			Symbol expectedSymbol = function.parameters.get(i);
-			Symbol actualSymbol = types.get(i);
+			Symbol expectedSymbol = function.parList.get(i);
+			Symbol.Types actualSymbol = types.get(i);
 
-			if (expectedSymbol instanceof SymbolArray && actualSymbol instanceof SymbolArray) {
-				SymbolArray expectedArray = (SymbolArray) expectedSymbol;
-				SymbolArray actualArray = (SymbolArray) actualSymbol;
+			// if (expectedSymbol instanceof SymbolArray && actualSymbol == Symbol.Types.ARRAY) {
+			// 	SymbolArray expectedArray = (SymbolArray) expectedSymbol;
 			
-				if (!expectedArray.baseType.equals(actualArray.baseType) || 
-					 expectedArray.minInd != actualArray.minInd || 
-					 expectedArray.maxInd != actualArray.maxInd) {
-					semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
-				}
-			} else if (expectedSymbol.type != actualSymbol.type) {
-				semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
-			}
+			// 	if (!expectedArray.baseType.equals(actualArray.baseType) || 
+			// 		 expectedArray.minInd != actualArray.minInd || 
+			// 		 expectedArray.maxInd != actualArray.maxInd) {
+			// 		semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
+			// 	}
+			// } else if (expectedSymbol.type != actualSymbol.type) {
+			// 	semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
+			// }
 		}
 
 	}

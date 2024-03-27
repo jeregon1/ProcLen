@@ -74,12 +74,12 @@ public class SemanticFunctions {
 
 	// -------------------------- TABLA DE SÍMBOLOS --------------------------------
 
-	public void insertSymbol(Symbol s) {
+	public void insertSymbol(Token t, Symbol s) {
 		try {
 			st.insertSymbol(s);
 		}
 		catch (AlreadyDefinedSymbolException e) {
-			System.err.println("ERROR: El símbolo " + s.name + " ya está definido.");
+			this.error(t, "El símbolo " + s.name + " ya está definido.");
 		}
 	}
 
