@@ -208,7 +208,7 @@ void declaracion_var() :
 }
 
 //lista_ids: <tID> (<tCOMMA> <tID>)*
-void lista_ids(List<Token> tokens) : 
+void lista_ids(List<Token> tokens) :
 {
 	Token t;
 }
@@ -308,6 +308,7 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 		} else { // Declaración de variables simples
 			for (Token id : t) {
 				switch (type) {
+					// Se insertan en la 'st' aquí pero SIN VALOR, por lo que hará falta asignárselo posteriormente
 					case INT:  semantic.insertSymbol(id, new  SymbolInt(id.image, paramClass)); break;
 					case CHAR: semantic.insertSymbol(id, new SymbolChar(id.image, paramClass)); break;
 					case BOOL: semantic.insertSymbol(id, new SymbolBool(id.image, paramClass)); break;
@@ -503,10 +504,11 @@ void inst_leer_elemento() :
 void array_access() : 
 {
 	Symbol.Types type;
+	Token aux = null;
 }
 {
 	<tLPAREN> 
-	type = expresion() 
+	type = expresion(aux) 
 	{
 		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
 			semantic.error(getToken(0), "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
@@ -517,53 +519,65 @@ void array_access() :
 }
 
 //inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
-void inst_escribir() : {}
+void inst_escribir() : 
+{
+	Token aux = null;
+}
 {
 	<tPUT> // Necesita parámetros
 	<tLPAREN> 
-	(<tCONST_STRING> | expresion()) 
-	( <tCOMMA> (<tCONST_STRING> | expresion()) )* 
+	(<tCONST_STRING> | expresion(aux)) 
+	( <tCOMMA> (<tCONST_STRING> | expresion(aux)) )* 
 	<tRPAREN>
 }
 
 //inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
-void inst_escribir_linea() : {}
+void inst_escribir_linea() : 
+{
+	Token aux = null;
+}
 {
 	<tPUT_LINE> // Puede NO tener parámetros
-	(<tLPAREN> (<tCONST_STRING> | expresion())
-	( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>
+	(<tLPAREN> (<tCONST_STRING> | expresion(aux))
+	( <tCOMMA> (<tCONST_STRING> | expresion(aux)) )* <tRPAREN>
 	)?
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
-void inst_invocacion_procedimiento_o_asignacion() : {}
+void inst_invocacion_procedimiento_o_asignacion() : 
 {
-	<tID> 
+	Token t;
+	Token aux = null;
+}
+{
+	// Guardado de ID para su posterior insertado junto al valor en caso de asignación
+	t = <tID> 
 	( // inst_asignacion() 
 		LOOKAHEAD( (array_access())? <tASSIGN> ) // LOOKAHEAD sintáctico para comprobar si es una asignación
 	(array_access())?
 	<tASSIGN>
-	expresion()
+	expresion(t)
 	| // inst_invocacion_procedimiento()
-	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
+	( <tLPAREN> expresion(aux) ( <tCOMMA> expresion(aux) )* <tRPAREN> )? )
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
 void inst_if() : 
 {
 	Symbol.Types type;
+	Token aux = null;
 	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
 			 tokenImage[tELSIF] + " debe ser de tipo " + tokenImage[tBOOL] + ".";
 }
 {
-	<tIF>	  type = expresion() 
+	<tIF>	  type = expresion(aux) 
 	{
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
 			semantic.error(getToken(0), errorMsg);
 		}
 	}
 	<tTHEN> ( instruccion() )+
-	(<tELSIF> type = expresion()
+	(<tELSIF> type = expresion(aux)
 	{
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
 			semantic.error(getToken(0), errorMsg);
@@ -577,9 +591,10 @@ void inst_if() :
 void inst_while() : 
 {
 	Symbol.Types type;
+	Token aux = null;
 }
 {
-	<tWHILE> type = expresion() 
+	<tWHILE> type = expresion(aux) 
 	{
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
 			semantic.error(getToken(0), "La guarda de un bucle " + tokenImage[tWHILE] + " debe ser de tipo " + tokenImage[tBOOL] + ".");
@@ -592,9 +607,10 @@ void inst_while() :
 void inst_return() : 
 {
 	Symbol.Types returnType;
+	Token aux = null;
 }
 {
-	<tRETURN> returnType = expresion() 
+	<tRETURN> returnType = expresion(aux) 
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
 		SymbolFunction function = semantic.getCurrentFunctionSymbol();
@@ -621,36 +637,40 @@ void inst_return() :
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
 //expresion: relacion ((<tAND> | <tOR>) relacion)*
-Symbol.Types expresion() : 
+Symbol.Types expresion(Token t) : 
 {
 	ArrayList<Symbol.Types> relaciones = new ArrayList<>();
 	Symbol.Types type;
+	Token aux = null;
 }
 {
-	type = relacion() {relaciones.add(type);}
-	((<tAND> | <tOR>) type = relacion() {relaciones.add(type);})*
+	type = relacion(t) {relaciones.add(type);}
+	((<tAND> | <tOR>) type = relacion(aux) {relaciones.add(type);})*
 	{
 		// Si hay más de una relación, deben ser todas BOOL
 		if (relaciones.size() > 1) {
-			for (Symbol.Types t : relaciones) {
-				if (t != Symbol.Types.BOOL) {
+			// if (t != null){
+			for (Symbol.Types token : relaciones) {
+				if (token != Symbol.Types.BOOL) {
 					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".");
 				}
 			}
+			// }
 		}
 		return relaciones.get(0);
 	}
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
-Symbol.Types relacion() : 
+Symbol.Types relacion(Token t) : 
 {
 	ArrayList<Symbol.Types> expresiones = new ArrayList<>();
 	Symbol.Types type;
+	Token aux = null;
 }
 {
-	type = expresion_simple() {expresiones.add(type);}
- 	( operador_relacional() type = expresion_simple() {expresiones.add(type);} )?
+	type = expresion_simple(t) {expresiones.add(type);}
+ 	( operador_relacional() type = expresion_simple(aux) {expresiones.add(type);} )?
 	{
 		// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
 		if (expresiones.size() == 2) {
@@ -671,20 +691,22 @@ void operador_relacional() : {}
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
-Symbol.Types expresion_simple() : 
+Symbol.Types expresion_simple(Token t) : 
 {
 	ArrayList<Symbol.Types> terminos = new ArrayList<>();
 	Symbol.Types type;
 	boolean sign1 = false;
+	Token aux = null;
 }
 {
-     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino() {terminos.add(type);}
-	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type);} )*
+	// Falta gestionar que se haga efectiva la suma/resta de los términos
+     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino(t) {terminos.add(type);}
+	(( <tPLUS> | <tMINUS> )  type = termino(t) {terminos.add(type);} )*
 	{
 		// Si hay más de un término, deben ser todos INT
 		if (terminos.size() > 1) {
-			for (Symbol.Types t : terminos) {
-				if (t != Symbol.Types.INT) {
+			for (Symbol.Types token : terminos) {
+				if (token != Symbol.Types.INT) {
 					semantic.error(getToken(0), 
 							"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ".");
 				}
@@ -698,19 +720,20 @@ Symbol.Types expresion_simple() :
 }
                                                                                                                                                                          
 //termino: factor (operador_multiplicativo factor)*
-Symbol.Types termino() : 
+Symbol.Types termino(Token t) : 
 {
 	ArrayList<Symbol.Types> factores = new ArrayList<>();
 	Symbol.Types type;
+	Token aux = null;
 }
 {
-    type = factor() { factores.add(type); }
-	( operador_multiplicativo() type = factor() { factores.add(type); } )*
+    type = factor(t) { factores.add(type); }
+	( operador_multiplicativo() type = factor(aux) { factores.add(type); } )*
 	{ 
 		// Si hay más de un factor, deben ser todos INT
 		if (factores.size() > 1) {
-			for (Symbol.Types t : factores) {
-				if (t != Symbol.Types.INT) {
+			for (Symbol.Types token : factores) {
+				if (token != Symbol.Types.INT) {
 					semantic.error(getToken(0), 
 							"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ".");
 				}
@@ -727,13 +750,13 @@ void operador_multiplicativo() : {}
 }
 
 //factor: (<tNOT>)? primario
-Symbol.Types factor() : 
+Symbol.Types factor(Token t) : 
 {
 	Symbol.Types type;
 	boolean not = false;
 }
 {	// Falta tener en cuenta el not
-	( <tNOT> {not = true;} )? type = primario() 
+	( <tNOT> {not = true;} )? type = primario(t) 
 	{
 		// Comprobar que el operador 'not' solo se puede usar con variables de tipo BOOL
 		if (not && (type != Symbol.Types.BOOL)) {
@@ -746,17 +769,16 @@ Symbol.Types factor() :
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-Symbol.Types primario() : 
+Symbol.Types primario(Token t) : 
 {
 	Symbol.Types type;
 	Token id;
-	int val_int;
-	char val_char;
-	boolean val_bool;
+	Token value;
+	Token aux = null;
 }
 {
-	(	<tLPAREN> type = expresion() <tRPAREN> // Aquí no hay que comprobar nada
-	|	<tINT2CHAR> <tLPAREN> type = expresion() <tRPAREN>
+	(	<tLPAREN> type = expresion(aux) <tRPAREN> // Aquí no hay que comprobar nada
+	|	<tINT2CHAR> <tLPAREN> type = expresion(aux) <tRPAREN>
 	{
 		// La expresión debe ser de tipo INT
 		if (type != Symbol.Types.INT) {
@@ -764,7 +786,7 @@ Symbol.Types primario() :
 		}
 		type = Symbol.Types.CHAR;
 	}
-	|	<tCHAR2INT> <tLPAREN> type = expresion() <tRPAREN>
+	|	<tCHAR2INT> <tLPAREN> type = expresion(aux) <tRPAREN>
 	{ 
 		// La expresioón debe ser de tipo CHAR
 		if (type != Symbol.Types.CHAR) {
@@ -785,25 +807,30 @@ Symbol.Types primario() :
 		}
 		type = semantic.getSymbolType(id);
 	}
-	|	val_int = <tCONST_INT> 
+	|	value = <tCONST_INT> 
 		{
 			type = Symbol.Types.INT;
-			semantic.insertSymbol(getToken(0), new SymbolInt(getToken(0).image, val_int, Symbol.ParameterClass.NONE));
+			int val_int = Integer.parseInt(value.image);
+			// Buscar el token t en la tabla de símbolos y asignarle el valor val_int
+			semantic.updateSymbolValue(t, val_int);
 		}
-	|	val_char = <tCONST_CHAR> 
+	|	value = <tCONST_CHAR> 
 		{
 			type = Symbol.Types.CHAR;
-			semantic.insertSymbol(getToken(0), new SymbolChar(getToken(0).image, val_char, Symbol.ParameterClass.NONE));
+			char val_char = value.image.charAt(1);
+			semantic.updateSymbolValue(t, val_char);
 		}
-	|	val_bool = <tTRUE> 
+	|	value = <tTRUE> 
 		{
 			type = Symbol.Types.BOOL;
-			semantic.insertSymbol(getToken(0), new SymbolBool(getToken(0).image, val_bool, Symbol.ParameterClass.NONE));	
+			boolean val_bool = Boolean.parseBoolean(value.image);
+			semantic.updateSymbolValue(t, val_bool);
 		}
-	|	val_bool = <tFALSE> 
+	|	value = <tFALSE> 
 		{
 			type = Symbol.Types.BOOL;
-			semantic.insertSymbol(getToken(0), new SymbolBool(getToken(0).image, val_bool, Symbol.ParameterClass.NONE));	
+			boolean val_bool = Boolean.parseBoolean(value.image);
+			semantic.updateSymbolValue(t, val_bool);
 		}
 	)
 	{
@@ -816,11 +843,12 @@ void lista_una_o_mas_exps(Token id) :
 {
 	List<Symbol.Types> types = new ArrayList<>();
 	Symbol.Types type;
+	Token aux = null;
 }
 {
 
-	type = expresion() {types.add(type);}
-	( <tCOMMA> type = expresion() {types.add(type);} )*
+	type = expresion(aux) {types.add(type);}
+	( <tCOMMA> type = expresion(aux) {types.add(type);} )*
 	{
 		// comprobar que el número de parámetros coincide
 		SymbolFunction function = (SymbolFunction) semantic.getSymbol(id);
