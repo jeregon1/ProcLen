@@ -694,14 +694,17 @@ void operador_relacional() : {}
 Symbol.Types expresion_simple(Token t) : 
 {
 	ArrayList<Symbol.Types> terminos = new ArrayList<>();
+	ArrayList<Object> valores = new ArrayList<>();
+	ArrayList<Token> operadores = new ArrayList<>();
+	Token op;
 	Symbol.Types type;
 	boolean sign1 = false;
-	Token aux = null;
+	// Token aux = null;
 }
 {
 	// Falta gestionar que se haga efectiva la suma/resta de los términos
-     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino(t) {terminos.add(type);}
-	(( <tPLUS> | <tMINUS> )  type = termino(t) {terminos.add(type);} )*
+     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino(t, value) {terminos.add(type); valores.add(value); }
+	(( op = <tPLUS> {operadores.add(op)} | op = <tMINUS> {operadores.add(op)} )  type = termino(t, value) {terminos.add(type); valores.add(value); } )*
 	{
 		// Si hay más de un término, deben ser todos INT
 		if (terminos.size() > 1) {
@@ -715,20 +718,39 @@ Symbol.Types expresion_simple(Token t) :
 			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
 					" solo se puede usar con variables de tipo " + tokenImage[tINT] + ".");
 		}
+		
+		/* DUDA: ir almacenando en un vector los valores y operadores por si es operación compuesta */
+		// Hacer efectiva la suma/resta en el token con identificador 't'
+		for (int i = 0; i < operadores.size(); i++) {
+			if (operadores.get(i).kind == tPLUS) {
+				valores.set(i+1, (int)valores.get(i) + (int)valores.get(i+1));
+			} else {
+				valores.set(i+1, (int)valores.get(i) - (int)valores.get(i+1));
+			}
+		}
+
+		updateSymbolValue(t, valores.get(valores.size()-1)); // Actualizar el valor de la variable
+
 		return terminos.get(0);
 	}
 }
                                                                                                                                                                          
 //termino: factor (operador_multiplicativo factor)*
-Symbol.Types termino(Token t) : 
+Symbol.Types termino(Token t, Object value) : 
 {
 	ArrayList<Symbol.Types> factores = new ArrayList<>();
+	ArrayList<Token> operadores = new ArrayList<>();
 	Symbol.Types type;
-	Token aux = null;
+	Token op;
 }
 {
+	/* ME HE QUEDADO AQUÍ 🎃. 
+		Hace falta hacer efectivas las operaciones multuplicativas
+		y propagar el atributo value de tipo Object a las llamadas anidadas donde se asignará
+		en 'primario' el valor del número leído para poder operar con el mismo 
+	*/
     type = factor(t) { factores.add(type); }
-	( operador_multiplicativo() type = factor(aux) { factores.add(type); } )*
+	( op = operador_multiplicativo() type = factor(aux) { factores.add(type); } )*
 	{ 
 		// Si hay más de un factor, deben ser todos INT
 		if (factores.size() > 1) {
@@ -744,9 +766,13 @@ Symbol.Types termino(Token t) :
 }
 
 //operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
-void operador_multiplicativo() : {}
+Token operador_multiplicativo() : 
 {
-	(<tMULT> | <tDIV> | <tMOD>)
+	Token t;
+}
+{
+	(t = <tMULT> | t = <tDIV> | t = <tMOD>)
+	return t;
 }
 
 //factor: (<tNOT>)? primario
