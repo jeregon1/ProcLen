@@ -53,7 +53,7 @@ public class SemanticFunctions {
 
 	public SymbolFunction getCurrentFunctionSymbol() {
 		try {
-			Symbol s = st.getPreviousBlockSymbol(functions.peek()); // .peek() devuelve el elemento en la cima de la pila sin eliminarlo
+			Symbol s = st.getPreviousBlockSymbol(functions.peek());
 			// problema: se puede encontrar antes un símbolo de este bloque con el mismo nombre que no sea la función
 			if (s instanceof SymbolFunction) {
 				return (SymbolFunction) s;

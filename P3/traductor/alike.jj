@@ -42,8 +42,8 @@ public class alike {
 	   	alike parser = null;
 
 		st = new SymbolTable();
-		semantic = new SemanticFunctions(st);
-		
+	   	semantic = new SemanticFunctions(st);
+	   
 	   	try {
 			if(args.length == 0) {
 				parser = new alike(System.in);
@@ -51,14 +51,13 @@ public class alike {
 			else {
 				parser = new alike(new java.io.FileInputStream(args[0]));
 			}
-
 			//Programa es el símbolo inicial de la gramática
 			parser.Programa();
 			
 			if (!semantic.hayErrores())
 				System.out.println("***** Análisis terminado con éxito *****");
 			else
-				System.out.println("DETECTADOS ERRORES SEMÁNTICOS. NO SE GENERA CÓDIGO.");
+				System.out.println("Detectados errores semánticos. No se genera código.");
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -76,11 +75,11 @@ public class alike {
    }
 }
 
+
 PARSER_END(alike)
 
-/*-----------------------------------------
-------------- ANÁLISIS LÉXICO -------------
-------------------------------------------*/
+//---------------------------------------------------------
+
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) > 
 |	< #DIGIT: ["0"-"9"] >
@@ -164,10 +163,8 @@ SKIP : {
 }
 
 
-/*-----------------------------------------
------------ ANÁLISIS SINTÁCTICO -----------
------------    & SEMÁNTICO      -----------
-------------------------------------------*/
+//-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
+
 //------------ Símbolo inicial de la gramática.
 // Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion* <tEND> <tSEMICOLON> <EOF>
 void Programa() : 
@@ -192,6 +189,7 @@ void Programa() :
 		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque principal
 	}
+
    < EOF >
 }
 
@@ -231,11 +229,6 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
 	}
 }
 
-/* v, w: array(-3..3) of integer;
-t--> v, w
-paramArray--> null
-paramClass--> NONE
-*/
 //tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
 void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
 {
@@ -246,7 +239,7 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 	boolean isParameter = (paramClass != Symbol.ParameterClass.NONE);
 }
 {
-	<tARRAY> <tLPAREN>
+	<tARRAY> <tLPAREN> 
 	(<tMINUS> {minus1 = -1;} | <tPLUS>)? tMin = <tCONST_INT> 
 	<tRANGE> 
 	(<tMINUS> {minus2 = -1;} | <tPLUS>)? tMax = <tCONST_INT> 
@@ -833,6 +826,7 @@ Symbol.Types primario(Token t) :
 		}
 		type = semantic.getSymbolType(id);
 	}
+<<<<<<< HEAD
 	|	value = <tCONST_INT> 
 		{
 			type = Symbol.Types.INT;
@@ -858,6 +852,12 @@ Symbol.Types primario(Token t) :
 			boolean val_bool = Boolean.parseBoolean(value.image);
 			semantic.updateSymbolValue(t, val_bool);
 		}
+=======
+	|	<tCONST_INT> {type = Symbol.Types.INT;}
+	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
+	|	<tTRUE> {type = Symbol.Types.BOOL;}
+	|	<tFALSE> {type = Symbol.Types.BOOL;}
+>>>>>>> parent of 9c9a899 (anotaciones + estudio de P4_clike (rarete))
 	)
 	{
 		return type;

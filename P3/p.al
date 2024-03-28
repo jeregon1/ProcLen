@@ -1,10 +1,11 @@
 procedure a is
-  z: character;
-  a1: array(-1..1) of integer;
-  a2: array(0..1) of integer;
+z: character;
+a1: array(-1..1) of integer;
+a2: array(0..1) of integer;
 
 function func (b, a: character; c, d: array(-1..1) of integer) return integer is
-  bb: boolean;
+
+bb: boolean;
 begin
   return 1;
   get(bb);
