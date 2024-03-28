@@ -35,6 +35,10 @@ public class SemanticFunctions {
 		this.st = st;
 	}
 
+	// public void var_array(){
+
+	// }	
+
 	// -------------------------- FUNCIONES --------------------------------
 	
 	public void enterFunction(String functionName) {
@@ -53,7 +57,7 @@ public class SemanticFunctions {
 
 	public SymbolFunction getCurrentFunctionSymbol() {
 		try {
-			Symbol s = st.getPreviousBlockSymbol(functions.peek());
+			Symbol s = st.getPreviousBlockSymbol(functions.peek()); // .peek() devuelve el elemento en la cima de la pila sin eliminarlo
 			// problema: se puede encontrar antes un símbolo de este bloque con el mismo nombre que no sea la función
 			if (s instanceof SymbolFunction) {
 				return (SymbolFunction) s;
