@@ -301,7 +301,7 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 		else if (isArray) { // Declaración de variables arrays
 			baseArray.baseType = type;
 			for (Token id : t) {
-				SymbolArray newArray = baseArray.clone();
+				SymbolArray newArray = baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices
 				newArray.name = id.image;
 				semantic.insertSymbol(id, newArray);
 			}
@@ -407,7 +407,7 @@ void parametro_formal(Map<Token,Symbol> params) :
 	( <tREF> {paramClass = Symbol.ParameterClass.REF;} )?
 	baseType = tipo_variable(null, paramArray, paramClass) 
 	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
-	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se crea un símbolo array en paramArray con min, max y paramClass
+	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
 	{
 		for (Token id : t) {
 			// Comprobar si hay algún parámetro con el mismo nombre
@@ -689,7 +689,7 @@ Symbol.Types expresion_simple() :
 							"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ".");
 				}
 			}
-		} else if (sign1 && terminos.get(0) != Symbol.Types.INT) {
+		} else if (sign1 && (terminos.get(0) != Symbol.Types.INT)) {
 			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
 					" solo se puede usar con variables de tipo " + tokenImage[tINT] + ".");
 		}
@@ -735,7 +735,8 @@ Symbol.Types factor() :
 {	// Falta tener en cuenta el not
 	( <tNOT> {not = true;} )? type = primario() 
 	{
-		if (not && type != Symbol.Types.BOOL) {
+		// Comprobar que el operador 'not' solo se puede usar con variables de tipo BOOL
+		if (not && (type != Symbol.Types.BOOL)) {
 			semantic.error(getToken(0), "El operador " + tokenImage[tNOT] + 
 					" solo se puede usar con variables de tipo " + tokenImage[tBOOL] + ".");
 		}
@@ -749,12 +750,15 @@ Symbol.Types primario() :
 {
 	Symbol.Types type;
 	Token id;
+	int val_int;
+	char val_char;
+	boolean val_bool;
 }
 {
 	(	<tLPAREN> type = expresion() <tRPAREN> // Aquí no hay que comprobar nada
 	|	<tINT2CHAR> <tLPAREN> type = expresion() <tRPAREN>
 	{
-		// Comprobar que la expresión es de tipo INT
+		// La expresión debe ser de tipo INT
 		if (type != Symbol.Types.INT) {
 			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
@@ -762,7 +766,7 @@ Symbol.Types primario() :
 	}
 	|	<tCHAR2INT> <tLPAREN> type = expresion() <tRPAREN>
 	{ 
-		// Comprobar que la expresion() es de tipo CHAR
+		// La expresioón debe ser de tipo CHAR
 		if (type != Symbol.Types.CHAR) {
 			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
@@ -781,14 +785,26 @@ Symbol.Types primario() :
 		}
 		type = semantic.getSymbolType(id);
 	}
-	|	<tCONST_INT> 
+	|	val_int = <tCONST_INT> 
 		{
 			type = Symbol.Types.INT;
-			semantic.insertSymbol(getToken(0), new SymbolInt(getToken(0).image, Symbol.ParameterClass.NONE));
+			semantic.insertSymbol(getToken(0), new SymbolInt(getToken(0).image, val_int, Symbol.ParameterClass.NONE));
 		}
-	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
-	|	<tTRUE> {type = Symbol.Types.BOOL;}
-	|	<tFALSE> {type = Symbol.Types.BOOL;}
+	|	val_char = <tCONST_CHAR> 
+		{
+			type = Symbol.Types.CHAR;
+			semantic.insertSymbol(getToken(0), new SymbolChar(getToken(0).image, val_char, Symbol.ParameterClass.NONE));
+		}
+	|	val_bool = <tTRUE> 
+		{
+			type = Symbol.Types.BOOL;
+			semantic.insertSymbol(getToken(0), new SymbolBool(getToken(0).image, val_bool, Symbol.ParameterClass.NONE));	
+		}
+	|	val_bool = <tFALSE> 
+		{
+			type = Symbol.Types.BOOL;
+			semantic.insertSymbol(getToken(0), new SymbolBool(getToken(0).image, val_bool, Symbol.ParameterClass.NONE));	
+		}
 	)
 	{
 		return type;

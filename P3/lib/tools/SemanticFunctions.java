@@ -35,10 +35,6 @@ public class SemanticFunctions {
 		this.st = st;
 	}
 
-	// public void var_array(){
-
-	// }	
-
 	// -------------------------- FUNCIONES --------------------------------
 	
 	public void enterFunction(String functionName) {
