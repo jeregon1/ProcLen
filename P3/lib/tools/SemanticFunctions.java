@@ -101,24 +101,6 @@ public class SemanticFunctions {
 		}
 	}
 
-	// Update symbol value by token id from the symbol table
-	public void updateSymbolValue(Token id, Object value) {
-		try {
-			Symbol s = st.getSymbol(id.image);
-			if (value instanceof Integer && s instanceof SymbolInt) {
-				((SymbolInt) s).value += (Integer) value;
-			} else if (value instanceof Character && s instanceof SymbolChar) {
-				((SymbolChar) s).value = (Character) value;
-			} else if (value instanceof Boolean && s instanceof SymbolBool) {
-				((SymbolBool) s).value = (Boolean) value;
-			} else {
-				this.error(id, "El símbolo " + id.image + " no es del tipo correcto.");
-			}
-		} catch (SymbolNotFoundException e) {
-			this.error(id, "El símbolo " + id.image + " no está definido.");
-		}
-	}
-
 	public Symbol getSymbol(Token id) {
 		if (isSymbolDefined(id)) {
 			return st.getSymbol(id.image);

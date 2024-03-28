@@ -1,0 +1,45 @@
+  ENP L0
+L0:
+  SRF  0  3
+  STC  4
+  ASG 
+  SRF  0  4
+  STC  3
+  ASG 
+  SRF  0  5
+  SRF  0  3
+  DRF 
+  SRF  0  4
+  DRF 
+  PLUS 
+  ASG 
+  STC 82
+  WRT  0
+  STC 101
+  WRT  0
+  STC 115
+  WRT  0
+  STC 117
+  WRT  0
+  STC 108
+  WRT  0
+  STC 116
+  WRT  0
+  STC 97
+  WRT  0
+  STC 100
+  WRT  0
+  STC 111
+  WRT  0
+  STC 61
+  WRT  0
+  STC 32
+  WRT  0
+  SRF  0  5
+  DRF 
+  WRT  1
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
+  LVP 
