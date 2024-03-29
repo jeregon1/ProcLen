@@ -530,6 +530,7 @@ void inst_escribir_linea() : {}
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
 void inst_invocacion_procedimiento_o_asignacion() : {}
 {
+	// Guardado de ID para su posterior insertado junto al valor en caso de asignación
 	<tID> 
 	( // inst_asignacion() 
 		LOOKAHEAD( (array_access())? <tASSIGN> ) // LOOKAHEAD sintáctico para comprobar si es una asignación
@@ -670,6 +671,7 @@ Symbol.Types expresion_simple() :
 	boolean sign1 = false;
 }
 {
+	// Falta gestionar que se haga efectiva la suma/resta de los términos
      ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino() {terminos.add(type); }
 	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type); } )*
 	{
@@ -716,7 +718,7 @@ Symbol.Types termino() :
 //operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
 void operador_multiplicativo() : {}
 {
-	(<tMULT> | <tDIV> | <tMOD>)
+	( <tMULT> | <tDIV> | <tMOD>)
 }
 
 //factor: (<tNOT>)? primario
