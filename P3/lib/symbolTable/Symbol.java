@@ -17,7 +17,21 @@ abstract public class Symbol implements Cloneable {
     }
 
     static public enum Types {
-        INT, BOOL, CHAR, ARRAY, FUNCTION, PROCEDURE, STRING, UNDEFINED
+        INT, BOOL, CHAR, ARRAY, FUNCTION, PROCEDURE, STRING, UNDEFINED;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case INT:   return "integer";
+                case BOOL:  return "boolean";
+                case CHAR:  return "character";
+                case ARRAY: return "array";
+                case FUNCTION:  return "function";
+                case PROCEDURE: return "procedure";
+                case STRING:    return "string";
+                default:    return "undefined";
+            }
+        }
     }
 
     public String name;
