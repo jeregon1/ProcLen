@@ -505,10 +505,7 @@ void array_access() :
 }
 
 //inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
-void inst_escribir() : // 🎃
-{
-	Token aux = null;
-}
+void inst_escribir() : {}
 {
 	<tPUT> // Necesita parámetros
 	<tLPAREN> 
@@ -517,12 +514,33 @@ void inst_escribir() : // 🎃
 	<tRPAREN>
 }
 
+//inst_escribir_elemento: <tCONST_STRING> | expresion
+void inst_escribir_elemento() : 
+{
+	Symbol.Types type = Symbol.Types.STRING;
+	// Se pueden escribir constantes string y expresiones de tipo integer, character y boolean, incluidos los elementos de un array
+}
+{
+	(<tCONST_STRING> | type = expresion())
+	{
+		switch (type) {
+			case INT:
+			case BOOL:
+			case CHAR:
+			case STRING: break;
+			case ARRAY: semantic.error(getToken(0), "No se puede escribir un array entero, pero sí componentes de array."); break;
+			default: semantic.error(getToken(0), 
+					"Solo se pueden escribir valores de tipo " + tokenImage[tINT] + ", " + tokenImage[tCHAR] + ", " + tokenImage[tBOOL] + " y " + tokenImage[tCONST_STRING] + ".");
+		}
+	}
+}
+
 //inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_escribir_linea() : {}
-{// 🎃
+{
 	<tPUT_LINE> // Puede NO tener parámetros
-	(<tLPAREN> (<tCONST_STRING> | expresion())
-	( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>
+	(<tLPAREN> inst_escribir_elemento())
+	( <tCOMMA> inst_escribir_elemento()) )* <tRPAREN>
 	)?
 }
 
@@ -540,7 +558,7 @@ void inst_invocacion_procedimiento_o_asignacion() : {}// 🎃
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
-void inst_if() : // 🎃
+void inst_if() :
 {
 	Symbol.Types type;
 	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
@@ -669,7 +687,7 @@ Symbol.Types expresion_simple() :
 	boolean sign1 = false;
 }
 {
-     ( <tPLUS> {sign1 = true;}  | <tMINUS> {sign1 = true;}  )? type = termino() {terminos.add(type); }
+     ( (<tPLUS> | <tMINUS>) {sign1 = true;}  )? type = termino() {terminos.add(type); }
 	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type); } )*
 	{
 		// Si hay más de un término, deben ser todos INT
