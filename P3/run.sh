@@ -2,9 +2,9 @@
 
 if [ $(whoami) == "jesus" ]
 then
-    dir="/mnt/c/Users/jesus/OneDrive/Documentos/3ºCarrera/ProLen/Practicas/P3"
+    dir=~/proclen/P3
 else
-    dir="~/PL/P3"
+    dir=~/PL/P3
 fi
 
 # Comprobar que hay dos parámetros: el fichero alike.jar y el fichero de prueba
