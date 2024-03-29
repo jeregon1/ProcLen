@@ -419,7 +419,6 @@ void parametro_formal(Map<Token,Symbol> params) :
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 //instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
-// 'inst_return' solamente es derivable si estamos dentro de una función. Este comportamiento se consigue gracias al LOOKAHEAD sintáctico.
 void instruccion(): {}
 {
 	(	inst_leer()
@@ -431,6 +430,7 @@ void instruccion(): {}
 	|   inst_while()
 	|   <tNULL>
 	|   LOOKAHEAD({ semantic.inFunction() }) inst_return()
+		// 'inst_return' solamente es derivable si estamos dentro de una función gracias al LOOKAHEAD sintáctico.
 	)
 	<tSEMICOLON>
 }
@@ -491,7 +491,6 @@ void inst_leer_elemento() :
 void array_access() : 
 {
 	Symbol.Types type;
-	Token aux = null;
 }
 {
 	<tLPAREN> 
@@ -506,7 +505,7 @@ void array_access() :
 }
 
 //inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
-void inst_escribir() : 
+void inst_escribir() : // 🎃
 {
 	Token aux = null;
 }
@@ -520,7 +519,7 @@ void inst_escribir() :
 
 //inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_escribir_linea() : {}
-{
+{// 🎃
 	<tPUT_LINE> // Puede NO tener parámetros
 	(<tLPAREN> (<tCONST_STRING> | expresion())
 	( <tCOMMA> (<tCONST_STRING> | expresion()) )* <tRPAREN>
@@ -528,7 +527,7 @@ void inst_escribir_linea() : {}
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
-void inst_invocacion_procedimiento_o_asignacion() : {}
+void inst_invocacion_procedimiento_o_asignacion() : {}// 🎃
 {
 	<tID> 
 	( // inst_asignacion() 
@@ -541,7 +540,7 @@ void inst_invocacion_procedimiento_o_asignacion() : {}
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
-void inst_if() : 
+void inst_if() : // 🎃
 {
 	Symbol.Types type;
 	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
