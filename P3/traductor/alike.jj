@@ -459,7 +459,7 @@ void inst_leer_elemento() :
 	{
 		Symbol symbol = semantic.getSymbol(id); // El error de símbolo no definido está en semantic.getSymbol
 		if (symbol == null) return;
-		
+
 		// si es procedimiento o función, error
 		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
 			semantic.error(id, "No se puede leer un procedimiento o función.");
@@ -549,18 +549,20 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	Token id;
 	Symbol.Types type;
 	boolean access = false;
-} // 🎃
+	Symbol symbol;
+}
 {
 	id = <tID> 
+	{
+		symbol = semantic.getSymbol(id);
+		if (symbol == null) return;
+	}
 	( // asignacion() 
 		LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación
 	(array_access() {access = true;} )? 
 	<tASSIGN>
 	type = expresion()
 	{
-		Symbol symbol = semantic.getSymbol(id);
-		if (symbol == null) return;
-
 		// Son asignables las variables simples y los elementos de un array
 		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
 			semantic.error(id, "Los procedimientos y funciones no son asignables.");
@@ -581,8 +583,13 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	}
 	| // invocación_procedimiento()
 	// checkear que el id es un procedimiento y nada más
-	// en los parámetros por referencia solo pueden pasarse símbolos asignables
-	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
+	( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
+	{
+		if (symbol.type != Symbol.Types.PROCEDURE) {
+			semantic.error(id, "Solo se pueden invocar procedimientos.");
+		}
+	}
+	)
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
