@@ -1,17 +1,14 @@
 procedure a is
-z: character;
+z: integer;
 a1: array(-1..1) of integer;
 a2: array(0..1) of integer;
 
-function func (b, a: character; c, d: array(-1..1) of integer) return integer is
-
-bb: boolean;
+function func (b, a: ref character) return integer is
 begin
   return 1;
-  get(bb);
 end;
 
 begin
-  z := func('a', 'b', a1, a2);
-  null;
+  z := func(a1, a2);
+  a1(0);
 end;

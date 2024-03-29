@@ -472,11 +472,8 @@ void inst_leer_elemento() :
 				if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
 					semantic.error(id, "El array '" + id.image + "' debe ser de tipo " + tokenImage[tINT] + " o " + tokenImage[tCHAR] + ".");
 				}
-			}
-
-			// comprobar que no se accede como a un array a una variable simple o procedimiento o funcón
-			if (symbol.type != Symbol.Types.ARRAY && access) {
-				semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + ".");
+			} else if (access) { // que no se acceda a una variable simple o procedimiento o función como a un array 
+				semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
 			}
 
 			// no puede ser boolean
@@ -509,8 +506,8 @@ void inst_escribir() : {}
 {
 	<tPUT> // Necesita parámetros
 	<tLPAREN> 
-	(<tCONST_STRING> | expresion()) 
-	( <tCOMMA> (<tCONST_STRING> | expresion()) )* 
+	inst_escribir_elemento()
+	( <tCOMMA> inst_escribir_elemento() )*
 	<tRPAREN>
 }
 
@@ -539,21 +536,50 @@ void inst_escribir_elemento() :
 void inst_escribir_linea() : {}
 {
 	<tPUT_LINE> // Puede NO tener parámetros
-	(<tLPAREN> inst_escribir_elemento())
-	( <tCOMMA> inst_escribir_elemento()) )* <tRPAREN>
+	(<tLPAREN> inst_escribir_elemento()
+	( <tCOMMA> inst_escribir_elemento() )* <tRPAREN>
 	)?
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
-void inst_invocacion_procedimiento_o_asignacion() : {}// 🎃
+void inst_invocacion_procedimiento_o_asignacion() : 
 {
-	<tID> 
-	( // inst_asignacion() 
-		LOOKAHEAD( (array_access())? <tASSIGN> ) // LOOKAHEAD sintáctico para comprobar si es una asignación
-	(array_access())?
+	Token id;
+	Symbol.Types type;
+	boolean access = false;
+} // 🎃
+{
+	id = <tID> 
+	( // asignacion() 
+		LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación
+	(array_access() {access = true;} )? 
 	<tASSIGN>
-	expresion()
-	| // inst_invocacion_procedimiento()
+	type = expresion()
+	{
+		Symbol symbol = semantic.getSymbol(id);
+		if (symbol != null) {
+			// Son asignables las variables simples y los elementos de un array
+			if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
+				semantic.error(id, "Los procedimientos y funciones no son asignables.");
+			}
+			if (symbol.type == Symbol.Types.ARRAY) {
+				if (!access) { // Si id es array, se accede a un elemento 
+					semantic.error(id, "Los arrays no son asignables, se debe acceder a un elemento de '" + id.image + "'.");
+				}
+				if (((SymbolArray) symbol).baseType != type) {
+					semantic.error(id, "El tipo de la expresión no coincide con el tipo base del array '" + id.image + "'.");
+				}
+			} else if (access) { // no puede accederse a una variable no array
+				semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+			}
+			if (symbol.type != type) { // Partes izq y derecha de la asignación deben ser del mismo tipo
+				semantic.error(id, "El tipo " + type + " de la expresión no coincide con el tipo " + symbol.type + " de '" + id.image + "'.");
+			}
+		}
+	}
+	| // invocación_procedimiento()
+	// checkear que el id es un procedimiento y nada más
+	// en los parámetros por referencia solo pueden pasarse símbolos asignables
 	( <tLPAREN> expresion() ( <tCOMMA> expresion() )* <tRPAREN> )? )
 }
 
@@ -607,22 +633,10 @@ void inst_return() :
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
 		SymbolFunction function = semantic.getCurrentFunctionSymbol();
-		if (returnType != function.returnType) {
-			String returnTypeStr, expectedTypeStr;
-			switch (returnType) {
-				case INT:  returnTypeStr = tokenImage[tINT]; break;
-				case CHAR: returnTypeStr = tokenImage[tCHAR]; break;
-				case BOOL: returnTypeStr = tokenImage[tBOOL]; break;
-				default:   returnTypeStr = "indefinido"; break;
-			}
-			switch (function.returnType) {
-				case INT:  expectedTypeStr = tokenImage[tINT]; break;
-				case CHAR: expectedTypeStr = tokenImage[tCHAR]; break;
-				case BOOL: expectedTypeStr = tokenImage[tBOOL]; break;
-				default:   expectedTypeStr = "indefinido"; break;
-			}
-			semantic.error(getToken(0), "El tipo de retorno " + expectedTypeStr + " de la función '" + function.name +
-					"' no coincide con el tipo " + returnTypeStr + " de la expresión de retorno ");
+		Symbol.Types expectedType = function.returnType;
+		if (returnType != expectedType) {
+			semantic.error(getToken(0), "El tipo de retorno " + expectedType + " de la función '" + function.name +
+					"' no coincide con el tipo " + returnType + " de la expresión de retorno ");
 		}
 	}
 }
@@ -758,8 +772,9 @@ Symbol.Types factor() :
 //			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
 Symbol.Types primario() : 
 {
-	Symbol.Types type;
+	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
+	boolean array_access = false;
 }
 {
 	(	<tLPAREN> type = expresion() <tRPAREN> // Aquí no hay que comprobar nada
@@ -779,18 +794,21 @@ Symbol.Types primario() :
 		}
 		type = Symbol.Types.INT;
 	}// 🎃 SOLO QUEDA ESTA
-	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps(id) <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
+	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps(id) {array_access = true;} <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 	{
 		// Comprobar el tipo de la variable id
-		Symbol idSymbol = semantic.getSymbol(id);
-		switch (idSymbol.type) {
-			case ARRAY:     type = ((SymbolArray) idSymbol).baseType; break;
-			case FUNCTION:  type = ((SymbolFunction) idSymbol).returnType; break;
-			case PROCEDURE: semantic.error(id, "No se puede usar un procedimiento en una expresión."); break;
-			case UNDEFINED: semantic.error(id, "El símbolo " + id.image + " no está definido."); break;
-			default: type = idSymbol.type; break;
-		}
-		type = semantic.getSymbolType(id);
+		// Symbol idSymbol = semantic.getSymbol(id);
+		// if (idSymbol != null) {
+		// 	switch (idSymbol.type) {
+		// 		case INT:
+		// 		case CHAR:
+		// 		case BOOL: type = idSymbol.type;
+		// 			break;
+		// 		case ARRAY:
+		// 			break;
+		// 		default:
+		// 			semantic.error(id, "El símbolo '" + id.image + "' no es una variable.");
+		// 	}
 	}
 	|	<tCONST_INT> {type = Symbol.Types.INT;}
 	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
