@@ -458,30 +458,30 @@ void inst_leer_elemento() :
 	id = <tID> ( array_access() {access = true;} )?
 	{
 		Symbol symbol = semantic.getSymbol(id); // El error de símbolo no definido está en semantic.getSymbol
-		if (symbol != null){
-			// si es procedimiento o función, error
-			if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
-				semantic.error(id, "No se puede leer un procedimiento o función.");
-			}
+		if (symbol == null) return;
+		
+		// si es procedimiento o función, error
+		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
+			semantic.error(id, "No se puede leer un procedimiento o función.");
+		}
 
-			if (symbol.type == Symbol.Types.ARRAY) {
-				// si es array, comprobar que se ha accedido a un elemento y no al array entero
-				if (!access) {
-					semantic.error(id, "Se debe acceder a un elemento del array '" + id.image + "'.");
-				}
-				// si es array, comprobar que el tipo del array es INT o CHAR
-				SymbolArray array = (SymbolArray) symbol;
-				if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
-					semantic.error(id, "El array '" + id.image + "' debe ser de tipo " + tokenImage[tINT] + " o " + tokenImage[tCHAR] + ".");
-				}
-			} else if (access) { // que no se acceda a una variable simple o procedimiento o función como a un array 
-				semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+		if (symbol.type == Symbol.Types.ARRAY) {
+			// si es array, comprobar que se ha accedido a un elemento y no al array entero
+			if (!access) {
+				semantic.error(id, "Se debe acceder a un elemento del array '" + id.image + "'.");
 			}
+			// si es array, comprobar que el tipo del array es INT o CHAR
+			SymbolArray array = (SymbolArray) symbol;
+			if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
+				semantic.error(id, "El array '" + id.image + "' debe ser de tipo " + tokenImage[tINT] + " o " + tokenImage[tCHAR] + ".");
+			}
+		} else if (access) { // que no se acceda a una variable simple o procedimiento o función como a un array 
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+		}
 
-			// no puede ser boolean
-			if (symbol.type == Symbol.Types.BOOL) {
-				semantic.error(id, "No se puede leer una variable de tipo " + tokenImage[tBOOL] + ".");
-			}
+		// no puede ser boolean
+		if (symbol.type == Symbol.Types.BOOL) {
+			semantic.error(id, "No se puede leer una variable de tipo " + tokenImage[tBOOL] + ".");
 		}
 	}
 }
@@ -559,24 +559,24 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	type = expresion()
 	{
 		Symbol symbol = semantic.getSymbol(id);
-		if (symbol != null) {
-			// Son asignables las variables simples y los elementos de un array
-			if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
-				semantic.error(id, "Los procedimientos y funciones no son asignables.");
+		if (symbol == null) return;
+
+		// Son asignables las variables simples y los elementos de un array
+		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
+			semantic.error(id, "Los procedimientos y funciones no son asignables.");
+		}
+		if (symbol.type == Symbol.Types.ARRAY) {
+			if (!access) { // Si id es array, se accede a un elemento 
+				semantic.error(id, "Los arrays no son asignables, se debe acceder a un elemento de '" + id.image + "'.");
 			}
-			if (symbol.type == Symbol.Types.ARRAY) {
-				if (!access) { // Si id es array, se accede a un elemento 
-					semantic.error(id, "Los arrays no son asignables, se debe acceder a un elemento de '" + id.image + "'.");
-				}
-				if (((SymbolArray) symbol).baseType != type) {
-					semantic.error(id, "El tipo de la expresión no coincide con el tipo base del array '" + id.image + "'.");
-				}
-			} else if (access) { // no puede accederse a una variable no array
-				semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+			if (((SymbolArray) symbol).baseType != type) {
+				semantic.error(id, "El tipo de la expresión no coincide con el tipo base del array '" + id.image + "'.");
 			}
-			if (symbol.type != type) { // Partes izq y derecha de la asignación deben ser del mismo tipo
-				semantic.error(id, "El tipo " + type + " de la expresión no coincide con el tipo " + symbol.type + " de '" + id.image + "'.");
-			}
+		} else if (access) { // no puede accederse a una variable no array
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+		}
+		if (symbol.type != type) { // Partes izq y derecha de la asignación deben ser del mismo tipo
+			semantic.error(id, "El tipo " + type + " de la expresión no coincide con el tipo " + symbol.type + " de '" + id.image + "'.");
 		}
 	}
 	| // invocación_procedimiento()
