@@ -552,10 +552,15 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	Symbol symbol;
 }
 {
-	id = <tID> 
+	id = <tID>
 	{
 		symbol = semantic.getSymbol(id);
 		if (symbol == null) return;
+		// Checkear que no sea el procedimiento principal del programa
+		// se permite crear un procedimiento con el mismo nombre que el programa?
+		if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
+			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
+		}
 	}
 	( // asignacion() 
 		LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación
@@ -638,6 +643,7 @@ void inst_return() :
 	Symbol.Types returnType;
 }
 {
+	// Falta prohibir que haya funciones sin return 🎃
 	<tRETURN> returnType = expresion() 
 	{
 		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
@@ -802,18 +808,28 @@ Symbol.Types primario() :
 			semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
 		}
 		type = Symbol.Types.INT;
-	}// 🎃 SOLO QUEDA ESTA
+	}
 	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps(id) {array_access = true;} <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 	{
-		// Checkear que no es procedimiento
+		Symbol symbol = semantic.getSymbol(id);
+		if (symbol == null) return Symbol.Types.UNDEFINED;
 
-		// Checkear que si id es array se ha accedido a un elemento y no al array entero
-
-		// Checkear que si id es un tipo simple, no se ha accedido a un elemento como si fuera un array
-
-		// Si es una función, devolver su tipo retorno
-
-		// Si es un array, devolver su tipo base (si se ha accedido a él, sino devolver tipo ARRAY)
+		switch (symbol.type) {
+			// Si es una función, devolver su tipo retorno
+			case FUNCTION: type = ((SymbolFunction) symbol).returnType; break;
+			case PROCEDURE: // Checkear que no es procedimiento
+				semantic.error(id, "No se puede invocar un procedimiento en una expresión como a una función.");
+				break;
+			case ARRAY: // Checkear que si id es array se ha accedido a un elemento y no al array entero
+				if (!array_access) {
+					semantic.error(id, "En una expresión debe accederse a un elemento del array '" + id.image + "'.");
+					type = Symbol.Types.ARRAY;
+				} else {
+					type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
+				}
+				break;
+			default: type = symbol.type;
+		}
 	}
 	|	<tCONST_INT> {type = Symbol.Types.INT;}
 	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
@@ -832,45 +848,51 @@ void lista_una_o_mas_exps(Token id) :
 	Symbol.Types type;
 }
 {
-
-	type = expresion() {types.add(type);}
-	( <tCOMMA> type = expresion() {types.add(type);} )*
 	{
 		Symbol symbol = semantic.getSymbol(id);
 		if (symbol == null) return;
-
-		switch (symbol.type) {
-			case FUNCTION:
-			case PROCEDURE:
-				List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
-				if (types.size() != parList.size()) {
-					semantic.error(id, "El número de argumentos no coincide con el número de parámetros de la función '" + id.image + "'.");
-					break;
-				}
-				for (int i = 0; i < types.size(); i++) {
+	}
+	type = expresion() {types.add(type);}
+	( <tCOMMA> type = expresion() {types.add(type);} )*
+	{
+		if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDURE) {
+			List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
+			if (types.size() != parList.size()) {
+				String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
+				semantic.error(id, "El número de argumentos no coincide con el número de parámetros " + msg + " '" + id.image + "'.");
+				return;
+			}
+			for (int i = 0; i < types.size(); i++) {
+				if (parList.get(i).type == Symbol.Types.ARRAY) {
+					// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
+					// Hay que comparar el tipo base del array y el rango de índices
+					// 🎃
+				} else {
+					// Si el parámetro es simple y por valor, los tipos deben coincidir
 					if (parList.get(i).parClass == Symbol.ParameterClass.VAL) {
 						if (types.get(i) != parList.get(i).type) {
 							semantic.error(id, "El tipo del argumento " + (i + 1) + " no coincide con el tipo del parámetro de la función '" + id.image + "'.");
 						}
-					} else { // Paso por referencia, los argumentos deben ser asignables del mismo tipo 🎃
-						
+					} else {
+					// Si es por referencia, el argumento debe ser un id de variable o componente de array del mismo tipo
+						// 🎃
 					}
+				}
 
-					if (types.get(i) != parList.get(i).type) {
-						semantic.error(id, "El tipo del argumento " + (i + 1) + " no coincide con el tipo del parámetro de la función '" + id.image + "'.");
-					}
+				if (types.get(i) != parList.get(i).type) {
+					semantic.error(id, "El tipo del argumento " + (i + 1) + " no coincide con el tipo del parámetro de la función '" + id.image + "'.");
 				}
-				break;
-			case ARRAY:
-				SymbolArray array = (SymbolArray) symbol;
-				if (types.size() != 1) {
-					semantic.error(id, "El acceso a un array debe tener un único índice.");
-				}
-				if (types.get(0) != Symbol.Types.INT) {
-					semantic.error(id, "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
-				}
-				break;
+			}
+		} else if (symbol.type == Symbol.Types.ARRAY) {
+			SymbolArray array = (SymbolArray) symbol;
+			if (types.size() != 1) {
+				semantic.error(id, "El acceso a un array debe tener un único índice.");
+			}
+			if (types.get(0) != Symbol.Types.INT) {
+				semantic.error(id, "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
+			}
+		} else { // Si id es un tipo simple, no se ha accedido a un elemento como si fuera un array
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
 		}
-
 	}
 }

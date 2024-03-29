@@ -119,6 +119,10 @@ public class SemanticFunctions {
 		}
 	}
 
+	public SymbolProcedure getMainProcedureSymbol() {
+		return st.getMainProcedureSymbol();
+	}
+
 	public Symbol.Types getArrayBaseType(Token id) {
 
 		Symbol s = this.getSymbol(id);

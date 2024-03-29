@@ -31,7 +31,7 @@ public class SymbolTable {
 
     public SymbolTable() {
         st = new ArrayList<HashMap<String, Symbol>>(ST_SIZE);
-        level = -1; //aún no hay ningún bloque intoducido
+        level = -1; //aún no hay ningún bloque introducido
         insertBlock();
     }
     
@@ -73,6 +73,10 @@ public class SymbolTable {
             return null;
         }
         return st.get(level - 1).get(name);
+    }
+
+    public SymbolProcedure getMainProcedureSymbol() {
+        return (SymbolProcedure) st.get(0).get(0);
     }
 
     // comprueba si está el símbolo 

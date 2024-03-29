@@ -1,12 +1,31 @@
-procedure a is
-z: integer;
-a1: array(0..0) of boolean;
+--procedure Programa is
+--a: boolean;
+--
+--procedure p1 is
+--a: integer;
+--
+--procedure pp1 is begin
+  --p1;
+  --a := 1;
+--end;
+--
+--begin
+  --a := 2;
+--end;
+--
+--begin
+  --Programa;
+--end;
 
-function func (b: ref array(0..0) of boolean) return integer is
+procedure Programa is
+v1: integer;
+
+procedure Programa is 
+v1: integer;
 begin
-  return 1;
+  v1 := 1;
 end;
 
 begin
-  z := func(a1);
+  p1;
 end;
