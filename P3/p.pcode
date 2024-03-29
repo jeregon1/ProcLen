@@ -7,9 +7,9 @@ L2:
   STC  1
   CSF 
   CSF 
-L3:
-  JMP L4
-L4:
-  CSF 
 L0:
+  SRF  0  3
+  SRF  0  4
+  OSF  5  0 L1
+  ASG 
   LVP 

@@ -796,19 +796,15 @@ Symbol.Types primario() :
 	}// 🎃 SOLO QUEDA ESTA
 	|	id = <tID> (<tLPAREN> lista_una_o_mas_exps(id) {array_access = true;} <tRPAREN>)? //invocar func. (con o sin parámetros) o comp. array 
 	{
-		// Comprobar el tipo de la variable id
-		// Symbol idSymbol = semantic.getSymbol(id);
-		// if (idSymbol != null) {
-		// 	switch (idSymbol.type) {
-		// 		case INT:
-		// 		case CHAR:
-		// 		case BOOL: type = idSymbol.type;
-		// 			break;
-		// 		case ARRAY:
-		// 			break;
-		// 		default:
-		// 			semantic.error(id, "El símbolo '" + id.image + "' no es una variable.");
-		// 	}
+		// Checkear que no es procedimiento
+
+		// Checkear que si id es array se ha accedido a un elemento y no al array entero
+
+		// Checkear que si id es un tipo simple, no se ha accedido a un elemento como si fuera un array
+
+		// Si es una función, devolver su tipo retorno
+
+		// Si es un array, devolver su tipo base (si se ha accedido a él, sino devolver tipo ARRAY)
 	}
 	|	<tCONST_INT> {type = Symbol.Types.INT;}
 	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
@@ -822,7 +818,7 @@ Symbol.Types primario() :
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
 void lista_una_o_mas_exps(Token id) : 
-{
+{ // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
 	List<Symbol.Types> types = new ArrayList<>();
 	Symbol.Types type;
 }
@@ -831,30 +827,40 @@ void lista_una_o_mas_exps(Token id) :
 	type = expresion() {types.add(type);}
 	( <tCOMMA> type = expresion() {types.add(type);} )*
 	{
-		// comprobar que el número de parámetros coincide
-		SymbolFunction function = (SymbolFunction) semantic.getSymbol(id);
-		if (types.size() != function.parList.size()) {
-			semantic.error(id, "El número de parámetros no coincide con la definición de la función '" + id.image + "'.");
-		}
+		Symbol symbol = semantic.getSymbol(id);
+		if (symbol == null) return;
 
-		// comprobar que los tipos de los parámetros coinciden (un vector es del mismo tipo que otro si coincide su tipo base y rango)
-		for (int i = 0; i < types.size(); i++) {
-			Symbol expectedSymbol = function.parList.get(i);
-			Symbol.Types actualSymbol = types.get(i);
+		switch (symbol.type) {
+			case FUNCTION:
+			case PROCEDURE:
+				List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
+				if (types.size() != parList.size()) {
+					semantic.error(id, "El número de argumentos no coincide con el número de parámetros de la función '" + id.image + "'.");
+					break;
+				}
+				for (int i = 0; i < types.size(); i++) {
+					if (parList.get(i).parClass == Symbol.ParameterClass.VAL) {
+						if (types.get(i) != parList.get(i).type) {
+							semantic.error(id, "El tipo del argumento " + (i + 1) + " no coincide con el tipo del parámetro de la función '" + id.image + "'.");
+						}
+					} else { // Paso por referencia, los argumentos deben ser asignables del mismo tipo 🎃
+						
+					}
 
-			// USAR FUNCIÓN semantic.getArrayBaseType(Token id)
-
-			// if (expectedSymbol instanceof SymbolArray && actualSymbol == Symbol.Types.ARRAY) {
-			// 	SymbolArray expectedArray = (SymbolArray) expectedSymbol;
-			
-			// 	if (!expectedArray.baseType.equals(actualArray.baseType) || 
-			// 		 expectedArray.minInd != actualArray.minInd || 
-			// 		 expectedArray.maxInd != actualArray.maxInd) {
-			// 		semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
-			// 	}
-			// } else if (expectedSymbol.type != actualSymbol.type) {
-			// 	semantic.error(id, "El tipo del parámetro " + (i + 1) + " no coincide con la definición de la función '" + id.image + "'.");
-			// }
+					if (types.get(i) != parList.get(i).type) {
+						semantic.error(id, "El tipo del argumento " + (i + 1) + " no coincide con el tipo del parámetro de la función '" + id.image + "'.");
+					}
+				}
+				break;
+			case ARRAY:
+				SymbolArray array = (SymbolArray) symbol;
+				if (types.size() != 1) {
+					semantic.error(id, "El acceso a un array debe tener un único índice.");
+				}
+				if (types.get(0) != Symbol.Types.INT) {
+					semantic.error(id, "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
+				}
+				break;
 		}
 
 	}

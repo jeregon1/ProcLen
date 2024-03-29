@@ -1,14 +1,12 @@
 procedure a is
 z: integer;
-a1: array(-1..1) of integer;
-a2: array(0..1) of integer;
+a1: array(0..0) of boolean;
 
-function func (b, a: ref character) return integer is
+function func (b: ref array(0..0) of boolean) return integer is
 begin
   return 1;
 end;
 
 begin
-  z := func(a1, a2);
-  a1(0);
+  z := func(a1);
 end;
