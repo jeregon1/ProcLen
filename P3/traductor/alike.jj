@@ -40,13 +40,15 @@ public class alike {
 
 		st = new SymbolTable();
 	   	semantic = new SemanticFunctions(st);
+		String fileName = "";
 	   
 	   	try {
 			if(args.length == 0) {
 				parser = new alike(System.in);
 			}
 			else {
-				parser = new alike(new java.io.FileInputStream(args[0]));
+				fileName = args[0] + ".al";
+				parser = new alike(new java.io.FileInputStream(fileName));
 			}
 			//Programa es el símbolo inicial de la gramática
 			parser.Programa();
@@ -57,7 +59,7 @@ public class alike {
 				System.out.println("Detectados errores semánticos. No se genera código.");
 		}
 		catch (java.io.FileNotFoundException e) {
-			System.err.println ("Fichero " + args[0] + " no encontrado.");
+			System.err.println ("Fichero " + fileName + " no encontrado.");
 		}
 		catch (TokenMgrError e) {
 			System.err.println("ERROR LÉXICO: " + e.getMessage());
