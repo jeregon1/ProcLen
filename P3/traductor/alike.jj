@@ -558,6 +558,7 @@ void inst_invocacion_procedimiento_o_asignacion() :
 		if (symbol == null) return;
 		// Checkear que no sea el procedimiento principal del programa
 		// se permite crear un procedimiento con el mismo nombre que el programa?
+// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia 
 		if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
 			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
