@@ -11,117 +11,119 @@ public interface alikeConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int LETTER = 1;
+  int COMMENT = 5;
   /** RegularExpression Id. */
-  int DIGIT = 2;
+  int LETTER = 6;
   /** RegularExpression Id. */
-  int tSEMICOLON = 3;
+  int DIGIT = 7;
   /** RegularExpression Id. */
-  int tCOLON = 4;
+  int tSEMICOLON = 8;
   /** RegularExpression Id. */
-  int tCOMMA = 5;
+  int tCOLON = 9;
   /** RegularExpression Id. */
-  int tLPAREN = 6;
+  int tCOMMA = 10;
   /** RegularExpression Id. */
-  int tRPAREN = 7;
+  int tLPAREN = 11;
   /** RegularExpression Id. */
-  int tINT = 8;
+  int tRPAREN = 12;
   /** RegularExpression Id. */
-  int tCHAR = 9;
+  int tINT = 13;
   /** RegularExpression Id. */
-  int tBOOL = 10;
+  int tCHAR = 14;
   /** RegularExpression Id. */
-  int tWHILE = 11;
+  int tBOOL = 15;
   /** RegularExpression Id. */
-  int tLOOP = 12;
+  int tARRAY = 16;
   /** RegularExpression Id. */
-  int tIF = 13;
+  int tOF = 17;
   /** RegularExpression Id. */
-  int tTHEN = 14;
+  int tRANGE = 18;
   /** RegularExpression Id. */
-  int tELSIF = 15;
+  int tWHILE = 19;
   /** RegularExpression Id. */
-  int tELSE = 16;
+  int tLOOP = 20;
   /** RegularExpression Id. */
-  int tPROCEDURE = 17;
+  int tIF = 21;
   /** RegularExpression Id. */
-  int tFUNCTION = 18;
+  int tTHEN = 22;
   /** RegularExpression Id. */
-  int tREF = 19;
+  int tELSIF = 23;
   /** RegularExpression Id. */
-  int tIS = 20;
+  int tELSE = 24;
   /** RegularExpression Id. */
-  int tBEGIN = 21;
+  int tPROCEDURE = 25;
   /** RegularExpression Id. */
-  int tEND = 22;
+  int tFUNCTION = 26;
   /** RegularExpression Id. */
-  int tRETURN = 23;
+  int tREF = 27;
   /** RegularExpression Id. */
-  int tARRAY = 24;
+  int tIS = 28;
   /** RegularExpression Id. */
-  int tOF = 25;
+  int tBEGIN = 29;
   /** RegularExpression Id. */
-  int tRANGE = 26;
+  int tEND = 30;
   /** RegularExpression Id. */
-  int tPUT = 27;
+  int tRETURN = 31;
   /** RegularExpression Id. */
-  int tPUT_LINE = 28;
+  int tPUT = 32;
   /** RegularExpression Id. */
-  int tGET = 29;
+  int tPUT_LINE = 33;
   /** RegularExpression Id. */
-  int tSKIP_LINE = 30;
+  int tGET = 34;
   /** RegularExpression Id. */
-  int tINT2CHAR = 31;
+  int tSKIP_LINE = 35;
   /** RegularExpression Id. */
-  int tCHAR2INT = 32;
+  int tINT2CHAR = 36;
   /** RegularExpression Id. */
-  int tEXIT = 33;
+  int tCHAR2INT = 37;
   /** RegularExpression Id. */
-  int tNULL = 34;
+  int tEXIT = 38;
   /** RegularExpression Id. */
-  int tTRUE = 35;
+  int tNULL = 39;
   /** RegularExpression Id. */
-  int tFALSE = 36;
+  int tTRUE = 40;
   /** RegularExpression Id. */
-  int tCONST_INT = 37;
+  int tFALSE = 41;
   /** RegularExpression Id. */
-  int tCONST_CHAR = 38;
+  int tCONST_INT = 42;
   /** RegularExpression Id. */
-  int tCONST_STRING = 39;
+  int tCONST_CHAR = 43;
   /** RegularExpression Id. */
-  int tASSIGN = 40;
+  int tCONST_STRING = 44;
   /** RegularExpression Id. */
-  int tAND = 41;
+  int tASSIGN = 45;
   /** RegularExpression Id. */
-  int tOR = 42;
+  int tAND = 46;
   /** RegularExpression Id. */
-  int tNOT = 43;
+  int tOR = 47;
   /** RegularExpression Id. */
-  int tEQ = 44;
+  int tNOT = 48;
   /** RegularExpression Id. */
-  int tNEQ = 45;
+  int tEQ = 49;
   /** RegularExpression Id. */
-  int tLT = 46;
+  int tNEQ = 50;
   /** RegularExpression Id. */
-  int tLE = 47;
+  int tLT = 51;
   /** RegularExpression Id. */
-  int tGT = 48;
+  int tLE = 52;
   /** RegularExpression Id. */
-  int tGE = 49;
+  int tGT = 53;
   /** RegularExpression Id. */
-  int tPLUS = 50;
+  int tGE = 54;
   /** RegularExpression Id. */
-  int tMINUS = 51;
+  int tPLUS = 55;
   /** RegularExpression Id. */
-  int tMULT = 52;
+  int tMINUS = 56;
   /** RegularExpression Id. */
-  int tDIV = 53;
+  int tMULT = 57;
   /** RegularExpression Id. */
-  int tMOD = 54;
+  int tDIV = 58;
   /** RegularExpression Id. */
-  int tID = 55;
+  int tMOD = 59;
   /** RegularExpression Id. */
-  int COMMENT = 60;
+  int tID = 60;
+  /** RegularExpression Id. */
+  int tBASURA = 61;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -129,6 +131,11 @@ public interface alikeConstants {
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
+    "\" \"",
+    "\"\\t\"",
+    "\"\\n\"",
+    "\"\\r\"",
+    "<COMMENT>",
     "<LETTER>",
     "<DIGIT>",
     "\";\"",
@@ -139,6 +146,9 @@ public interface alikeConstants {
     "\"integer\"",
     "\"character\"",
     "\"boolean\"",
+    "\"array\"",
+    "\"of\"",
+    "\"..\"",
     "\"while\"",
     "\"loop\"",
     "\"if\"",
@@ -152,9 +162,6 @@ public interface alikeConstants {
     "\"begin\"",
     "\"end\"",
     "\"return\"",
-    "\"array\"",
-    "\"of\"",
-    "\"..\"",
     "\"put\"",
     "\"put_line\"",
     "\"get\"",
@@ -184,11 +191,7 @@ public interface alikeConstants {
     "\"/\"",
     "\"mod\"",
     "<tID>",
-    "\" \"",
-    "\"\\t\"",
-    "\"\\n\"",
-    "\"\\r\"",
-    "<COMMENT>",
+    "<tBASURA>",
   };
 
 }

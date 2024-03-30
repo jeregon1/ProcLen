@@ -83,6 +83,12 @@ PARSER_END(alike)
 
 //---------------------------------------------------------
 
+
+SKIP : {
+	" " | "\t" | "\n" | "\r" 
+	|  <COMMENT: "--" (~["\n", "\r"])*> 
+}
+
 TOKEN : {
 	< #LETTER: (["a"-"z","A"-"Z"]) > 
 |	< #DIGIT: ["0"-"9"] >
@@ -101,6 +107,10 @@ TOKEN : {
 |	< tCHAR: "character" >
 |	< tBOOL: "boolean" >
 
+|   < tARRAY: "array" >
+| 	< tOF: "of" >
+|	< tRANGE: ".." >
+
 	// Palabras reservadas
 |	< tWHILE: "while" > 
 |   < tLOOP: "loop" >
@@ -116,10 +126,6 @@ TOKEN : {
 |   < tBEGIN: "begin" >
 |   < tEND: "end" >
 |	< tRETURN: "return" > 
-
-|   < tARRAY: "array" >
-| 	< tOF: "of" >
-|	< tRANGE: ".." >
 
 	// Funciones estándar
 | 	< tPUT: "put" >
@@ -160,9 +166,13 @@ TOKEN : {
 
 }
 
-SKIP : { 
-	" " | "\t" | "\n" | "\r" 
-	|  <COMMENT: "--" (~["\n", "\r"])*> 
+SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
+ 	< tBASURA: ~[] >
+	 	{
+			System.err.println("----------------------------------------");
+			System.err.println(TokenMgrError.LexicalErr(matchedToken, "Carácter extraño: '" + matchedToken.image + "'. Reemplazo por espacio"));
+			matchedToken.image = " ";
+	 	}
 }
 
 
@@ -180,7 +190,7 @@ void Programa() :
 	{	// Procedimiento principal
 		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
 		semantic.setMainProcedureName(id.image);
-		st.insertBlock(); // Bloque 0
+		st.insertBlock(); // Bloque 0 🎃 No hay que insertar bloque
 	}
 	<tIS>
 	( declaracion_var() )*
