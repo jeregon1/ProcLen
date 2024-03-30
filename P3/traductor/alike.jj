@@ -363,6 +363,7 @@ void declaracion_funcion() :
 {
 	Token id;
 	Symbol.Types returnType;
+	SymbolFunction functionSymbol;
 	Map <Token,Symbol> params = new HashMap<Token,Symbol>();
 }
 {
@@ -372,7 +373,8 @@ void declaracion_funcion() :
 	<tRETURN>
 	returnType = tipo_variable_simple(null, null, Symbol.ParameterClass.NONE)
 	{
-		semantic.insertSymbol(id, new SymbolFunction(id.image,  new ArrayList<Symbol>(params.values()), returnType));
+		functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(params.values()), returnType);
+		semantic.insertSymbol(id, functionSymbol);
 		st.insertBlock();
 		// insertar params con los tokens en la tabla de símbolos tras crear un nuevo bloque
 		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
@@ -383,12 +385,12 @@ void declaracion_funcion() :
 	(declaracion_var())*
 	( declaracion_procedimiento() | declaracion_funcion() )*
 	<tBEGIN>
-		{semantic.enterFunction(id.image);}
+		{semantic.enterFunction(functionSymbol);}
 	(instruccion())+
-		{semantic.exitFunction();} // Se vuelve a establecer como false
 	<tEND>
 	<tSEMICOLON>
 	{
+		semantic.exitFunction(getToken(0));
 		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque actual
 	}
@@ -450,8 +452,7 @@ void instruccion(): {}
 	|   inst_if()
 	|   inst_while()
 	|   <tNULL>
-	|   LOOKAHEAD({ semantic.inFunction() }) inst_return()
-		// 'inst_return' solamente es derivable si estamos dentro de una función gracias al LOOKAHEAD sintáctico.
+	|   inst_return()
 	)
 	<tSEMICOLON>
 }
@@ -574,11 +575,8 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	id = <tID>
 	{
 		symbol = semantic.getSymbol(id);
-		// Checkear que no sea el procedimiento principal del programa
 		// Se tiene acceso a símbolos de menor nivel?
 			// Respuesta: Sí, al símbolo de más alto nivel con el mismo nombre
-		// se permite crear un procedimiento con el mismo nombre que el programa?
-			// Respuesta: sí, pero solo en niveles > 1, error?
 		// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
 			// Respuesta: no se permite: Error Argument for simple ref parameter is not a simple variable 
 	}
@@ -616,6 +614,8 @@ void inst_invocacion_procedimiento_o_asignacion() :
 		if (symbol.type != Symbol.Types.PROCEDURE) {
 			semantic.error(id, "Solo se pueden invocar procedimientos.");
 		} else if (symbol.name.toLowerCase().equals(semantic.getMainProcedureName())) {
+			// Checkear que no sea el procedimiento principal del programa
+			// también hay que checkear que sea del nivel 0
 			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
 	}
@@ -668,16 +668,9 @@ void inst_return() :
 	Symbol.Types returnType;
 }
 {
-	// Falta prohibir que haya funciones sin return 🎃
 	<tRETURN> returnType = expresion() 
 	{
-		// Comprobar que la expresión de retorno es del mismo tipo que el tipo de retorno de la función
-		SymbolFunction function = semantic.getCurrentFunctionSymbol();
-		Symbol.Types expectedType = function.returnType;
-		if (returnType != expectedType) {
-			semantic.error(getToken(0), "El tipo de retorno " + expectedType + " de la función '" + function.name +
-					"' no coincide con el tipo " + returnType + " de la expresión de retorno ");
-		}
+		semantic.inst_return(getToken(0), returnType);
 	}
 }
 

@@ -17,17 +17,15 @@ import lib.symbolTable.exceptions.*;
 import lib.errores.*;
 
 public class SemanticFunctions {
-	private ErrorSemantico errSem; //clase común de errores semánticos
-	private SymbolTable st; //tabla de símbolos
-	private boolean inFunction = false; //indica si estamos dentro de una función
-	private String mainProcedureName = "";
-
-	private Queue<String> functions = new LinkedList<>();
 
 	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
 		this.st = st;
 	}
+
+	// -------------------------- PROCEDIMIENTO PRINCIPAL --------------------------------
+
+	private String mainProcedureName = "";
 
 	public void setMainProcedureName(String name) {
 		if (mainProcedureName.equals("")) {
@@ -39,44 +37,73 @@ public class SemanticFunctions {
 	}
 
 	public String getMainProcedureName() {
+		if (mainProcedureName.equals("")) {
+			System.err.println("Error: No se ha definido el nombre de la función principal todavía.");
+		}
 		return mainProcedureName;
 	}
 
 	// -------------------------- FUNCIONES --------------------------------
+
+	private boolean currentFunctionHasReturn = false; // indica si la función actual tiene return
+	private SymbolFunction currentFunctionSymbol; // tipo de la función actual
+	private static final List<Symbol.Types> FUNCTION_TYPES = Arrays.asList(
+		Symbol.Types.INT,
+		Symbol.Types.BOOL,
+		Symbol.Types.CHAR
+	);
 	
-	public void enterFunction(String functionName) {
-		inFunction = true;
-		functions.add(functionName);
+	public void enterFunction(SymbolFunction functionSymbol) {
+		if (inFunction()) {
+			System.err.println("Error: No se puede llamar a este método dentro de una función.");
+		} else if (!FUNCTION_TYPES.contains(functionSymbol.returnType)) {
+			System.err.println("Error: Tipo de función no válido.");
+		} else {
+			currentFunctionSymbol = functionSymbol;
+		}
 	}
 
 	public boolean inFunction() {
-		return inFunction;
+		return currentFunctionSymbol != null;
 	}
 
-	public void exitFunction() {
-		inFunction = false;
-		functions.poll();
+	public Symbol.Types getCurrentFunctionType() {
+		if (currentFunctionSymbol != null)
+			return currentFunctionSymbol.returnType;
+		else {
+			System.err.println("Error: No se puede llamar a este método sin estar en una función.");
+			return Symbol.Types.UNDEFINED;
+		}
 	}
 
-	public SymbolFunction getCurrentFunctionSymbol() {
-		try {
-			Symbol s = st.getPreviousBlockSymbol(functions.peek());
-			// problema: se puede encontrar antes un símbolo de este bloque con el mismo nombre que no sea la función
-			if (s instanceof SymbolFunction) {
-				return (SymbolFunction) s;
-			}
-			else {
-				System.err.println("Error: El símbolo " + functions.peek() + " no es una función.");
-				return null;
+	public void inst_return(Token t, Symbol.Types returnType) {
+		if (!inFunction()) {
+			error(t, "Error: No puede haber instrucciones return en un procedimiento.");
+		} else {
+			currentFunctionHasReturn = true;
+			if (returnType != currentFunctionSymbol.returnType) {
+				error(t, "El tipo de retorno " + returnType + " no coincide con el tipo " + currentFunctionSymbol.returnType + " de la función '" + currentFunctionSymbol.name + "'.");
 			}
 		}
-		catch (SymbolNotFoundException e) {
-			System.err.println("Error: La función " + functions.peek() + " no está definida.");
-			return null;
+	}
+
+	public void exitFunction(Token t) {
+		if (!inFunction()) {
+			System.err.println("Error: No se puede llamar a este método sin estar en una función.");
+			return;
 		}
+
+		if (!currentFunctionHasReturn) {
+			error(t, "La función '" + currentFunctionSymbol.name + "' no tiene instrucción return.");
+		}
+
+		currentFunctionHasReturn = false;
+		currentFunctionSymbol = null;
 	}
 
 	// -------------------------- ERRORES SEMÁNTICOS --------------------------------
+
+	private ErrorSemantico errSem; //clase común de errores semánticos
 
 	public void error(Token token, String msg) {
 		errSem.print(token, msg);
@@ -92,12 +119,14 @@ public class SemanticFunctions {
 
 	// -------------------------- TABLA DE SÍMBOLOS --------------------------------
 
+	private SymbolTable st; //tabla de símbolos
+
 	public void insertSymbol(Token t, Symbol s) {
 		try {
 			st.insertSymbol(s);
 		}
 		catch (AlreadyDefinedSymbolException e) {
-			this.error(t, "El símbolo " + s.name + " ya está definido.");
+			error(t, "El símbolo " + s.name + " ya está definido.");
 		}
 	}
 
@@ -107,7 +136,7 @@ public class SemanticFunctions {
 			return true;
 		}
 		catch (SymbolNotFoundException e) {
-			this.error(id, "El símbolo " + id.image + " no está definido.");
+			error(id, "El símbolo " + id.image + " no está definido.");
 			return false;
 		}
 	}
@@ -144,7 +173,7 @@ public class SemanticFunctions {
 			return ((SymbolArray) s).baseType;
 		}
 		else {
-			this.error(id, "El símbolo " + id.image + " no es un array.");
+			error(id, "El símbolo " + id.image + " no es un array.");
 			return Symbol.Types.UNDEFINED;
 		}
 	}
