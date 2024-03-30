@@ -79,6 +79,10 @@ public class SemanticFunctions {
 		return errSem.hayError();
 	}
 
+	public int getNumErrores() {
+		return errSem.getNumErrores();
+	}
+
 	// -------------------------- TABLA DE SÍMBOLOS --------------------------------
 
 	public void insertSymbol(Token t, Symbol s) {

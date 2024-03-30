@@ -1,11 +1,11 @@
   ENP L0
 L1:
   JMP L2
+L3:
+  JMP L4
+L4:
+  CSF 
 L2:
-  SRF  0  3
-  STC  1
-  ASG 
   CSF 
 L0:
-  OSF  4  0 L1
   LVP 

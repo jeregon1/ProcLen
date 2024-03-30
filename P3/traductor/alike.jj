@@ -56,7 +56,11 @@ public class alike {
 			if (!semantic.hayErrores())
 				System.out.println("***** Análisis terminado con éxito *****");
 			else
-				System.out.println("Detectados errores semánticos. No se genera código.");
+				if (semantic.getNumErrores() == 1) {
+					System.out.println("Detectado 1 error semántico. No se genera código.");
+				} else {
+					System.out.println("Detectados " + semantic.getNumErrores() + " errores semánticos. No se genera código.");
+				}
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + fileName + " no encontrado.");
@@ -558,7 +562,9 @@ void inst_invocacion_procedimiento_o_asignacion() :
 		if (symbol == null) return;
 		// Checkear que no sea el procedimiento principal del programa
 		// se permite crear un procedimiento con el mismo nombre que el programa?
-// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia 
+			// Respuesta: sí, pero solo en niveles > 1, error?
+		// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
+			// Respuesta: no se permite: Error Argument for simple ref parameter is not a simple variable 
 		if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
 			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
