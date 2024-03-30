@@ -559,15 +559,11 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	id = <tID>
 	{
 		symbol = semantic.getSymbol(id);
-		if (symbol == null) return;
 		// Checkear que no sea el procedimiento principal del programa
 		// se permite crear un procedimiento con el mismo nombre que el programa?
 			// Respuesta: sí, pero solo en niveles > 1, error?
 		// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
 			// Respuesta: no se permite: Error Argument for simple ref parameter is not a simple variable 
-		if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
-			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
-		}
 	}
 	( // asignacion() 
 		LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación
@@ -575,21 +571,23 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	<tASSIGN>
 	type = expresion()
 	{
-		// Son asignables las variables simples y los elementos de un array
-		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
-			semantic.error(id, "Los procedimientos y funciones no son asignables.");
-		}
+		if (symbol == null) return;
 		if (symbol.type == Symbol.Types.ARRAY) {
 			if (!access) { // Si id es array, se accede a un elemento 
 				semantic.error(id, "Los arrays no son asignables, se debe acceder a un elemento de '" + id.image + "'.");
 			}
-			if (((SymbolArray) symbol).baseType != type) {
-				semantic.error(id, "El tipo de la expresión no coincide con el tipo base del array '" + id.image + "'.");
+			Symbol.Types baseType = ((SymbolArray) symbol).baseType;
+			if (baseType != type) {
+				semantic.error(id, "El tipo " + type + " de la expresión no coincide con el tipo " + baseType + " base del array '" + id.image + "'.");
 			}
 		} else if (access) { // no puede accederse a una variable no array
-			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + tokenImage[tARRAY] + " y no " + symbol.type + ".");
 		}
-		if (symbol.type != type) { // Partes izq y derecha de la asignación deben ser del mismo tipo
+		// Son asignables las variables simples y los elementos de un array
+		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
+			semantic.error(id, "Los procedimientos y funciones no son asignables.");
+		} 
+		else if (symbol.type != type) { // Partes izq y derecha de la asignación deben ser del mismo tipo
 			semantic.error(id, "El tipo " + type + " de la expresión no coincide con el tipo " + symbol.type + " de '" + id.image + "'.");
 		}
 	}
@@ -597,8 +595,11 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	// checkear que el id es un procedimiento y nada más
 	( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
 	{
+		if (symbol == null) return;
 		if (symbol.type != Symbol.Types.PROCEDURE) {
 			semantic.error(id, "Solo se pueden invocar procedimientos.");
+		} else if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
+			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
 	}
 	)
