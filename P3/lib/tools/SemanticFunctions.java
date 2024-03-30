@@ -30,7 +30,12 @@ public class SemanticFunctions {
 	}
 
 	public void setMainProcedureName(String name) {
-		mainProcedureName = name.toLowerCase(); // case insensitive
+		if (mainProcedureName.equals("")) {
+			mainProcedureName = name.toLowerCase(); // case insensitive
+		}
+		else {
+			System.err.println("Error: El nombre de la función principal ya ha sido definido.");
+		}
 	}
 
 	public String getMainProcedureName() {
