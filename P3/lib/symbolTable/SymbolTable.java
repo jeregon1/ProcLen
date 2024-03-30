@@ -51,11 +51,12 @@ public class SymbolTable {
     //Si no, se inserta
     public void insertSymbol(Symbol s) throws AlreadyDefinedSymbolException {
         HashMap<String, Symbol> currentBlock = st.get(st.size()-1);
-        if (currentBlock.containsKey(s.name)) { // ya está
+        String key = s.name.toLowerCase(); // case insensitive, pero se almacena el nombre original del símbolo
+        if (currentBlock.containsKey(key)) { // ya está
             throw new AlreadyDefinedSymbolException();
         } else {
             s.nivel = level;
-            currentBlock.put(s.name, s);
+            currentBlock.put(key, s);
         }
     }
 
@@ -72,11 +73,12 @@ public class SymbolTable {
         if (level == 0) {
             return null;
         }
-        return st.get(level - 1).get(name);
+        return st.get(level - 1).get(name.toLowerCase());
     }
 
     public SymbolProcedure getMainProcedureSymbol() {
-        return (SymbolProcedure) st.get(0).get(0);
+        // Se asume que ya se ha insertado el símbolo del procedimiento principal
+        return (SymbolProcedure) st.get(0).values().toArray()[0];
     }
 
     // comprueba si está el símbolo 
@@ -86,6 +88,7 @@ public class SymbolTable {
 
     //para usar en "getSymbol" y "containsSymbol"
     private Symbol findSymbol (String name) {
+        name = name.toLowerCase(); // case insensitive
     	for (int i = st.size()-1; i >= 0; i--) {
             if (st.get(i).containsKey(name)) {
                 return st.get(i).get(name);
