@@ -190,7 +190,6 @@ void Programa() :
 	{	// Procedimiento principal
 		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
 		semantic.setMainProcedureName(id.image);
-		st.insertBlock(); // Bloque 0 🎃 No hay que insertar bloque
 	}
 	<tIS>
 	( declaracion_var() )*
@@ -201,7 +200,6 @@ void Programa() :
 	<tSEMICOLON>
 	{
 		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
-		st.removeBlock(); // Eliminación del bloque principal
 	}
 
    < EOF >
