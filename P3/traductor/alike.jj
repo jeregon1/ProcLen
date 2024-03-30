@@ -179,6 +179,7 @@ void Programa() :
 	id = <tID>
 	{	// Procedimiento principal
 		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
+		semantic.setMainProcedureName(id.image);
 		st.insertBlock(); // Bloque 0
 	}
 	<tIS>
@@ -560,6 +561,8 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	{
 		symbol = semantic.getSymbol(id);
 		// Checkear que no sea el procedimiento principal del programa
+		// Se tiene acceso a símbolos de menor nivel?
+			// Respuesta: Sí, al símbolo de más alto nivel con el mismo nombre
 		// se permite crear un procedimiento con el mismo nombre que el programa?
 			// Respuesta: sí, pero solo en niveles > 1, error?
 		// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
@@ -598,7 +601,7 @@ void inst_invocacion_procedimiento_o_asignacion() :
 		if (symbol == null) return;
 		if (symbol.type != Symbol.Types.PROCEDURE) {
 			semantic.error(id, "Solo se pueden invocar procedimientos.");
-		} else if (symbol.name.equals(semantic.getMainProcedureSymbol().name)) {
+		} else if (symbol.name.toLowerCase().equals(semantic.getMainProcedureName())) {
 			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
 	}

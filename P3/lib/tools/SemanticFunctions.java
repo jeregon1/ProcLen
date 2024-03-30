@@ -20,19 +20,21 @@ public class SemanticFunctions {
 	private ErrorSemantico errSem; //clase común de errores semánticos
 	private SymbolTable st; //tabla de símbolos
 	private boolean inFunction = false; //indica si estamos dentro de una función
+	private String mainProcedureName = "";
 
 	private Queue<String> functions = new LinkedList<>();
-
-	// declaramos la lista de tipos asignables
-	private final List<Symbol.Types> assignableTypes = Arrays.asList(
-		Symbol.Types.INT,
-		Symbol.Types.CHAR,
-		Symbol.Types.BOOL
-	);
 
 	public SemanticFunctions(SymbolTable st) {
 		errSem = new ErrorSemantico();
 		this.st = st;
+	}
+
+	public void setMainProcedureName(String name) {
+		mainProcedureName = name.toLowerCase(); // case insensitive
+	}
+
+	public String getMainProcedureName() {
+		return mainProcedureName;
 	}
 
 	// -------------------------- FUNCIONES --------------------------------
