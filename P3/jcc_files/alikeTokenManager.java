@@ -887,6 +887,7 @@ public static Token getNextToken()
       {
          matchedToken = jjFillToken();
          matchedToken.specialToken = specialToken;
+         TokenLexicalActions(matchedToken);
          return matchedToken;
       }
       else
@@ -958,6 +959,13 @@ static void TokenLexicalActions(Token matchedToken)
 {
    switch(jjmatchedKind)
    {
+      case 44 :
+        image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
+                // Sustituir las comillas dobles por una comilla simple
+                String str = matchedToken.image;
+                str = str.substring(1, str.length() - 1); // Eliminar las comillas dobles de los extremos
+                matchedToken.image = str.replace("\"\"", "\"");
+         break;
       default :
          break;
    }
