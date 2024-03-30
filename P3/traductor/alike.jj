@@ -267,7 +267,7 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 		min = Integer.parseInt(tMin.image) * minus1;
 		max = Integer.parseInt(tMax.image) * minus2;
 		if (min > max) {
-			semantic.error(getToken(0), "Los vectores deben tener un rango no vacío de enteros, se ha encontrado (" + min + ".." + max + ")");
+			semantic.error(tMax, "Los vectores deben tener un rango no vacío de enteros, se ha encontrado (" + min + ".." + max + ")");
 		}
 		if (isDeclaration) {
 			baseArray = new SymbolArray("", min, max, Symbol.Types.UNDEFINED, paramClass);
@@ -388,12 +388,12 @@ void declaracion_funcion() :
 		{semantic.enterFunction(functionSymbol);}
 	(instruccion())+
 	<tEND>
-	<tSEMICOLON>
 	{
 		semantic.exitFunction(getToken(0));
 		System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque actual
 	}
+	<tSEMICOLON>
 }
 
 
@@ -421,7 +421,7 @@ void parametro_formal(Map<Token,Symbol> params) :
 	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
 	{
 		for (Token id : t) {
-			// Comprobar si hay algún parámetro con el mismo nombre
+			// Comprobar si hay algún parámetro con el mismo nombre se hace tras declarar todos los parámetros
 
 			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
@@ -679,22 +679,28 @@ void inst_return() :
 //expresion: relacion ((<tAND> | <tOR>) relacion)*
 Symbol.Types expresion() : 
 {
-	ArrayList<Symbol.Types> relaciones = new ArrayList<>();
-	Symbol.Types type;
+	Symbol.Types mainType, otherType = Symbol.Types.UNDEFINED;
+	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
 }
 {
-	type = relacion() {relaciones.add(type);}
-	((<tAND> | <tOR>) type = relacion() {relaciones.add(type);})*
-	{
-		// Si hay más de una relación, deben ser todas BOOL
-		if (relaciones.size() > 1) {
-			for (Symbol.Types token : relaciones) {
-				if (token != Symbol.Types.BOOL) {
-					semantic.error(getToken(0), "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".");
-				}
-			}
+	mainType = relacion()
+	((<tAND> | <tOR>)
+		{
+			if (mainType != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
 		}
-		return relaciones.get(0);
+	otherType = relacion() 
+		{
+			// Si hay más de una relación, deben ser todas BOOL
+			if (otherType != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+	)*
+	{
+		if (otherType == Symbol.Types.UNDEFINED)
+			return mainType;
+		else
+			return Symbol.Types.BOOL;
 	}
 }
 
