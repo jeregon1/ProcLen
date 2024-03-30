@@ -143,6 +143,12 @@ TOKEN : {
 | 	< tCONST_INT: (<DIGIT>)+ >
 |	< tCONST_CHAR: "'"~[]"'" >
 |	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
+	{
+		// Sustituir las comillas dobles por una comilla simple
+		String str = matchedToken.image;
+		str = str.substring(1, str.length() - 1); // Eliminar las comillas dobles de los extremos
+		matchedToken.image = str.replace("\"\"", "\""); // Sustituir las parejas de comillas dobles por una sola ocurrencia
+	}
 
 	// Operadores
 |	< tASSIGN: ":=" > 
