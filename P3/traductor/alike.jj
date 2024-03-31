@@ -679,50 +679,48 @@ void inst_return() :
 //expresion: relacion ((<tAND> | <tOR>) relacion)*
 Symbol.Types expresion() : 
 {
-	Symbol.Types mainType, otherType = Symbol.Types.UNDEFINED;
+	Symbol.Types type;
+	boolean moreThanOne = false;
 	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
 }
 {
-	mainType = relacion()
+	type = relacion()
 	((<tAND> | <tOR>)
 		{
-			if (mainType != Symbol.Types.BOOL)
+			moreThanOne = true;
+			if (type != Symbol.Types.BOOL)
 				semantic.error(getToken(0), errorMsg);
 		}
-	otherType = relacion() 
+	type = relacion() 
 		{
 			// Si hay más de una relación, deben ser todas BOOL
-			if (otherType != Symbol.Types.BOOL)
+			if (type != Symbol.Types.BOOL)
 				semantic.error(getToken(0), errorMsg);
 		}
 	)*
 	{
-		if (otherType == Symbol.Types.UNDEFINED)
-			return mainType;
-		else
-			return Symbol.Types.BOOL;
+		return (moreThanOne) ? Symbol.Types.BOOL : type;
 	}
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
 Symbol.Types relacion() : 
 {
-	ArrayList<Symbol.Types> expresiones = new ArrayList<>();
-	Symbol.Types type;
+	Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
 }
 {
-	type = expresion_simple() {expresiones.add(type);}
- 	( operador_relacional() type = expresion_simple() {expresiones.add(type);} )?
+	type1 = expresion_simple()
+ 	( operador_relacional() type2 = expresion_simple() )?
 	{
 		// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
-		if (expresiones.size() == 2) {
-			if (expresiones.get(0) != expresiones.get(1))
-				semantic.error(getToken(0), "Las expresiones de una relación deben ser del mismo tipo.");
+		if (type2 != Symbol.Types.UNDEFINED) {
+			if (type1 != type2)
+				semantic.error(getToken(0), "Las expresiones de una relación deben ser del mismo tipo, se encontró " + type1 + " y " + type2 + ".");
 
 			return Symbol.Types.BOOL; // Si hay dos expresiones, el resultado es booleano
-		} 
+		}
 		// else: si hay solo una expresión, se devuelve su tipo
-		return expresiones.get(0);
+		return type1;
 	}
 }
 
@@ -735,51 +733,59 @@ void operador_relacional() : {}
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
 Symbol.Types expresion_simple() : 
 {
-	ArrayList<Symbol.Types> terminos = new ArrayList<>();
 	Symbol.Types type;
-	boolean sign1 = false;
+	boolean sign = false;
 }
 {
-     ( (<tPLUS> | <tMINUS>) {sign1 = true;}  )? type = termino() {terminos.add(type); }
-	(( <tPLUS> | <tMINUS> )  type = termino() {terminos.add(type); } )*
+    ((<tPLUS> | <tMINUS>) {sign = true;}  )? type = termino() 
 	{
-		// Si hay más de un término, deben ser todos INT
-		if (terminos.size() > 1) {
-			for (Symbol.Types token : terminos) {
-				if (token != Symbol.Types.INT) {
-					semantic.error(getToken(0), 
-							"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ".");
-				}
-			}
-		} else if (sign1 && (terminos.get(0) != Symbol.Types.INT)) {
+		if (sign && (type != Symbol.Types.INT)) {
 			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
-					" solo se puede usar con variables de tipo " + tokenImage[tINT] + ".");
+					" solo se puede usar con expresiones de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
 		}
-		
-		return terminos.get(0);
+	}
+	(( <tPLUS> | <tMINUS> )  type = termino()
+	{
+		sign = true;
+		// Si hay más de un término, deben ser todos INT
+		if (type != Symbol.Types.INT) {
+			semantic.error(getToken(0), 
+					"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
+		}
+	}
+	)*
+	{
+		return (sign) ? Symbol.Types.INT : type;
 	}
 }
                                                                                                                                                                          
 //termino: factor (operador_multiplicativo factor)*
 Symbol.Types termino() : 
 {
-	ArrayList<Symbol.Types> factores = new ArrayList<>();
 	Symbol.Types type;
+	boolean moreThanOne = false;
 }
 {
-    type = factor() { factores.add(type); }
-	( operador_multiplicativo() type = factor() { factores.add(type); } )*
-	{ 
-		// Si hay más de un factor, deben ser todos INT
-		if (factores.size() > 1) {
-			for (Symbol.Types token : factores) {
-				if (token != Symbol.Types.INT) {
-					semantic.error(getToken(0), 
-							"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ".");
-				}
+    type = factor() 
+	( operador_multiplicativo()
+		{
+			moreThanOne = true;
+			if (type != Symbol.Types.INT) {
+				semantic.error(getToken(0), 
+						"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
 			}
 		}
-		return factores.get(0);
+	type = factor()
+		{ 
+			// Si hay más de un factor, deben ser todos INT
+			if (type != Symbol.Types.INT) {
+				semantic.error(getToken(0), 
+						"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
+			}
+		}
+	)*
+	{ 
+		return (moreThanOne) ? Symbol.Types.INT : type;
 	}
 }
 
@@ -803,7 +809,7 @@ Symbol.Types factor() :
 			semantic.error(getToken(0), "El operador " + tokenImage[tNOT] + 
 					" solo se puede usar con variables de tipo " + tokenImage[tBOOL] + ".");
 		}
-		return type;
+		return not ? Symbol.Types.BOOL : type;
 	}
 }
 
