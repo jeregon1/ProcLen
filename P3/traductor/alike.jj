@@ -877,7 +877,7 @@ Symbol.Types primario() :
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
 void lista_una_o_mas_exps(Token id) : 
 { // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
-	List<Symbol.Types> types = new ArrayList<>();
+	List<Symbol.Types> types = new ArrayList<>(); // Cambiar por Map<Symbol, Symbol.Types> 
 	Symbol.Types type;
 }
 {
@@ -889,17 +889,35 @@ void lista_una_o_mas_exps(Token id) :
 	( <tCOMMA> type = expresion() {types.add(type);} )*
 	{
 		if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDURE) {
+			// Recuperar lista parámetros del Token 'id' 
 			List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
+
+			// Comprobar que el número de argumentos coincide con el número de parámetros
 			if (types.size() != parList.size()) {
 				String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
 				semantic.error(id, "El número de argumentos no coincide con el número de parámetros " + msg + " '" + id.image + "'.");
 				return;
 			}
+
+			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
 			for (int i = 0; i < types.size(); i++) {
 				if (parList.get(i).type == Symbol.Types.ARRAY) {
 					// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
-					// Hay que comparar el tipo base del array y el rango de índices
-					// 🎃
+					SymbolArray paramArray = (SymbolArray) parList.get(i);
+					if (types.get(i) != Symbol.Types.ARRAY) { // Si el parámetro debe ser un array y el argumento no lo es, error
+						semantic.error(id, "El argumento " + (i + 1) + " debe ser un array para el parámetro de la función '" + id.image + "'.");
+					} else { // Si el argumento es un array, comprobar que el tipo base y el rango de índices coinciden (del parámetro y argumento)
+						/* La idea es esta, pero argArray debe de ser el argumento que se está procesando, no la línea de abajo (la de 
+						la calabaza) que es el id del vector al que se está accediendo. Sería hacer un Map<Symbol, Symbol.Types>
+						en lugar de un List, para poder recuperar el símbolo donde reside la info de baseType e índices  */
+						SymbolArray argArray = (SymbolArray) semantic.getSymbol(id); // 🎃 
+						if (argArray.baseType != paramArray.baseType) {
+							semantic.error(id, "El tipo base del argumento " + (i + 1) + " no coincide con el tipo base del parámetro de la función '" + id.image + "'.");
+						}
+						if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
+							semantic.error(id, "El rango de índices del argumento " + (i + 1) + " no coincide con el rango de índices del parámetro de la función '" + id.image + "'.");
+						}
+					}
 				} else {
 					// Si el parámetro es simple y por valor, los tipos deben coincidir
 					if (parList.get(i).parClass == Symbol.ParameterClass.VAL) {
