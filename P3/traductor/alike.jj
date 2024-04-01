@@ -621,7 +621,7 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	)
 }
 
-//inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tENDIF>
+//inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if() :
 {
 	Symbol.Types type;

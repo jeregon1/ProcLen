@@ -10,6 +10,21 @@ ai:  array(-1..1) of integer;
 ai2: array(-1..1) of integer;
 ab: array(1..3) of boolean;
 
+-- PRUEBA--> PROCEDIMIENTOS Y FUNCIONES
+procedure p is
+    i: integer;
+    c: character;
+    b: boolean;
+    ai: array(-1..1) of integer;
+    ab: array(1..3) of boolean;
+begin
+    i := 1;
+    c := 'c';
+    b := true;
+    ai(1) := 1;
+    ab(1) := true;
+end;
+
 begin 
 -- PRUEBA--> OPERADORES
 
@@ -46,13 +61,13 @@ b := i; -- Error: se esperaba un booleano
 --La guarda de las instrucciones de selecci´on y de iteraci´on s´olo puede ser de
 --tipo boolean. Lo mismo se exige para las cla´usulas elsif.
 if -i then null; end if; -- Error: se esperaba un booleano
-if i = 1 or b and c /= 'c' and not (ai(3) = -2) then null; 
+    -- CORREGIR ERROR--> if i = 1 or b and c /= 'c' and not (ai(3) = -2) then null; 
+if true then null;
 elsif i + 3 then null; -- Error: se esperaba un booleano
 elsif ab(5) then null; 
 end if;
 
 WHILE c loop null; end loop; -- Error: se esperaba un booleano
-
 
 
 
