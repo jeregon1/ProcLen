@@ -25,8 +25,24 @@ begin
     ab(1) := true;
 end;
 
+function f(aux2, aux3: integer) return integer is -- Función con return en lugar inalcanzable (funciona bien en alike)
+    aux: integer;
+begin
+    aux := 1;
+    if false then
+        aux := aux2 + aux3;
+        return aux;
+    end if;
+end;
+
 begin 
--- PRUEBA--> OPERADORES
+-- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
+i := f(1, 2, 3); -- error semántico: número incorrecto de argumentos
+-- p(); error sintáctico: invocación a parámetro/función sin parámetros va sin '()'
+-- Programa -- error sintáctico: programa principal no puede ser invocado
+
+
+-- PRUEBA--> OPERADORES (hacer)
 
 
 -- PRUEBA--> GET. 
