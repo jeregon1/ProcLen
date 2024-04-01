@@ -902,13 +902,13 @@ void lista_una_o_mas_exps(Token id) :
 						/* La idea es esta, pero argArray debe de ser el argumento que se está procesando, no la línea de abajo (la de 
 						la calabaza) que es el id del vector al que se está accediendo. Sería hacer un Map<Symbol, Symbol.Types>
 						en lugar de un List, para poder recuperar el símbolo donde reside la info de baseType e índices  */
-						SymbolArray argArray = (SymbolArray) semantic.getSymbol(id); // 🎃 
-						if (argArray.baseType != paramArray.baseType) {
-							semantic.error(id, "El tipo base del argumento " + (i + 1) + " no coincide con el tipo base del parámetro de la función '" + id.image + "'.");
-						}
-						if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
-							semantic.error(id, "El rango de índices del argumento " + (i + 1) + " no coincide con el rango de índices del parámetro de la función '" + id.image + "'.");
-						}
+						// SymbolArray argArray = (SymbolArray) semantic.getSymbol(id); // 🎃 
+						// if (argArray.baseType != paramArray.baseType) {
+						// 	semantic.error(id, "El tipo base del argumento " + (i + 1) + " no coincide con el tipo base del parámetro de la función '" + id.image + "'.");
+						// }
+						// if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
+						// 	semantic.error(id, "El rango de índices del argumento " + (i + 1) + " no coincide con el rango de índices del parámetro de la función '" + id.image + "'.");
+						// }
 					}
 				} else {
 					// Si el parámetro es simple y por valor, los tipos deben coincidir
