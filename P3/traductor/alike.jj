@@ -169,7 +169,6 @@ TOKEN : {
 
 	// Otros
 |	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
-|	< tNEWLINE: "\n" >
 
 }
 
@@ -419,6 +418,7 @@ void parametro_formal(Map<Token,Symbol> params) :
 	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
 	{
 		for (Token id : t) {
+		// Comprobar si hay algún parámetro con el mismo nombre se hace tras declarar todos los parámetros
 
 			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
@@ -432,14 +432,6 @@ void parametro_formal(Map<Token,Symbol> params) :
 				}
 			}
 		}
-		// Comprobar si hay algún parámetro con el mismo nombre se hace tras declarar todos los parámetros
-		// 🎃 No sé funciona ya que quizás cuenta el mismo token (daría true siempre) o solamente cuenta cuando hay mínimo un duplicado
-		for (Token id : t) {
-			if (params.containsKey(id)) {
-				semantic.error(id, "El parámetro '" + id.image + "' ya ha sido definido.");
-			}
-		}
-
 	}
 }
 
@@ -559,14 +551,14 @@ void inst_escribir_elemento() :
 	}
 }
 
-//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)? <tNEWLINE>
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
 void inst_escribir_linea() : {}
 {
 	<tPUT_LINE> // Puede NO tener parámetros
 	(<tLPAREN> inst_escribir_elemento()
 	( <tCOMMA> inst_escribir_elemento() )* <tRPAREN>
 	)?
-	<tNEWLINE>
+
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
