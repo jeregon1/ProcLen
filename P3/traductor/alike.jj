@@ -30,13 +30,16 @@ public class alike {
 	// Tabla de símbolos global
 	static SymbolTable st;
 	static SemanticFunctions semantic;
-	
-	// Variable global necesaria para controlar la derivabilidad de la instrucción 'return' 
-	// dependiendo de si nos encontramos en una función o en un procedimiento. 
-	static boolean inFunction = false;
+
+	static boolean verbose = false;
 
    	public static void main(String[] args) {
 	   	alike parser = null;
+		
+		// argumento verbose
+		if (args.length > 1 && args[1].equals("-v")) {
+			verbose = true;
+		}
 
 		st = new SymbolTable();
 	   	semantic = new SemanticFunctions(st);
