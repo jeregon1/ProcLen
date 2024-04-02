@@ -676,6 +676,7 @@ void inst_return() :
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
 //expresion: relacion ((<tAND> | <tOR>) relacion)*
+//expresion: relacion ( (<tAND> relacion)* | (<tOR> relacion)* )
 Symbol.Types expresion() : 
 {
 	Symbol.Types type;
@@ -684,19 +685,33 @@ Symbol.Types expresion() :
 }
 {
 	type = relacion()
-	((<tAND> | <tOR>)
+	(	(<tAND>
 		{
 			moreThanOne = true;
 			if (type != Symbol.Types.BOOL)
 				semantic.error(getToken(0), errorMsg);
 		}
-	type = relacion() 
+		type = relacion() 
 		{
 			// Si hay más de una relación, deben ser todas BOOL
 			if (type != Symbol.Types.BOOL)
 				semantic.error(getToken(0), errorMsg);
 		}
-	)*
+		)+
+		| (<tOR>
+		{
+			moreThanOne = true;
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		type = relacion() 
+		{
+			// Si hay más de una relación, deben ser todas BOOL
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		)+
+	)?
 	{
 		return (moreThanOne) ? Symbol.Types.BOOL : type;
 	}
