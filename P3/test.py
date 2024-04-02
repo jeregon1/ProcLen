@@ -31,7 +31,7 @@ fuentes_alike = [f for f in fuentes if os.path.splitext(f)[1] == '.al']
 for f in fuentes_alike:
     try:
         print('\n====================================')
-        res = os.system('java -jar ' + traductor + ' ' + os.path.join(path_fuentes,f))
+        res = os.system('java -jar ' + traductor + ' ' + os.path.join(path_fuentes,os.path.splitext(f)[0]))
         print('\n========== ' + f + ' ==========')
         res = input('\nReturn para continuar')
     except Exception as e:
