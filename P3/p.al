@@ -7,11 +7,18 @@ ai: array (1..10) of integer;
 ab: array (1..10) of boolean;
 ac: array (1..10) of character;
 
-procedure p( a, b: integer; a1, b1: ref integer) is
-begin
-  null;
-end;
+procedure pi(i: ref integer) is
+begin  null; end;
+
+procedure pb(b: ref boolean) is
+begin  null; end;
+
+function fi(a,b,c,d: integer) return integer is
+begin  return 0; end;
 
 begin 
-  p (1, 2, 3, 4);
+  pi (ai(3 + i));
+  pb (b and b);
+
+  ai(fi(1,2,3,4)) := 1;
 end;

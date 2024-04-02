@@ -11,7 +11,6 @@ package lib.tools.SemanticFunctions;
 
 import java.util.*;
 import traductor.Token;
-// import lib.attributes.*;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.errores.*;
