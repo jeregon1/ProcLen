@@ -128,5 +128,19 @@ public class Token implements java.io.Serializable {
     return newToken(ofKind, null);
   }
 
+  public void clone(Token t) {
+    if (t == null)
+      return;
+
+    t.kind = this.kind;
+    t.beginLine = this.beginLine;
+    t.beginColumn = this.beginColumn;
+    t.endLine = this.endLine;
+    t.endColumn = this.endColumn;
+    t.image = this.image;
+    t.next = this.next;
+    t.specialToken = this.specialToken;
+  }
+
 }
 /* JavaCC - OriginalChecksum=5df5983891b66b108e7f273cd02f67a7 (do not edit this line) */

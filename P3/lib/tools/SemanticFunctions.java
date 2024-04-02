@@ -42,7 +42,7 @@ public class SemanticFunctions {
 		}
 		return mainProcedureName;
 	}
-
+	
 	// -------------------------- FUNCIONES --------------------------------
 
 	private boolean currentFunctionHasReturn = false; // indica si la función actual tiene return
@@ -121,12 +121,12 @@ public class SemanticFunctions {
 
 	private SymbolTable st; //tabla de símbolos
 
-	public void insertSymbol(Token t, Symbol s) {
+	public void insertSymbol(Token id, Symbol s) {
 		try {
 			st.insertSymbol(s);
 		}
 		catch (AlreadyDefinedSymbolException e) {
-			error(t, "El símbolo " + s.name + " ya está definido.");
+			error(id, "El símbolo '" + id.image + "' ya está definido.");
 		}
 	}
 
@@ -136,7 +136,7 @@ public class SemanticFunctions {
 			return true;
 		}
 		catch (SymbolNotFoundException e) {
-			error(id, "El símbolo " + id.image + " no está definido.");
+			error(id, "El símbolo '" + id.image + "' no está definido.");
 			return false;
 		}
 	}
@@ -173,7 +173,7 @@ public class SemanticFunctions {
 			return ((SymbolArray) s).baseType;
 		}
 		else {
-			error(id, "El símbolo " + id.image + " no es un array.");
+			error(id, "El símbolo '" + id.image + "' no es un array.");
 			return Symbol.Types.UNDEFINED;
 		}
 	}

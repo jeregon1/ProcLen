@@ -1,31 +1,61 @@
 procedure Programa is
+    aux : integer;
+    v: array(1..3) of integer;
+    v2: array(1..3) of boolean;
+    v3: array(1..4) of integer;
 
--- PRUEBA--> PROCEDIMIENTOS Y FUNCIONES
-procedure p is
-    i: integer;
-    c: character;
-    b: boolean;
-    ai: array(-1..1) of integer;
-    ab: array(1..3) of boolean;
-begin
-    i := 1;
-    c := 'c';
-    b := true;
-    ai(1) := 1;
-    ab(1) := true;
-end;
+    -- PRUEBA--> PROCEDIMIENTOS Y FUNCIONES
+    procedure p1 is
+        i: integer;
+        c: character;
+        b: boolean;
+        ai: array(-1..1) of integer;
+        ab: array(1..3) of boolean;
+    begin
+        i := 1;
+        c := 'c';
+        b := true;
+        ai(1) := 1;
+        ab(1) := true;
+    end;
 
-function f(aux2, aux3: integer) return integer is -- Función con return en lugar inalcanzable (funciona bien en alike)
-begin
-    if false then
-        return aux;
-    end if;
-end;
+    function f1(aux2, aux3: integer) return integer is -- Función con return en lugar inalcanzable (funciona bien en alike)
+    begin
+        if false then
+            return aux2;
+        end if;
+    end;
 
+    function f2(aux2: ref integer) return integer is
+    begin
+        return aux2;
+    end;
+
+    -- Parametros por valor
+
+    -- Prueba de parámetros arrays tanto por valor como por referencia
+    function f3( a: array(1..3) of integer) return integer is
+    begin
+        return a(1);
+    end;
+
+    function f4( a: ref array(1..3) of integer) return integer is
+    begin
+        return a(1);
+    end;
 begin
     -- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
-    i := f(1, 2, 3); -- error semántico: número incorrecto de argumentos
-    -- p(); error sintáctico: invocación a parámetro/función sin parámetros va sin '()'
+    --aux := f1(1, 2, 3); -- error semántico: número incorrecto de argumentos
+    --aux := f2(1); -- error semántico: argumento por referencia no es asignable
+    --aux := f3(v); -- error semántico: argumento por valor no es asignable
+    --aux := f4(v); -- error semántico: argumento por referencia no es asignable
+    aux := f3(v2); -- error semántico: no coinciden los tipos base
+    aux := f3(v3); -- error semántico: no coinciden los tamaños de los arrays
+
+    --aux := 2 + v;
+    --aux := f1("hola", 2); -- error semántico: argumento debe coincidir con tipo de parámetro
+    -- p1(); error sintáctico: invocación a parámetro/función sin parámetros va sin '()'
     -- Programa -- error sintáctico: programa principal no puede ser invocado
+    aux := f1(f1(1,2),2);
 
 end;
