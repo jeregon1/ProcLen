@@ -44,16 +44,20 @@ procedure Programa is
         return a(1);
     end;
 
+    -- Prueba de función sin return
     function f5( a: ref array(1..3) of integer) return integer is
     begin
         a(1) := 1;
     end;
 
+    -- Prueba de función con return de distinto tipo
     function f6( a: array(1..3) of integer) return integer is
     begin
         return true;
     end;
 
+    -- Prueba de declaración de procedimiento con mismo nombre que el programa principal
+    -- pero en nivel != de 0 (si que deja), mientras que en nivel 0 no deja (ejemplo siguiente)
     function f7( a: array(1..3) of integer) return integer is
         procedure Programa is
         begin 
@@ -62,6 +66,12 @@ procedure Programa is
     begin
         return a(1);
     end;
+
+    procedure Programa is
+    begin
+        skip_line;
+    end;
+
 begin
     -- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
     --aux := f1(1, 2, 3); -- error semántico: número incorrecto de argumentos
