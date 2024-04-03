@@ -53,6 +53,15 @@ procedure Programa is
     begin
         return true;
     end;
+
+    function f7( a: array(1..3) of integer) return integer is
+        procedure Programa is
+        begin 
+            skip_line;
+        end;
+    begin
+        return a(1);
+    end;
 begin
     -- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
     --aux := f1(1, 2, 3); -- error semántico: número incorrecto de argumentos
