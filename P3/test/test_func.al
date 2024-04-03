@@ -43,6 +43,16 @@ procedure Programa is
     begin
         return a(1);
     end;
+
+    function f5( a: ref array(1..3) of integer) return integer is
+    begin
+        a(1) := 1;
+    end;
+
+    function f6( a: array(1..3) of integer) return integer is
+    begin
+        return true;
+    end;
 begin
     -- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
     --aux := f1(1, 2, 3); -- error semántico: número incorrecto de argumentos
