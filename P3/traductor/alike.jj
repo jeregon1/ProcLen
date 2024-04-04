@@ -606,10 +606,6 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	id = <tID>
 	{
 		symbol = semantic.getSymbol(id);
-		// Se tiene acceso a símbolos de menor nivel?
-			// Respuesta: Sí, al símbolo de más alto nivel con el mismo nombre
-		// Comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
-			// Respuesta: no se permite: Error Argument for simple ref parameter is not a simple variable 
 	}
 	(
 	LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
