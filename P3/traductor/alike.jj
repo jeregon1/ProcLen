@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 
 public class alike {
-	// Tabla de símbolos global
-	static SymbolTable st;
-	static SemanticFunctions semantic;
+	
+	static SymbolTable st; // Tabla de símbolos global
+	static SemanticFunctions semantic; // Funciones semánticas
 
-	static boolean verbose = false;
+	static boolean verbose = false; // Flag modo verbose (impresión bloque cerrado tabla de símbolos)
 
    	public static void main(String[] args) {
 	   	alike parser = null;
@@ -188,7 +188,7 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 //-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
 
 //------------ Símbolo inicial de la gramática.
-// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion* <tEND> <tSEMICOLON> <EOF>
+// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
 void Programa() : 
 {
 	Token id;
@@ -237,6 +237,12 @@ void lista_ids(List<Token> tokens) :
 }
 
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
+/*
+ Params: 
+	-t: lista de tokens con los nombres de las variables
+	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
+	-paramClass: valor != de NONE en caso de ser un parámetro
+ */
 Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
 {
 	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
@@ -249,6 +255,12 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
 }
 
 //tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
+/*
+ Params:
+	-t: lista de tokens con los nombres de las variables
+	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
+	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
+ */
 void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
 {
 	Token tMin, tMax;
@@ -259,7 +271,7 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 	boolean isDeclaration = !isParameter;
 }
 {
-	<tARRAY> <tLPAREN> 
+	<tARRAY> <tLPAREN>
 	(<tMINUS> {minus1 = -1;} | <tPLUS>)? tMin = <tCONST_INT> 
 	<tRANGE> 
 	(<tMINUS> {minus2 = -1;} | <tPLUS>)? tMax = <tCONST_INT> 
@@ -272,14 +284,14 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 		}
 		if (isDeclaration) {
 			baseArray = new SymbolArray("", min, max, Symbol.Types.UNDEFINED, paramClass);
-			// baseArray se crea aquí para que en tipo_variable_simple se pueda insertar en la 
-			// tabla de símbolos con los valores de min y max
+			/* baseArray se crea aquí para que en "tipo_variable_simple" se pueda
+			   insertar en la tabla de símbolos con los valores de "min" y "max" */
 		}
 	}
 	<tOF> baseType = tipo_variable_simple(t, baseArray, null)
 	{
 		if (isParameter){ // Parámetro ARRAY
-			// paramArray se ha creado en parametro_formal para rellenarse aquí
+			// paramArray se ha creado en "parametro_formal" para rellenarse aquí
 			paramArray.minInd = min;
 			paramArray.maxInd = max;
 			paramArray.parClass = paramClass;
@@ -289,12 +301,19 @@ void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.Parameter
 }
 
 //tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
+/*
+ Params:
+	-t: lista de tokens con los nombres de las variables
+	-baseArray: creado en "tipo_variable_array" para rellenar datos del array (índices y paramClass). 
+				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
+	-paramClass: valor != de NONE en caso de ser un parámetro
+ */
 Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass) : 
 {
 	Symbol.Types type = null;
 	boolean isArray = (baseArray != null);
-	// Si baseArray no es null, estamos en una declaración de array y 
-	// contiene los valores de min, max y paramClass
+	/* Si baseArray != de null, estamos en una declaración de
+	   array y contiene los valores de min, max y paramClass */
 }
 {
 	( <tINT>  { type = Symbol.Types.INT; }
@@ -303,14 +322,14 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 	)
 	{
 		if (t == null) { // Parámetros
-			// Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
-			// y estos se insertan en st en declaracion_procedimiento y declaracion_funcion
+			/* Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
+			   y estos se insertan en st en declaracion_procedimiento y declaracion_funcion */
 			return type;
 		}
 		else if (isArray) { // Declaración de variables arrays
 			baseArray.baseType = type;
 			for (Token id : t) {
-				SymbolArray newArray = baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices
+				SymbolArray newArray = baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices y paramClass
 				newArray.name = id.image;
 				semantic.insertSymbol(id, newArray);
 			}
@@ -327,7 +346,7 @@ Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.P
 	}
 }
 
-//declaracion_procedimiento: cabecera_procedimiento (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+//declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_procedimiento() : 
 {
 	Token id;
@@ -358,7 +377,7 @@ void declaracion_procedimiento() :
 	}
 }
 
-//declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instrucciones <tEND>
+//declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_funcion() : 
 {
 	Token id;
@@ -376,7 +395,7 @@ void declaracion_funcion() :
 		functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(params.values()), returnType);
 		semantic.insertSymbol(id, functionSymbol);
 		st.insertBlock();
-		// insertar params con los tokens en la tabla de símbolos tras crear un nuevo bloque
+		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
 		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
 			semantic.insertSymbol(entry.getKey() ,entry.getValue());
 		}
@@ -390,7 +409,7 @@ void declaracion_funcion() :
 	<tEND>
 	{
 		semantic.exitFunction(getToken(0));
-		// if (verbose) System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
+		if (verbose) System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 		st.removeBlock(); // Eliminación del bloque actual
 	}
 	<tSEMICOLON>
@@ -398,6 +417,10 @@ void declaracion_funcion() :
 
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
+/**
+ * Params:
+ * 	-params: Diccionario de Token-Symbol de los parámetros
+ */
 void lista_parametros(Map<Token,Symbol> params) : {}
 {
 	parametro_formal(params) 
@@ -405,6 +428,10 @@ void lista_parametros(Map<Token,Symbol> params) : {}
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
+/**
+ * Params:
+ * 	-params: Diccionario de Token-Symbol de los parámetros
+ */
 void parametro_formal(Map<Token,Symbol> params) : 
 {
 	List<Token> t = new ArrayList<Token>();
@@ -418,17 +445,18 @@ void parametro_formal(Map<Token,Symbol> params) :
 	( <tREF> {paramClass = Symbol.ParameterClass.REF;} )?
 	baseType = tipo_variable(null, paramArray, paramClass) 
 	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
-	// Funciona de manera que en tipo_variable_array al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
+	// Funciona de manera que en "tipo_variable_array" al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
 	{
 		for (Token id : t) {
-		// Comprobar si hay algún parámetro con el mismo nombre se hace tras declarar todos los parámetros
+		// Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
 
 			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
 				newArray.name = id.image;
-				params.put(id, newArray);
+				params.put(id, newArray); // Insertado de parámetro array en el diccionario de parámetros
 			} else { // Parámetros simples
 				switch (baseType) {
+					// Insertado de parámetro (int|char|bool) en el diccionario de parámetros
 					case INT:  params.put(id, new  SymbolInt(id.image, paramClass)); break;
 					case CHAR: params.put(id, new SymbolChar(id.image, paramClass)); break;
 					case BOOL: params.put(id, new SymbolBool(id.image, paramClass)); break;
@@ -441,7 +469,7 @@ void parametro_formal(Map<Token,Symbol> params) :
 
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
-//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento | inst_asignacion | inst_if | inst_while | inst_return | <tNULL>) <tSEMICOLON>
+//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
 void instruccion(): {}
 {
 	(	inst_leer()
@@ -457,7 +485,7 @@ void instruccion(): {}
 	<tSEMICOLON>
 }
 
-//inst_leer: <tGET> <tLPAREN> <tID> (array_access)? ( <tCOMMA> <tID> (array_access)? )* <tRPAREN>
+//inst_leer: <tGET> <tLPAREN> inst_leer_elemento ( <tCOMMA> inst_leer_elemento )* <tRPAREN>
 void inst_leer() : {}
 {
 	<tGET> // Necesita parámetros
@@ -467,12 +495,13 @@ void inst_leer() : {}
 	<tRPAREN>
 }
 
+//inst_leer_elemento: <tID> ( array_access )?
 void inst_leer_elemento() :
 {
 	Token id;
 	boolean access = false;
-	// Se deben leer variables asignables de tipo integer o character
-	// Solo son asignables las variables simples y los elementos de un array
+	/* Se deben leer variables asignables de tipo integer o character.
+	   Solo son asignables las variables simples y los elementos de un array */
 }
 {
 	id = <tID> ( array_access() {access = true;} )?
@@ -490,6 +519,7 @@ void inst_leer_elemento() :
 			if (!access) {
 				semantic.error(id, "Se debe acceder a un elemento del array '" + id.image + "'.");
 			}
+
 			// si es array, comprobar que el tipo del array es INT o CHAR
 			SymbolArray array = (SymbolArray) symbol;
 			if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
@@ -518,12 +548,12 @@ void array_access() :
 		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
 			semantic.error(getToken(0), "El índice de un array debe ser de tipo " + tokenImage[tINT] + ".");
 		}
-		// No hace falta comprobar que el índice esté dentro del rango del array porque no lo piden
+		// No hace falta comprobar que el índice esté dentro del rango del array porque no se pide
 	}
 	<tRPAREN>
 }
 
-//inst_escribir: <tPUT> <tLPAREN> (<tCONST_STRING> | expresion) ( <tCOMMA> (<tCONST_STRING> | expresion) )* <tRPAREN>
+//inst_escribir: <tPUT> <tLPAREN> inst_escribir_elemento ( <tCOMMA> inst_escribir_elemento )* <tRPAREN>
 void inst_escribir() : {}
 {
 	<tPUT> // Necesita parámetros
@@ -554,7 +584,7 @@ void inst_escribir_elemento() :
 	}
 }
 
-//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> expresion (<tCOMMA> expresion)* <tRPAREN>)?
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> inst_escribir_elemento (<tCOMMA> inst_escribir_elemento)* <tRPAREN>)?
 void inst_escribir_linea() : {}
 {
 	<tPUT_LINE> // Puede NO tener parámetros
@@ -564,7 +594,7 @@ void inst_escribir_linea() : {}
 
 }
 
-//inst_invocacion_procedimiento_o_asignacion: <tID> ( inst_asignacion | inst_invocacion_procedimiento )
+//inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
 void inst_invocacion_procedimiento_o_asignacion() : 
 {
 	Token id;
@@ -578,11 +608,11 @@ void inst_invocacion_procedimiento_o_asignacion() :
 		symbol = semantic.getSymbol(id);
 		// Se tiene acceso a símbolos de menor nivel?
 			// Respuesta: Sí, al símbolo de más alto nivel con el mismo nombre
-		// comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
+		// Comprobar qué pasa al pasar una expresión (-var) a un parámetro por referencia
 			// Respuesta: no se permite: Error Argument for simple ref parameter is not a simple variable 
 	}
-	( // asignacion() 
-		LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
+	(
+	LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
 	(array_access() {access = true;} )? 
 	<tASSIGN>
 	type = expresion(null, null)
@@ -618,7 +648,6 @@ void inst_invocacion_procedimiento_o_asignacion() :
 			semantic.error(id, "Solo se pueden invocar procedimientos.");
 		} else if (symbol.name.toLowerCase().equals(semantic.getMainProcedureName())) {
 			// Checkear que no sea el procedimiento principal del programa
-			// también hay que checkear que sea del nivel 0 🎃 <-- ¿?
 			semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
 		}
 	}
@@ -665,7 +694,7 @@ void inst_while() :
 	<tLOOP> ( instruccion() )+ <tEND> <tLOOP>
 }
 
-//inst_return: <tRETURN> (expresion)?
+//inst_return: <tRETURN> expresion
 void inst_return() : 
 {
 	Symbol.Types returnType;
@@ -679,8 +708,13 @@ void inst_return() :
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
-//expresion: relacion ((<tAND> | <tOR>) relacion)*
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
+/**
+ * Params:
+ * -param: != de null si es un parámetro de función/procedimiento, o bien una componente de un vector
+ * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
+ * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
+ */
 Symbol.Types expresion(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type;
@@ -723,6 +757,9 @@ Symbol.Types expresion(Token param, boolean[] esAsignable) :
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
 Symbol.Types relacion(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
@@ -751,6 +788,9 @@ void operador_relacional() : {}
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
 Symbol.Types expresion_simple(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type;
@@ -781,6 +821,9 @@ Symbol.Types expresion_simple(Token param, boolean[] esAsignable) :
 }
                                                                                                                                                                          
 //termino: factor (operador_multiplicativo factor)*
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
 Symbol.Types termino(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type;
@@ -818,6 +861,9 @@ void operador_multiplicativo() : {}
 }
 
 //factor: (<tNOT>)? primario
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
 Symbol.Types factor(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type;
@@ -840,7 +886,10 @@ Symbol.Types factor(Token param, boolean[] esAsignable) :
 }
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
-//			| <tID> (<tLPAREN> lista_una_o_mas_exps <tRPAREN>)? | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
+//			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
 Symbol.Types primario(Token param, boolean[] esAsignable) : 
 {
 	Symbol.Types type = Symbol.Types.UNDEFINED;
@@ -915,6 +964,10 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
+/**
+ * Params:
+ * 	-id: Token de la función/procedimiento invocado, o del array accedido
+ */
 void lista_una_o_mas_exps(Token id) : 
 { // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
 	List<Symbol.Types> types = new ArrayList<>();
