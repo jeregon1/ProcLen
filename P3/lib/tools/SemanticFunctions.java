@@ -148,32 +148,11 @@ public class SemanticFunctions {
 		}
 	}
 
-	// public Symbol.Types getSymbolType(Token id) {
-	// 	Symbol s = this.getSymbol(id);
-	// 	if (s == null) {
-	// 		return Symbol.Types.UNDEFINED;
-	// 	}
-	// 	else {
-	// 		return s.type;
-	// 	}
-	// }
-
 	public SymbolProcedure getMainProcedureSymbol() {
-		return st.getMainProcedureSymbol();
+		SymbolProcedure mainProcedure = st.getMainProcedureSymbol();
+		if (mainProcedure == null) {
+			error(null, "No se ha definido el procedimiento principal.");
+		}
+		return mainProcedure;
 	}
-
-	// public Symbol.Types getArrayBaseType(Token id) {
-
-	// 	Symbol s = this.getSymbol(id);
-	// 	if (s == null) {
-	// 		return Symbol.Types.UNDEFINED;
-	// 	}
-	// 	else if (s instanceof SymbolArray) {
-	// 		return ((SymbolArray) s).baseType;
-	// 	}
-	// 	else {
-	// 		error(id, "El símbolo '" + id.image + "' no es un array.");
-	// 		return Symbol.Types.UNDEFINED;
-	// 	}
-	// }
 }

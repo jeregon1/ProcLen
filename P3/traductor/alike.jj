@@ -506,8 +506,9 @@ void inst_leer_elemento() :
 {
 	id = <tID> ( array_access() {access = true;} )?
 	{
-		Symbol symbol = semantic.getSymbol(id); // El error de símbolo no definido está en semantic.getSymbol
-		if (symbol == null) return;
+		
+		if (! semantic.isSymbolDefined(id)) return; // El error de símbolo no definido está en semantic.isSymbolDefined
+		Symbol symbol = semantic.getSymbol(id);
 
 		// si es procedimiento o función, error
 		if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
@@ -600,20 +601,17 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	Token id;
 	Symbol.Types type;
 	boolean access = false;
-	Symbol symbol;
 }
 {
 	id = <tID>
-	{
-		symbol = semantic.getSymbol(id);
-	}
 	(
 	LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
 	(array_access() {access = true;} )? 
 	<tASSIGN>
 	type = expresion(null, null)
 	{
-		if (symbol == null) return;
+		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+		Symbol symbol = semantic.getSymbol(id);
 
 		if (symbol.type == Symbol.Types.ARRAY) {
 			if (!access) { // Si id es array, se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son) 
@@ -639,7 +637,8 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	// checkear que el id es un procedimiento y nada más
 	( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
 	{
-		if (symbol == null) return;
+		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+		Symbol symbol = semantic.getSymbol(id);
 		if (symbol.type != Symbol.Types.PROCEDURE) {
 			semantic.error(id, "Solo se pueden invocar procedimientos.");
 		} else if (symbol.name.toLowerCase().equals(semantic.getMainProcedureName())) {
@@ -907,8 +906,8 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 	}
 	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> //invocar func. (con parámetros) o comp. array
 	{
+		if (! semantic.isSymbolDefined(id)) return Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
-		if (symbol == null) return Symbol.Types.UNDEFINED;
 
 		switch (symbol.type) {
 			// Si es una función, devolver su tipo retorno
@@ -926,8 +925,8 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 	}
 	|	id = <tID> // variable simple o func/proced sin parámetros
 	{
+		if (! semantic.isSymbolDefined(id)) return Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
-		if (symbol == null) return Symbol.Types.UNDEFINED;
 
 		switch (symbol.type) {
 			case FUNCTION: // Checkear que la función no tiene parámetros
@@ -971,8 +970,8 @@ void lista_una_o_mas_exps(Token id) :
 	boolean[] esAsignable = {false};
 
 	Symbol.Types type;
+	if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
 	Symbol symbol = semantic.getSymbol(id);
-	if (symbol == null) return;
 	
 	Token t = new Token(0);
 }
@@ -1012,13 +1011,12 @@ void lista_una_o_mas_exps(Token id) :
 
 			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
 			for (int i = 0; i < types.size(); i++) {
+				if (types.get(i) == Symbol.Types.UNDEFINED) continue; // Si hay un error en la expresión, no comprobar más
 				if (types.get(i) != parList.get(i).type) {
 					semantic.error(id, "El tipo " + types.get(i) + " del argumento nº " + (i + 1) + " no coincide con el tipo " + parList.get(i).type + " del parámetro " + msg);
 					continue;
 				}
 
-				// System.out.println(i);
-				// System.out.println(parList.get(i));
 				Token arg = tokenArgs.get(i);
 
 				if (parList.get(i).type == Symbol.Types.ARRAY) {

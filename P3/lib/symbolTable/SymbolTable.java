@@ -76,7 +76,12 @@ public class SymbolTable {
         return st.get(level - 1).get(name.toLowerCase());
     }
 
-    public SymbolProcedure getMainProcedureSymbol() {
+    public SymbolProcedure getMainProcedure() {
+        if (st.size() == 0) {
+            return null;
+         } else if (st.get(0).size() == 0) {
+            return null;
+        }
         // Se asume que ya se ha insertado el símbolo del procedimiento principal
         return (SymbolProcedure) st.get(0).values().toArray()[0];
     }
