@@ -20,7 +20,7 @@ then
     java -jar $dir/../other/alike/alike.jar "$2" "$3"
 else
     # Si el primer parámetro es "corni", se ejecuta el compilador $dir/dist/alike.jar
-    java -jar $dir/dist/alike.jar "$2" "$3"
+    java -jar $dir/dist/alike_4.jar "$2" "$3"
 fi
 
 # Su compilador--> java -jar ../other/alike/alike.jar p

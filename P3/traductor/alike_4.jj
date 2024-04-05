@@ -13,7 +13,7 @@ options {
 	// DEBUG_PARSER = true;
 }
 
-PARSER_BEGIN(alike)
+PARSER_BEGIN(alike_4)
 
 package traductor;
 
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
-public class alike {
+public class alike_4 {
 	
 	static SymbolTable st; // Tabla de símbolos global
 	static SemanticFunctions semantic; // Funciones semánticas
@@ -34,7 +34,7 @@ public class alike {
 	static boolean verbose = false; // Flag modo verbose (impresión bloque cerrado tabla de símbolos)
 
    	public static void main(String[] args) {
-	   	alike parser = null;
+	   	alike_4 parser = null;
 		
 		// argumento verbose
 		if (args.length > 1 && args[1].equals("-v")) {
@@ -47,11 +47,11 @@ public class alike {
 	   
 	   	try {
 			if(args.length == 0) {
-				parser = new alike(System.in);
+				parser = new alike_4(System.in);
 			}
 			else {
 				fileName = args[0] + ".al";
-				parser = new alike(new java.io.FileInputStream(fileName));
+				parser = new alike_4(new java.io.FileInputStream(fileName));
 			}
 			//Programa es el símbolo inicial de la gramática
 			parser.Programa();
@@ -82,7 +82,7 @@ public class alike {
 }
 
 
-PARSER_END(alike)
+PARSER_END(alike_4)
 
 //---------------------------------------------------------
 

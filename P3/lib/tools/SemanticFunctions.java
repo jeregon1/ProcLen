@@ -147,12 +147,4 @@ public class SemanticFunctions {
 			return null;
 		}
 	}
-
-	public SymbolProcedure getMainProcedureSymbol() {
-		SymbolProcedure mainProcedure = st.getMainProcedureSymbol();
-		if (mainProcedure == null) {
-			error(null, "No se ha definido el procedimiento principal.");
-		}
-		return mainProcedure;
-	}
 }
