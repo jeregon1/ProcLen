@@ -38,11 +38,13 @@ produce ningún error sintáctico, se muestra también la cantidad de errores se
 
 
 --> Organización del proyecto:
-El proyecto gira en torno a la clase "alike_4.jj", donde se realizan los distintos análisis. ç
+El proyecto gira en torno a la clase "alike_4.jj", donde se realizan los distintos análisis.
 Para ello, se apoya de las clases: 
 - "Token" 
 - Todas las clases que hacen alusión a los "Símbolos" y "Tabla de Símbolos"
 - "ErrorSemantico" útil para la impresión de errores con el mismo formato, y para recopilar 
    información sobre el número de errores semánticos detectados.
 - "SemanticFunctions" donde se definen métodos para encapsular ciertas funciones relativas 
-   a la lógica semántica del compilador.
+   a la lógica semántica del compilador. A su vez, el uso de la Tabla de Símbolos está realmente
+   encapsulado en esta clase, al igual que otros detalles varios como flags necesarios para el 
+   correcto funcionamiento del compilador.
