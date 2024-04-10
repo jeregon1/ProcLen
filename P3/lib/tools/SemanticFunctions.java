@@ -18,9 +18,12 @@ import lib.errores.*;
 
 public class SemanticFunctions {
 
-	public SemanticFunctions(SymbolTable st) {
+	private SymbolTable st; //tabla de símbolos
+	private ErrorSemantico errSem; //clase común de errores semánticos
+
+	public SemanticFunctions() {
+		st     = new SymbolTable();
 		errSem = new ErrorSemantico();
-		this.st = st;
 	}
 
 	// -------------------------- PROCEDIMIENTO PRINCIPAL --------------------------------
@@ -94,7 +97,6 @@ public class SemanticFunctions {
 
 	// -------------------------- ERRORES SEMÁNTICOS --------------------------------
 
-	private ErrorSemantico errSem; //clase común de errores semánticos
 
 	public void error(Token token, String msg) {
 		errSem.print(token, msg);
@@ -110,7 +112,17 @@ public class SemanticFunctions {
 
 	// -------------------------- TABLA DE SÍMBOLOS --------------------------------
 
-	private SymbolTable st; //tabla de símbolos
+	public void insertBlock() {
+		st.insertBlock();
+	}
+
+	public void removeBlock() {
+		st.removeBlock();
+	}
+
+	public void printSymbolTable(String id_image) {
+		System.err.println(st.toString(id_image));
+	}
 
 	public void insertSymbol(Token id, Symbol s) {
 		try {
