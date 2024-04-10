@@ -10,7 +10,7 @@ Jesús López Ansón, 839922
 
 --> Compilar mediante: "ant"
 
---> Invocar como: "java -jar alike_4.jar <fichero_fuente_alike>"
+--> Invocar como: "java -jar alike_4.jar <fichero_fuente_alike> [-v]"
 
 - El fichero alike_4.jar se encuentra en el directorio "dist". De este modo, se debe de 
 aportar una ruta hasta el mismo, o estar en el propio directorio al lanzar el programa.
@@ -26,6 +26,9 @@ Consiste en un compilador que realiza el análisis léxico, sintáctico y semán
 para el lenguaje de programación "alike". Consiste en la versión de nivel 4 del compilador, que admite
 las siguentes características:
 "Uso de parámetros escalares y de vectores, tanto por valor como por referencia en procedimientos y funciones".
+
+Se ha incluido una opción verbose, que permite mostrar información adicional sobre el proceso de compilación.
+De este modo, cada vez que se cierre un bloque de la tabla de símbolos, se mostrará la información de la misma.
 
 --> En caso de detección de errores:
 - Si se detecta algún error sintáctico, se muestra el lugar donde se ha producido y se interrumpe el

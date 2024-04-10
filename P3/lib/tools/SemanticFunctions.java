@@ -11,6 +11,7 @@ package lib.tools.SemanticFunctions;
 
 import java.util.*;
 import traductor.Token;
+import traductor.alikeConstants;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.errores.*;
@@ -65,15 +66,6 @@ public class SemanticFunctions {
 	public boolean inFunction() {
 		return currentFunctionSymbol != null;
 	}
-
-	// public Symbol.Types getCurrentFunctionType() {
-	// 	if (currentFunctionSymbol != null)
-	// 		return currentFunctionSymbol.returnType;
-	// 	else {
-	// 		System.err.println("Error: No se puede llamar a este método sin estar en una función.");
-	// 		return Symbol.Types.UNDEFINED;
-	// 	}
-	// }
 
 	public void inst_return(Token t, Symbol.Types returnType) {
 		if (!inFunction()) {
@@ -147,4 +139,91 @@ public class SemanticFunctions {
 			return null;
 		}
 	}
+
+	// -------------------------- TIPOS --------------------------------
+
+	public void emptyArrayRange(Token t, int min, int max) {
+		if (min > max) {
+			error(t, "Los vectores deben tener un rango no vacío de enteros, se ha encontrado (" + min + ".." + max + ")");
+		}
+	}
+
+	public void isProcedureOrFunction(Token t, Symbol s){
+		if (s.type == Symbol.Types.PROCEDURE || s.type == Symbol.Types.FUNCTION) {
+			error(t, "No se puede leer un procedimiento o función.");
+		}
+	}
+
+	public void readingArrayChecks(Token t, Symbol s, boolean access){
+		if (s.type == Symbol.Types.ARRAY) {
+			// si es array, comprobar que se ha accedido a un elemento y no al array entero
+			if (!access) {
+				error(t, "Se debe acceder a un elemento del array '" + t.image + "'.");
+			}
+
+			// si es array, comprobar que el tipo del array es INT o CHAR
+			SymbolArray array = (SymbolArray) s;
+			if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
+				error(t, "El array '" + t.image + "' debe ser de tipo " + "integer"/* tokenImage[tINT] */ + " o " + "character"/* tokenImage[tCHAR] */ + ".");
+			}
+		} else if (access) { // que no se acceda a una variable simple, procedimiento o función como a un array 
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por no ser de tipo " + "array"/* tokenImage[tARRAY] */ + " sino " + s.type + ".");
+		}		
+	}
+
+	public void isBooleanBeingRead(Token t, Symbol s){
+		if (s.type == Symbol.Types.BOOL) { // Comprobar que no se esté leyendo un booleano
+			error(t, "No se puede leer una variable de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+		}
+	}
+
+	public void indexIsInteger(Token t, Symbol.Types type){
+		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
+			error(t, "El índice de un array debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+		}
+	}
+
+	public void assigningArrayChecks(Token t, Symbol s, Symbol.Types type, boolean access) {
+		if (s.type == Symbol.Types.ARRAY) {
+			if (!access) { // Si id es array, se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son) 
+				error(t, "Los arrays no son asignables, se debe acceder a un elemento de '" + t.image + "'.");
+			}
+			Symbol.Types baseType = ((SymbolArray) s).baseType;
+			if (baseType != type) { // Comprobar que el tipo de la expresión coincide con el tipo base del array
+				error(t, "El tipo " + type + " de la expresión no coincide con el tipo " + baseType + " base del array '" + t.image + "'.");
+			}
+		} else if (access) { // no puede accederse a una variable no array
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + "array"/* tokenImage[tARRAY] */ + " y no " + s.type + ".");
+		}
+	}
+
+	public void assignableTypeChecks(Token t, Symbol s, Symbol.Types type) {
+		if (s.type == Symbol.Types.PROCEDURE || s.type == Symbol.Types.FUNCTION) {
+			error(t, "Los procedimientos y funciones no son asignables.");
+		} 
+		else if (s.type != Symbol.Types.ARRAY && s.type != type) { // Asignable y expresión deben ser del mismo tipo
+			error(t, "El tipo " + type + " de la expresión no coincide con el tipo " + s.type + " de '" + t.image + "'.");
+		}
+	}
+
+	public void procedureChecks(Token t, Symbol s) {
+		if (s.type != Symbol.Types.PROCEDURE) { // Comprobar que el símbolo es un procedimiento
+			error(t, "Solo se pueden invocar procedimientos.");
+		} else if (s.name.toLowerCase().equals(getMainProcedureName())) { // Checkear que no sea el procedimiento principal del programa
+			error(t, "No se puede invocar el procedimiento principal del programa.");
+		}
+	}
+
+	public void ifChecks(Token t, Symbol.Types type, String errorMsg) {
+		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
+			error(t, errorMsg);
+		}
+	}
+
+	public void whileChecks(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
+			error(t, "La guarda de un bucle " + "while"/* tokenImage[tWHILE] */ + " debe ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+		}
+	}
 }
+

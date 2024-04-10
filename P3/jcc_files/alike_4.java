@@ -26,12 +26,13 @@ public class alike_4 implements alike_4Constants {
                         verbose = true;
                 }
 
+                // creación de SemanticFuncions, donde se encapsula la lógica semántica junto a la tabla de símbolos
                 st = new SymbolTable();
                 semantic = new SemanticFunctions(st);
                 String fileName = "";
 
                 try {
-                        if(args.length == 0) {
+                        if(args.length == 0) { // Si no se especifica fichero, se lee de la entrada estándar
                                 parser = new alike_4(System.in);
                         }
                         else {
@@ -64,8 +65,6 @@ public class alike_4 implements alike_4Constants {
                         e.printStackTrace();
                 }
    }
-
-//-------------------👇🏼 Analizador sintáctico 👇🏼-------------------
 
 //------------ Símbolo inicial de la gramática.
 // Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
@@ -142,7 +141,6 @@ public class alike_4 implements alike_4Constants {
     jj_consume_token(tSEMICOLON);
 if (verbose) System.err.println(st.toString(id.image)); // Impresión de la tabla de símbolos
 
-    jj_consume_token(0);
 }
 
 //declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
@@ -154,6 +152,10 @@ if (verbose) System.err.println(st.toString(id.image)); // Impresión de la tabl
 }
 
 //lista_ids: <tID> (<tCOMMA> <tID>)*
+/**
+ * Params:
+ * 	-tokens: lista de tokens de la enumeración de los identificadores de las variables
+ */
   static final public void lista_ids(List<Token> tokens) throws ParseException {Token t;
     t = jj_consume_token(tID);
 tokens.add(t);
@@ -175,11 +177,11 @@ tokens.add(t);
 }
 
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
-/*
- Params: 
-	-t: lista de tokens con los nombres de las variables
-	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
-	-paramClass: valor != de NONE en caso de ser un parámetro
+/**
+ * Params: 
+ *	-t: lista de tokens de la enumeración de los identificadores de las variables
+ *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
+ *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
   static final public Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) throws ParseException {Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
 
@@ -205,11 +207,11 @@ tokens.add(t);
 }
 
 //tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
-/*
- Params:
-	-t: lista de tokens con los nombres de las variables
-	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
-	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
+/**
+ * Params:
+ *	-t: lista de tokens de la enumeración de los identificadores de las variables
+ *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
+ *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
  */
   static final public void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) throws ParseException {Token tMin, tMax;
         int min, max, minus1 = 1, minus2 = 1;
@@ -273,9 +275,8 @@ minus2 = -1;
     jj_consume_token(tRPAREN);
 min = Integer.parseInt(tMin.image) * minus1;
                 max = Integer.parseInt(tMax.image) * minus2;
-                if (min > max) {
-                        semantic.error(tMax, "Los vectores deben tener un rango no vac\u00edo de enteros, se ha encontrado (" + min + ".." + max + ")");
-                }
+                semantic.emptyArrayRange(tMax, min, max); // Comprobar que el rango no es vacío (min > max)
+
                 if (isDeclaration) {
                         baseArray = new SymbolArray("", min, max, Symbol.Types.UNDEFINED, paramClass);
                         /* baseArray se crea aquí para que en "tipo_variable_simple" se pueda
@@ -295,7 +296,7 @@ if (isParameter){ // Parámetro ARRAY
 //tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
 /*
  Params:
-	-t: lista de tokens con los nombres de las variables
+	-t: lista de tokens de la enumeración de los identificadores de las variables
 	-baseArray: creado en "tipo_variable_array" para rellenar datos del array (índices y paramClass). 
 				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
 	-paramClass: valor != de NONE en caso de ser un parámetro
@@ -370,7 +371,7 @@ if (t == null) { // Parámetros
     }
 semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>(params.values())));
                 st.insertBlock();
-                // insertar params con los tokens en la tabla de símbolos tras crear un nuevo bloque
+                // insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
                 for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
                         semantic.insertSymbol(entry.getKey(), entry.getValue());
                 }
@@ -698,39 +699,25 @@ access = true;
 if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // El error de símbolo no definido está en semantic.isSymbolDefined
                 Symbol symbol = semantic.getSymbol(id);
 
-                // si es procedimiento o función, error
-                if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
-                        semantic.error(id, "No se puede leer un procedimiento o funci\u00f3n.");
-                }
+                semantic.isProcedureOrFunction(id, symbol); // si es procedimiento o función, error
 
-                if (symbol.type == Symbol.Types.ARRAY) {
-                        // si es array, comprobar que se ha accedido a un elemento y no al array entero
-                        if (!access) {
-                                semantic.error(id, "Se debe acceder a un elemento del array '" + id.image + "'.");
-                        }
+                /* Comprobaciones relacionadas con arrays:
+		- Si es array: 
+			- comprobar que se ha accedido a un elemento y no al array entero
+			- comprobar que el tipo del array es INT o CHAR
+		- Si no: que no se acceda a una variable simple, procedimiento o función como a un array
+		*/
+                semantic.readingArrayChecks(id, symbol, access);
 
-                        // si es array, comprobar que el tipo del array es INT o CHAR
-                        SymbolArray array = (SymbolArray) symbol;
-                        if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
-                                semantic.error(id, "El array '" + id.image + "' debe ser de tipo " + tokenImage[tINT] + " o " + tokenImage[tCHAR] + ".");
-                        }
-                } else if (access) { // que no se acceda a una variable simple o procedimiento o función como a un array 
-                        semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por no ser de tipo " + tokenImage[tARRAY] + " sino " + symbol.type + ".");
-                }
+                semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
 
-                // no puede ser boolean
-                if (symbol.type == Symbol.Types.BOOL) {
-                        semantic.error(id, "No se puede leer una variable de tipo " + tokenImage[tBOOL] + ".");
-                }
 }
 
 //array_access: <tLPAREN> expresion <tRPAREN>
   static final public void array_access() throws ParseException {Symbol.Types type;
     jj_consume_token(tLPAREN);
     type = expresion(null, null);
-if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
-                        semantic.error(getToken(0), "El \u00edndice de un array debe ser de tipo " + tokenImage[tINT] + ".");
-                }
+semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de tipo INT
                 // No hace falta comprobar que el índice esté dentro del rango del array porque no se pide
 
     jj_consume_token(tRPAREN);
@@ -848,25 +835,20 @@ access = true;
 if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está definido, no se puede comprobar nada más
                 Symbol symbol = semantic.getSymbol(id);
 
-                if (symbol.type == Symbol.Types.ARRAY) {
-                        if (!access) { // Si id es array, se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son) 
-                                semantic.error(id, "Los arrays no son asignables, se debe acceder a un elemento de '" + id.image + "'.");
-                        }
-                        Symbol.Types baseType = ((SymbolArray) symbol).baseType;
-                        if (baseType != type) { // Comprobar que el tipo de la expresión coincide con el tipo base del array
-                                semantic.error(id, "El tipo " + type + " de la expresi\u00f3n no coincide con el tipo " + baseType + " base del array '" + id.image + "'.");
-                        }
-                } else if (access) { // no puede accederse a una variable no array
-                        semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por ser de tipo " + tokenImage[tARRAY] + " y no " + symbol.type + ".");
-                }
+                /* Comprobaciones relacionadas con arrays:
+		- Si es array:
+			- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
+			- comprobar que el tipo de la expresión coincide con el tipo base del array
+		- Si no: no puede accederse a una variable no array
+		*/
+                semantic.assigningArrayChecks(id, symbol, type, access);
 
-                // Solamente son asignables las variables simples y los elementos de un array
-                if (symbol.type == Symbol.Types.PROCEDURE || symbol.type == Symbol.Types.FUNCTION) {
-                        semantic.error(id, "Los procedimientos y funciones no son asignables.");
-                }
-                else if (symbol.type != Symbol.Types.ARRAY && symbol.type != type) { // Asignable y expresión deben ser del mismo tipo
-                        semantic.error(id, "El tipo " + type + " de la expresi\u00f3n no coincide con el tipo " + symbol.type + " de '" + id.image + "'.");
-                }
+                /* Comprobaciones sobre los tipos de los asignables:
+		- Si es un procedimiento o función, error
+		- Asignable y expresión deben ser del mismo tipo
+		*/
+                semantic.assignableTypeChecks(id, symbol, type); // Solamente son asignables las variables simples y los elementos de un array
+
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tLPAREN:{
@@ -881,12 +863,9 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
       }
 if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está definido, no se puede comprobar nada más
                 Symbol symbol = semantic.getSymbol(id);
-                if (symbol.type != Symbol.Types.PROCEDURE) {
-                        semantic.error(id, "Solo se pueden invocar procedimientos.");
-                } else if (symbol.name.toLowerCase().equals(semantic.getMainProcedureName())) {
-                        // Checkear que no sea el procedimiento principal del programa
-                        semantic.error(id, "No se puede invocar el procedimiento principal del programa.");
-                }
+
+                semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
+
     }
 }
 
@@ -896,9 +875,8 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
                         tokenImage[tELSIF] + " debe ser de tipo " + tokenImage[tBOOL] + ".";
     jj_consume_token(tIF);
     type = expresion(null, null);
-if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-                        semantic.error(getToken(0), errorMsg);
-                }
+semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+
     jj_consume_token(tTHEN);
     label_15:
     while (true) {
@@ -934,9 +912,8 @@ if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
       }
       jj_consume_token(tELSIF);
       type = expresion(null, null);
-if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-                        semantic.error(getToken(0), errorMsg);
-                }
+semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+
       jj_consume_token(tTHEN);
       label_17:
       while (true) {
@@ -998,9 +975,8 @@ if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
   static final public void inst_while() throws ParseException {Symbol.Types type;
     jj_consume_token(tWHILE);
     type = expresion(null, null);
-if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-                        semantic.error(getToken(0), "La guarda de un bucle " + tokenImage[tWHILE] + " debe ser de tipo " + tokenImage[tBOOL] + ".");
-                }
+semantic.whileChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
+
     jj_consume_token(tLOOP);
     label_19:
     while (true) {
@@ -1580,14 +1556,268 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     finally { jj_save(1, xla); }
   }
 
-  static private boolean jj_3R_termino_829_11_41()
+  static private boolean jj_3R_factor_834_11_42()
  {
-    if (jj_3R_operador_multiplicativo_855_9_44()) return true;
-    if (jj_3R_factor_868_9_40()) return true;
+    if (jj_scan_token(tNOT)) return true;
     return false;
   }
 
-  static private boolean jj_3R_operador_relacional_782_9_37()
+  static private boolean jj_3_1()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_null_590_21_25()) jj_scanpos = xsp;
+    if (jj_scan_token(tASSIGN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_687_17_29()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_687_17_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_expresion_700_19_33()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_687_17_32()
+ {
+    Token xsp;
+    if (jj_3R_expresion_687_18_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_687_18_38()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_920_17_52()
+ {
+    if (jj_scan_token(tFALSE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_factor_834_9_40()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_factor_834_11_42()) jj_scanpos = xsp;
+    if (jj_3R_primario_860_9_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2()
+ {
+    if (jj_scan_token(tID)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_lista_una_o_mas_exps_945_9_53()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_919_17_51()
+ {
+    if (jj_scan_token(tTRUE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_918_17_50()
+ {
+    if (jj_scan_token(tCONST_CHAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_917_17_49()
+ {
+    if (jj_scan_token(tCONST_INT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_867_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_686_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_686_9_27()
+ {
+    if (jj_3R_relacion_729_9_28()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_687_17_29()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_730_11_31()
+ {
+    if (jj_3R_operador_relacional_748_9_37()) return true;
+    if (jj_3R_expresion_simple_761_5_30()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_729_9_28()
+ {
+    if (jj_3R_expresion_simple_761_5_30()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_730_11_31()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_861_17_46()
+ {
+    if (jj_scan_token(tINT2CHAR)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_686_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_operador_multiplicativo_821_9_44()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(57)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(58)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(59)) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_768_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_794_5_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_953_11_54()
+ {
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_686_9_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_860_9_43()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_primario_860_37_45()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_861_17_46()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_867_17_47()) {
+    jj_scanpos = xsp;
+    if (jj_3_2()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_892_17_48()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_917_17_49()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_918_17_50()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_919_17_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_920_17_52()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_array_access_530_9_26()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_686_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_892_17_48()
+ {
+    if (jj_scan_token(tID)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_700_20_39()
+ {
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_729_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_761_6_34()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_945_9_53()
+ {
+    if (jj_3R_expresion_686_9_27()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_lista_una_o_mas_exps_953_11_54()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_700_19_33()
+ {
+    Token xsp;
+    if (jj_3R_expresion_700_20_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_700_20_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_761_5_30()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_simple_761_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_794_5_35()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_simple_768_10_36()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_termino_795_11_41()
+ {
+    if (jj_3R_operador_multiplicativo_821_9_44()) return true;
+    if (jj_3R_factor_834_9_40()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_operador_relacional_748_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1610,288 +1840,34 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_primario_894_37_45()
+  static private boolean jj_3R_primario_860_37_45()
  {
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_720_9_27()) return true;
+    if (jj_3R_expresion_686_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_array_access_546_9_26()
+  static private boolean jj_3R_null_590_21_25()
  {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_720_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
+    if (jj_3R_array_access_530_9_26()) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_721_18_38()
+  static private boolean jj_3R_expresion_687_18_38()
  {
     if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_763_9_28()) return true;
+    if (jj_3R_relacion_729_9_28()) return true;
     return false;
   }
 
-  static private boolean jj_3R_termino_828_5_35()
+  static private boolean jj_3R_termino_794_5_35()
  {
-    if (jj_3R_factor_868_9_40()) return true;
+    if (jj_3R_factor_834_9_40()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_termino_829_11_41()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_factor_868_11_42()
- {
-    if (jj_scan_token(tNOT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_721_17_29()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_721_17_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_expresion_734_19_33()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_721_17_32()
- {
-    Token xsp;
-    if (jj_3R_expresion_721_18_38()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_721_18_38()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_954_17_52()
- {
-    if (jj_scan_token(tFALSE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_factor_868_9_40()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_factor_868_11_42()) jj_scanpos = xsp;
-    if (jj_3R_primario_894_9_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2()
- {
-    if (jj_scan_token(tID)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_lista_una_o_mas_exps_979_9_53()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_953_17_51()
- {
-    if (jj_scan_token(tTRUE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_952_17_50()
- {
-    if (jj_scan_token(tCONST_CHAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_951_17_49()
- {
-    if (jj_scan_token(tCONST_INT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_901_17_47()
- {
-    if (jj_scan_token(tCHAR2INT)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_720_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_720_9_27()
- {
-    if (jj_3R_relacion_763_9_28()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_721_17_29()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_764_11_31()
- {
-    if (jj_3R_operador_relacional_782_9_37()) return true;
-    if (jj_3R_expresion_simple_795_5_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_763_9_28()
- {
-    if (jj_3R_expresion_simple_795_5_30()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_relacion_764_11_31()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_895_17_46()
- {
-    if (jj_scan_token(tINT2CHAR)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_720_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_multiplicativo_855_9_44()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(57)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(58)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(59)) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_null_608_21_25()
- {
-    if (jj_3R_array_access_546_9_26()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_null_608_21_25()) jj_scanpos = xsp;
-    if (jj_scan_token(tASSIGN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_802_10_36()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    if (jj_3R_termino_828_5_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_lista_una_o_mas_exps_987_11_54()
- {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_720_9_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_894_9_43()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_primario_894_37_45()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_895_17_46()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_901_17_47()) {
-    jj_scanpos = xsp;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_926_17_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_951_17_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_952_17_50()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_953_17_51()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_954_17_52()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_926_17_48()
- {
-    if (jj_scan_token(tID)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_734_20_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_763_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_795_6_34()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_lista_una_o_mas_exps_979_9_53()
- {
-    if (jj_3R_expresion_720_9_27()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_lista_una_o_mas_exps_987_11_54()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_734_19_33()
- {
-    Token xsp;
-    if (jj_3R_expresion_734_20_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_734_20_39()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_795_5_30()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_795_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_828_5_35()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_802_10_36()) { jj_scanpos = xsp; break; }
+      if (jj_3R_termino_795_11_41()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
