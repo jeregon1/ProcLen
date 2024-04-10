@@ -758,19 +758,12 @@ Symbol.Types expresion_simple(Token param, boolean[] esAsignable) :
 {
     ((<tPLUS> | <tMINUS>) {sign = true;}  )? type = termino(param, esAsignable) 
 	{
-		if (sign && (type != Symbol.Types.INT)) {
-			semantic.error(getToken(0), "Los signos " + tokenImage[tPLUS] + " y " + tokenImage[tMINUS] + 
-					" solo se puede usar con expresiones de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
-		}
+		semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la expresión debe ser de tipo INT
 	}
 	(( <tPLUS> | <tMINUS> )  type = termino(null, null)
 	{
 		sign = true;
-		// Si hay más de un término, deben ser todos INT
-		if (type != Symbol.Types.INT) {
-			semantic.error(getToken(0), 
-				"Los términos de una suma o resta deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
-		}
+		semantic.moreThanOneExpressionCheck(getToken(0), type); // Si hay más de un término, deben ser todos INT
 	}
 	)*
 	{
@@ -793,18 +786,12 @@ Symbol.Types termino(Token param, boolean[] esAsignable) :
 	( operador_multiplicativo()
 		{
 			moreThanOne = true;
-			if (type != Symbol.Types.INT) {
-				semantic.error(getToken(0), 
-						"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
-			}
+			semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
 	type = factor(null, null)
 		{ 
 			// Si hay más de un factor, deben ser todos INT
-			if (type != Symbol.Types.INT) {
-				semantic.error(getToken(0), 
-						"Los factores de una multiplicación, división y módulo deben ser de tipo " + tokenImage[tINT] + ", se encontró " + type + ".");
-			}
+			semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
 	)*
 	{
@@ -831,13 +818,9 @@ Symbol.Types factor(Token param, boolean[] esAsignable) :
 {
 	( <tNOT> {not = true;} )? type = primario(param, esAsignable) 
 	{
-		// Comprobar que el operador 'not' solo se puede usar con variables de tipo BOOL
 		if (not) {
 			if (esAsignable != null) esAsignable[0] = false;
-			if (type != Symbol.Types.BOOL) {
-				semantic.error(getToken(0), "El operador " + tokenImage[tNOT] + 
-						" solo se puede usar con variables de tipo " + tokenImage[tBOOL] + ".");
-			}
+			semantic.notOperatorCheck(getToken(0), type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 			return Symbol.Types.BOOL;
 		}
 		return type;
@@ -858,14 +841,13 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 	(			    <tLPAREN> type = expresion(null, null) <tRPAREN>
 	|	<tINT2CHAR> <tLPAREN> type = expresion(null, null) <tRPAREN>
 	{
-		// La expresión debe ser de tipo INT
-		if (type != Symbol.Types.INT) semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
+		semantic.int2charCheck(getToken(0), type); // La expresión debe ser de tipo INT
 		type = Symbol.Types.CHAR;
 	}
 	|	<tCHAR2INT> <tLPAREN> type = expresion(null, null) <tRPAREN>
 	{
 		// La expresioón debe ser de tipo CHAR
-		if (type != Symbol.Types.CHAR) semantic.error(getToken(0), "La expresión debe ser de tipo " + tokenImage[tINT] + ".");
+		semantic.char2intCheck(getToken(0), type); // La expresión debe ser de tipo CHAR
 		type = Symbol.Types.INT;
 	}
 	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> //invocar func. (con parámetros) o comp. array
@@ -876,9 +858,8 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 		switch (symbol.type) {
 			// Si es una función, devolver su tipo retorno
 			case FUNCTION: type = ((SymbolFunction) symbol).returnType; break;
-			case PROCEDURE: // Checkear que no es procedimiento
-				semantic.error(id, "No se puede invocar un procedimiento en una expresión como a una función.");
-				break;
+			// Checkear que no es procedimiento 
+			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break;
 			case ARRAY:
 				type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
 				if (esAsignable != null) esAsignable[0] = true;
@@ -893,19 +874,15 @@ Symbol.Types primario(Token param, boolean[] esAsignable) :
 		Symbol symbol = semantic.getSymbol(id);
 
 		switch (symbol.type) {
-			case FUNCTION: // Checkear que la función no tiene parámetros
+			case FUNCTION: 
 				SymbolFunction function = (SymbolFunction) symbol;
-				if (function.parList.size() > 0) {
-					semantic.error(id, "La función '" + id.image + "' debe invocarse con " + function.parList.size() + " argumentos.");
-				}
+				semantic.functionParametersCheck(id, function); // Checkear que la función no tenga parámetros
 				type = function.returnType;
 				break;
-			case PROCEDURE: // Checkear que no es procedimiento 
-				semantic.error(id, "No se puede invocar un procedimiento en una expresión como a una variable.");
-				break;
-			case ARRAY:
-				// Si es un array y no se espera un parámetro, debe accederse a un elemento
-				if (param == null) semantic.error(id, "En una expresión debe accederse a un elemento del array '" + id.image + "'.");
+			// Checkear que no es procedimiento
+			case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break; 
+			// Si es un array y no se espera un parámetro, debe accederse a un elemento
+			case ARRAY: semantic.arrayAccessCheck(id, param); 
 			default:
 				id.clone(param);
 				if (esAsignable != null) esAsignable[0] = true;
@@ -966,10 +943,8 @@ void lista_una_o_mas_exps(Token id) :
 			// Comprobar que el número de argumentos coincide con el número de parámetros
 			String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
 			msg += " '" + id.image + "'";
-			if (types.size() != parList.size()) {
-				semantic.error(id, "El número de argumentos no coincide con el número de parámetros " + msg);
-				return;
-			}
+			if (semantic.checkNumberOfArguments(id, parList.size(), types.size(), msg)) return; // Si no coinciden los parámetros, salir
+
 			List<Token> tokenArgs = new ArrayList<>(args.keySet());
 			List<Boolean> assignables = new ArrayList<>(args.values());
 
@@ -984,7 +959,6 @@ void lista_una_o_mas_exps(Token id) :
 				Token arg = tokenArgs.get(i);
 
 				if (parList.get(i).type == Symbol.Types.ARRAY) {
-
 					// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
 					SymbolArray paramArray = (SymbolArray) parList.get(i);
 

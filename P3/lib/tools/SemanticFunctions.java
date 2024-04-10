@@ -237,5 +237,60 @@ public class SemanticFunctions {
 			error(t, "La guarda de un bucle " + "while"/* tokenImage[tWHILE] */ + " debe ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
 		}
 	}
-}
 
+	public void signInExpressionCheck(Token t, Symbol.Types type, boolean sign) {
+		if (sign && (type != Symbol.Types.INT)) { // Si hay signo, la expresión debe ser de tipo INT
+			error(t, "Los signos " + "+"/* tokenImage[tPLUS] */ + " y " + "-"/* tokenImage[tMINUS] */ + 
+					" solo se puede usar con expresiones de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+		}
+	}
+
+	public void moreThanOneExpressionCheck(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.INT) {
+			error(t, "Los términos de una suma o resta deben ser de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+		}
+	}
+
+	public void multiplicativeFactorCheck(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.INT) {
+				error(t, "Los factores de una multiplicación, división y módulo deben ser de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+		}
+	}
+
+	public void notOperatorCheck(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.BOOL) {
+				error(t, "El operador " + "not"/* tokenImage[tNOT] */ + 
+						" solo se puede usar con variables de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+		}
+	}
+
+	public void int2charCheck(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.INT) error(t, "La expresión debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+	}
+
+	public void char2intCheck(Token t, Symbol.Types type) {
+		if (type != Symbol.Types.CHAR) error(t, "La expresión debe ser de tipo " + "character"/* tokenImage[tCHAR] */ + ".");
+	}
+
+	public void procedureInPrimaryError(Token t, String wrongType) {
+		error(t, "No se puede invocar un procedimiento en una expresión como a una " + wrongType + ".");
+	}
+
+	public void functionParametersCheck(Token t, SymbolFunction function) {
+		if (function.parList.size() > 0) {
+			error(t, "La función '" + t.image + "' debe invocarse con " + function.parList.size() + " argumentos.");
+		}
+	}
+	
+	public void arrayAccessCheck(Token t, Token param) {
+		if (param == null) error(t, "En una expresión debe accederse a un elemento del array '" + t.image + "'.");
+	}
+
+	public boolean checkNumberOfArguments(Token t, Integer paramSize, Integer argsSize, String msg) {
+		if (argsSize != paramSize) {
+			error(t, "El número de argumentos no coincide con el número de parámetros " + msg);
+			return true;
+		}
+		return false;
+	}
+}
