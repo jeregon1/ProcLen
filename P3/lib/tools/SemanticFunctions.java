@@ -293,4 +293,51 @@ public class SemanticFunctions {
 		}
 		return false;
 	}
+
+	public void arrayInListOfExpressionCheck(Token id, List<Symbol.Types> types) {
+		if (types.size() != 1) {
+			error(id, "El acceso a un array debe tener un único índice.");
+		}
+		if (types.get(0) != Symbol.Types.INT) {
+			error(id, "El índice de un array debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+		}
+	}
+
+	public void checkArgumentTypes(Token id, List<Symbol.Types> types, List<Symbol> parList, Map<Token, Boolean> args, String msg) {
+		List<Token> tokenArgs = new ArrayList<>(args.keySet());
+		List<Boolean> assignables = new ArrayList<>(args.values());
+
+		for (int i = 0; i < types.size(); i++) {
+				if (types.get(i) == Symbol.Types.UNDEFINED) continue; // Si hay un error en la expresión, no comprobar más
+				if (types.get(i) != parList.get(i).type) {
+					error(id, "El tipo " + types.get(i) + " del argumento nº " + (i + 1) + " no coincide con el tipo " + parList.get(i).type + " del parámetro " + msg);
+					continue;
+				}
+
+				Token arg = tokenArgs.get(i);
+
+				if (parList.get(i).type == Symbol.Types.ARRAY) {
+					// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
+					SymbolArray paramArray = (SymbolArray) parList.get(i);
+
+					// Si el argumento es un array, comprobar que el tipo base y el rango de índices coinciden (del parámetro y argumento)
+					SymbolArray argArray = (SymbolArray) getSymbol(arg);
+					
+					if (argArray.baseType != paramArray.baseType) {
+						error(arg, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
+					}
+					if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
+						error(arg, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
+					}
+				} else {
+					// Si el parámetro es simple y por valor, no hay que comprobar nada más
+					// Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
+					if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
+						if (!assignables.get(i)) {
+							error(arg, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
+						}
+					}
+				}
+			}
+	}
 }

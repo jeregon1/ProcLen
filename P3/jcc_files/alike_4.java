@@ -1467,51 +1467,16 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
                         msg += " '" + id.image + "'";
                         if (semantic.checkNumberOfArguments(id, parList.size(), types.size(), msg)) {if ("" != null) return;} // Si no coinciden los parámetros, salir
 
-                        List<Token> tokenArgs = new ArrayList<>(args.keySet());
-                        List<Boolean> assignables = new ArrayList<>(args.values());
-
                         // Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
-                        for (int i = 0; i < types.size(); i++) {
-                                if (types.get(i) == Symbol.Types.UNDEFINED) continue; // Si hay un error en la expresión, no comprobar más
-                                if (types.get(i) != parList.get(i).type) {
-                                        semantic.error(id, "El tipo " + types.get(i) + " del argumento n\u00ba " + (i + 1) + " no coincide con el tipo " + parList.get(i).type + " del par\u00e1metro " + msg);
-                                        continue;
-                                }
+                        semantic.checkArgumentTypes(id, types, parList, args, msg);
 
-                                Token arg = tokenArgs.get(i);
-
-                                if (parList.get(i).type == Symbol.Types.ARRAY) {
-
-                                        // Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
-                                        SymbolArray paramArray = (SymbolArray) parList.get(i);
-
-                                        // Si el argumento es un array, comprobar que el tipo base y el rango de índices coinciden (del parámetro y argumento)
-                                        SymbolArray argArray = (SymbolArray) semantic.getSymbol(arg);
-
-                                        if (argArray.baseType != paramArray.baseType) {
-                                                semantic.error(arg, "El tipo base del vector '" + arg + "' no coincide con el tipo base del par\u00e1metro " + (i + 1) + " " + msg);
-                                        }
-                                        if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
-                                                semantic.error(arg, "El rango de \u00edndices del vector '" + arg  + "' no coincide con el rango de \u00edndices del par\u00e1metro " + (i + 1) + " " + msg);
-                                        }
-                                } else {
-                                        // Si el parámetro es simple y por valor, no hay que comprobar nada más
-                                        // Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
-                                        if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
-                                                if (!assignables.get(i)) {
-                                                        semantic.error(arg, "El argumento n\u00ba " + (i + 1) + " no es una variable asignable para el par\u00e1metro por referencia " + msg);
-                                                }
-                                        }
-                                }
-                        }
                 } else if (symbol.type == Symbol.Types.ARRAY) {
-                        SymbolArray array = (SymbolArray) symbol;
-                        if (types.size() != 1) {
-                                semantic.error(id, "El acceso a un array debe tener un \u00fanico \u00edndice.");
-                        }
-                        if (types.get(0) != Symbol.Types.INT) {
-                                semantic.error(id, "El \u00edndice de un array debe ser de tipo " + tokenImage[tINT] + ".");
-                        }
+                        // SymbolArray array = (SymbolArray) symbol; 🎃 <-- is this necessary?
+                        /*Comprobaciones sobre el array
+			- El acceso a un array debe tener un único índice
+			- El índice de un array debe ser de tipo integer
+			*/
+                        semantic.arrayInListOfExpressionCheck(id, types);
                 } else { // Si id es un tipo simple, no puede accederse a un elemento
                         semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
                 }
