@@ -1,0 +1,962 @@
+//*****************************************************************
+// File:   alike.jj
+// Author: Jesús López Ansón, 839922
+// 		   Javier Sin Pelayo, 843442
+// Date:   abril 2024
+// Coms:   compilar mediante "ant"
+// Doc:    https://javacc.github.io/javacc/
+//*****************************************************************
+
+options {
+	IGNORE_CASE = true;
+	UNICODE_INPUT = true;
+	// DEBUG_PARSER = true;
+}
+
+PARSER_BEGIN(alike_4)
+
+package traductor;
+
+import lib.symbolTable.*;
+import lib.symbolTable.exceptions.*;
+import lib.tools.SemanticFunctions.SemanticFunctions;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
+
+public class alike_4 {
+
+	static SemanticFunctions semantic; // Funciones semánticas
+
+	static boolean verbose = false; // Flag modo verbose (impresión bloque cerrado tabla de símbolos)
+
+   	public static void main(String[] args) {
+	   	alike_4 parser = null;
+		
+		// argumento verbose
+		if (args.length > 1 && args[1].equals("-v")) {
+			verbose = true;
+		}
+
+		// creación de SemanticFuncions, donde se encapsula la lógica semántica junto a la tabla de símbolos
+	   	semantic = new SemanticFunctions();
+		String fileName = "";
+	   
+	   	try {
+			if(args.length == 0) { // Si no se especifica fichero, se lee de la entrada estándar
+				parser = new alike_4(System.in);
+			}
+			else {
+				fileName = args[0] + ".al";
+				parser = new alike_4(new java.io.FileInputStream(fileName));
+			}
+			//Programa es el símbolo inicial de la gramática
+			parser.Programa();
+			
+			if (!semantic.hayErrores())
+				System.out.println("Compilación finalizada. Se ha generado el fichero " + fileName + ".pcode");
+			else
+				if (semantic.getNumErrores() == 1) {
+					System.out.println("Detectado 1 error semántico. No se genera código.");
+				} else {
+					System.out.println("Detectados " + semantic.getNumErrores() + " errores semánticos. No se genera código.");
+				}
+		}
+		catch (java.io.FileNotFoundException e) {
+			System.err.println ("Fichero " + fileName + " no encontrado.");
+		}
+		catch (TokenMgrError e) {
+			System.err.println("ERROR LÉXICO: " + e.getMessage());
+		}
+		catch (ParseException e) {
+			System.err.println("----------------------------------------");
+			System.err.println(e.getMessage());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+   }
+}
+
+
+PARSER_END(alike_4)
+
+//---------------------------------------------------------
+
+
+SKIP : {
+	" " | "\t" | "\n" | "\r" 
+	|  <COMMENT: "--" (~["\n", "\r"])*> 
+}
+
+TOKEN : {
+	< #LETTER: (["a"-"z","A"-"Z"]) > 
+|	< #DIGIT: ["0"-"9"] >
+
+	// Separadores
+|	< tSEMICOLON: ";" >
+|	< tCOLON: ":" >
+|	< tCOMMA: "," >
+
+	// Delimitadores
+|	< tLPAREN: "(" >
+|	< tRPAREN: ")" >
+
+	// Tipos de datos
+|	< tINT: "integer" >
+|	< tCHAR: "character" >
+|	< tBOOL: "boolean" >
+
+|   < tARRAY: "array" >
+| 	< tOF: "of" >
+|	< tRANGE: ".." >
+
+	// Palabras reservadas
+|	< tWHILE: "while" > 
+|   < tLOOP: "loop" >
+|	< tIF: "if" >
+|	< tTHEN: "then" >
+|	< tELSIF: "elsif" >
+|	< tELSE: "else" >
+
+|   < tPROCEDURE: "procedure" >
+|   < tFUNCTION: "function" >
+|   < tREF: "ref" >
+|   < tIS: "is" >
+|   < tBEGIN: "begin" >
+|   < tEND: "end" >
+|	< tRETURN: "return" > 
+
+	// Funciones estándar
+| 	< tPUT: "put" >
+| 	< tPUT_LINE: "put_line" >
+|	< tGET: "get" >
+|	< tSKIP_LINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tEXIT: "exit" >
+|	< tNULL: "null" >
+
+	// Literales
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tCONST_INT: (<DIGIT>)+ >
+|	< tCONST_CHAR: "'"~[]"'" >
+|	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
+	{
+		// Sustituir las comillas dobles por una comilla simple
+		String str = matchedToken.image;
+		str = str.substring(1, str.length() - 1); // Eliminar las comillas dobles de los extremos
+		matchedToken.image = str.replace("\"\"", "\""); // Sustituir las parejas de comillas dobles por una sola ocurrencia
+	}
+
+	// Operadores
+|	< tASSIGN: ":=" > 
+|	< tAND: "and" >
+|	< tOR: "or" >
+|	< tNOT: "not" >
+|	< tEQ: "=" >
+|	< tNEQ: "/=" >
+|	< tLT: "<" >
+|	< tLE: "<=" >
+|	< tGT: ">" >
+|	< tGE: ">=" >
+|	< tPLUS: "+" >
+|	< tMINUS: "-" >
+|	< tMULT: "*" >
+|	< tDIV: "/" >
+|	< tMOD: "mod" >
+
+	// Otros
+|	< tID: (<LETTER> | "_") (<LETTER> | <DIGIT> | "_")* >
+
+}
+
+SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
+ 	< tBASURA: ~[] >
+	 	{
+			System.err.println("----------------------------------------");
+			System.err.println(TokenMgrError.LexicalErr(matchedToken, "Carácter extraño: '" + matchedToken.image + "'. Reemplazo por espacio"));
+			matchedToken.image = " ";
+	 	}
+}
+
+
+//------------ Símbolo inicial de la gramática.
+// Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
+void Programa() : 
+{
+	Token id;
+}
+{
+	<tPROCEDURE> 
+	id = <tID>
+	{	// Procedimiento principal
+		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
+		semantic.setMainProcedureName(id.image);
+	}
+	<tIS>
+		( declaracion_var() )*
+		( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+		(instruccion())+
+	<tEND> <tSEMICOLON>
+	{
+		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
+	}
+}
+
+//declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
+void declaracion_var() : 
+{
+	List<Token> t = new ArrayList<Token>();
+}
+{
+	lista_ids(t)
+	<tCOLON>
+	tipo_variable(t, null, Symbol.ParameterClass.NONE)
+	<tSEMICOLON> 
+}
+
+//lista_ids: <tID> (<tCOMMA> <tID>)*
+/**
+ * Params:
+ * 	-tokens: lista de tokens de la enumeración de los identificadores de las variables
+ */
+void lista_ids(List<Token> tokens) :
+{
+	Token t;
+}
+{
+	t = <tID> {tokens.add(t);}
+	(<tCOMMA> t = <tID> {tokens.add(t);})*
+}
+
+//tipo_variable: (tipo_variable_simple | tipo_variable_array)
+/**
+ * Params: 
+ *	-t: lista de tokens de la enumeración de los identificadores de las variables
+ *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
+ *	-paramClass: valor != de NONE en caso de ser un parámetro
+ */
+Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
+{
+	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
+}
+{
+	( baseType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
+	{
+		return baseType; // Si es un tipo simple, se devuelve el tipo de la variable
+	}
+}
+
+//tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
+/**
+ * Params:
+ *	-t: lista de tokens de la enumeración de los identificadores de las variables
+ *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
+ *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
+ */
+void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
+{
+	Token tMin, tMax;
+	int min, max, minus1 = 1, minus2 = 1;
+	Symbol.Types baseType;
+	SymbolArray baseArray = null;
+	boolean isParameter = (paramClass != Symbol.ParameterClass.NONE);
+	boolean isDeclaration = !isParameter;
+}
+{
+	<tARRAY> <tLPAREN>
+	(<tMINUS> {minus1 = -1;} | <tPLUS>)? tMin = <tCONST_INT> 
+		<tRANGE> 
+	(<tMINUS> {minus2 = -1;} | <tPLUS>)? tMax = <tCONST_INT> 
+	<tRPAREN>
+	{
+		min = Integer.parseInt(tMin.image) * minus1;
+		max = Integer.parseInt(tMax.image) * minus2;
+		semantic.emptyArrayRange(tMax, min, max); // Comprobar que el rango no es vacío (min > max)
+
+		if (isDeclaration) {
+			baseArray = new SymbolArray("", min, max, Symbol.Types.UNDEFINED, paramClass);
+			/* baseArray se crea aquí para que en "tipo_variable_simple" se pueda
+			   insertar en la tabla de símbolos con los valores de "min" y "max" */
+		}
+	}
+	<tOF> baseType = tipo_variable_simple(t, baseArray, null)
+	{
+		if (isParameter){ // Parámetro ARRAY
+			// paramArray se ha creado en "parametro_formal" para rellenarse aquí
+			paramArray.minInd = min;
+			paramArray.maxInd = max;
+			paramArray.parClass = paramClass;
+			paramArray.baseType = baseType;
+		}
+	}
+}
+
+//tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
+/*
+ Params:
+	-t: lista de tokens de la enumeración de los identificadores de las variables
+	-baseArray: creado en "tipo_variable_array" para rellenar datos del array (índices y paramClass). 
+				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
+	-paramClass: valor != de NONE en caso de ser un parámetro
+ */
+Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass) : 
+{
+	Symbol.Types type = null;
+	boolean isArray = (baseArray != null);
+	/* Si baseArray != de null, estamos en una declaración de
+	   array y contiene los valores de min, max y paramClass */
+}
+{
+	( <tINT>  { type = Symbol.Types.INT; }
+	| <tCHAR> { type = Symbol.Types.CHAR; }
+	| <tBOOL> { type = Symbol.Types.BOOL; }
+	)
+	{
+		if (t == null) { // Parámetros
+			/* Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
+			   y estos se insertan en st en declaracion_procedimiento y declaracion_funcion */
+			return type;
+		}
+		else if (isArray) { // Declaración de variables arrays
+			baseArray.baseType = type;
+			for (Token id : t) {
+				SymbolArray newArray = baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices y paramClass
+				newArray.name = id.image;
+				semantic.insertSymbol(id, newArray);
+			}
+		} else { // Declaración de variables simples
+			for (Token id : t) {
+				switch (type) {
+					case INT:  semantic.insertSymbol(id, new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: semantic.insertSymbol(id, new SymbolChar(id.image, paramClass)); break;
+					case BOOL: semantic.insertSymbol(id, new SymbolBool(id.image, paramClass)); break;
+				}
+			}
+		}
+		return type;
+	}
+}
+
+//declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
+void declaracion_procedimiento() : 
+{
+	Token id;
+	Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+}
+{
+	<tPROCEDURE>
+	id = <tID> // Puede NO tener parámetros
+	( <tLPAREN> lista_parametros(params) <tRPAREN> )?
+	{
+		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>(params.values())));
+		semantic.insertBlock();
+		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+			semantic.insertSymbol(entry.getKey(), entry.getValue());
+		}
+	}
+	<tIS>
+		(declaracion_var())*
+		( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN>
+		(instruccion())+
+	<tEND>
+	<tSEMICOLON>
+	{
+		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
+		semantic.removeBlock(); // Eliminación del bloque actual
+	}
+}
+
+//declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
+void declaracion_funcion() : 
+{
+	Token id;
+	Symbol.Types returnType;
+	SymbolFunction functionSymbol;
+	Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+}
+{
+	<tFUNCTION>
+	id = <tID>
+	( <tLPAREN> lista_parametros(params) <tRPAREN> )? // Puede NO tener parámetros
+	<tRETURN>
+	returnType = tipo_variable_simple(null, null, Symbol.ParameterClass.NONE)
+	{
+		functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(params.values()), returnType);
+		semantic.insertSymbol(id, functionSymbol);
+		semantic.insertBlock();
+		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+			semantic.insertSymbol(entry.getKey() ,entry.getValue());
+		}
+	}
+	<tIS>
+		(declaracion_var())*
+		( declaracion_procedimiento() | declaracion_funcion() )*
+	<tBEGIN> {semantic.enterFunction(functionSymbol);}
+		(instruccion())+
+	<tEND>
+	{
+		semantic.exitFunction(getToken(0));
+		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
+		semantic.removeBlock(); // Eliminación del bloque actual
+	}
+	<tSEMICOLON>
+}
+
+
+//lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
+/**
+ * Params:
+ * 	-params: Diccionario de Token-Symbol de los parámetros
+ */
+void lista_parametros(Map<Token,Symbol> params) : {}
+{
+	parametro_formal(params) 
+	( <tSEMICOLON> parametro_formal(params) )*
+}
+
+//parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
+/**
+ * Params:
+ * 	-params: Diccionario de Token-Symbol de los parámetros
+ */
+void parametro_formal(Map<Token,Symbol> params) : 
+{
+	List<Token> t = new ArrayList<Token>();
+	SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
+	Symbol.Types baseType;
+	Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
+}
+{
+	lista_ids(t)
+	<tCOLON>
+	( <tREF> {paramClass = Symbol.ParameterClass.REF;} )?
+	baseType = tipo_variable(null, paramArray, paramClass) 
+	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
+	// Funciona de manera que en "tipo_variable_array" al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
+	{
+		for (Token id : t) {
+		// Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
+
+			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
+				SymbolArray newArray = paramArray.clone();
+				newArray.name = id.image;
+				params.put(id, newArray); // Insertado de parámetro array en el diccionario de parámetros
+			} else { // Parámetros simples
+				switch (baseType) {
+					// Insertado de parámetro (int|char|bool) en el diccionario de parámetros
+					case INT:  params.put(id, new  SymbolInt(id.image, paramClass)); break;
+					case CHAR: params.put(id, new SymbolChar(id.image, paramClass)); break;
+					case BOOL: params.put(id, new SymbolBool(id.image, paramClass)); break;
+				}
+			}
+		}
+	}
+}
+
+
+/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
+
+//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
+void instruccion(): {}
+{
+	(	inst_leer()
+	|	<tSKIP_LINE> // Nunca recibe argumentos
+	|   inst_escribir()
+	|   inst_escribir_linea()
+	|   inst_invocacion_procedimiento_o_asignacion()
+	|   inst_if()
+	|   inst_while()
+	|   <tNULL>
+	|   inst_return()
+	)
+	<tSEMICOLON>
+}
+
+//inst_leer: <tGET> <tLPAREN> inst_leer_elemento ( <tCOMMA> inst_leer_elemento )* <tRPAREN>
+void inst_leer() : {}
+{
+	<tGET> // Necesita parámetros
+	<tLPAREN> 
+	inst_leer_elemento()
+	( <tCOMMA> inst_leer_elemento() )* 
+	<tRPAREN>
+}
+
+//inst_leer_elemento: <tID> ( array_access )?
+void inst_leer_elemento() :
+{
+	Token id;
+	boolean access = false;
+	/* Se deben leer variables asignables de tipo integer o character.
+	   Solo son asignables las variables simples y los elementos de un array */
+}
+{
+	id = <tID> ( array_access() {access = true;} )?
+	{
+		if (! semantic.isSymbolDefined(id)) return; // El error de símbolo no definido está en semantic.isSymbolDefined
+		Symbol symbol = semantic.getSymbol(id);
+
+		semantic.isProcedureOrFunction(id, symbol); // si es procedimiento o función, error
+
+		/* Comprobaciones relacionadas con arrays:
+		- Si es array: 
+			- comprobar que se ha accedido a un elemento y no al array entero
+			- comprobar que el tipo del array es INT o CHAR
+		- Si no: que no se acceda a una variable simple, procedimiento o función como a un array
+		*/
+		semantic.readingArrayChecks(id, symbol, access);
+
+		semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
+	}
+}
+
+//array_access: <tLPAREN> expresion <tRPAREN>
+void array_access() : 
+{
+	Symbol.Types type;
+}
+{
+	<tLPAREN> 
+	type = expresion(null, null)
+	{
+		semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de tipo INT
+		// No hace falta comprobar que el índice esté dentro del rango del array porque no se pide
+	}
+	<tRPAREN>
+}
+
+//inst_escribir: <tPUT> <tLPAREN> inst_escribir_elemento ( <tCOMMA> inst_escribir_elemento )* <tRPAREN>
+void inst_escribir() : {}
+{
+	<tPUT> // Necesita parámetros
+	<tLPAREN> 
+	inst_escribir_elemento()
+	( <tCOMMA> inst_escribir_elemento() )*
+	<tRPAREN>
+}
+
+//inst_escribir_elemento: <tCONST_STRING> | expresion
+void inst_escribir_elemento() : 
+{
+	Symbol.Types type = Symbol.Types.STRING;
+	// Se pueden escribir constantes string y expresiones de tipo integer, character y boolean, incluidos los elementos de un array
+}
+{
+	(<tCONST_STRING> | type = expresion(null, null))
+	{
+		switch (type) {
+			case INT:
+			case BOOL:
+			case CHAR:
+			case STRING: break;
+			case ARRAY: semantic.error(getToken(0), "No se puede escribir un array entero, pero sí componentes de array."); break;
+			default: semantic.error(getToken(0), 
+					"Solo se pueden escribir valores de tipo " + tokenImage[tINT] + ", " + tokenImage[tCHAR] + ", " + tokenImage[tBOOL] + " y " + tokenImage[tCONST_STRING] + ".");
+		}
+	}
+}
+
+//inst_escribir_linea: <tPUT_LINE> (<tLPAREN> inst_escribir_elemento (<tCOMMA> inst_escribir_elemento)* <tRPAREN>)?
+void inst_escribir_linea() : {}
+{
+	<tPUT_LINE> // Puede NO tener parámetros
+	(<tLPAREN> inst_escribir_elemento()
+	( <tCOMMA> inst_escribir_elemento() )* <tRPAREN>
+	)?
+
+}
+
+//inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
+void inst_invocacion_procedimiento_o_asignacion() : 
+{
+	Token id;
+	Symbol.Types type;
+	boolean access = false;
+}
+{
+	id = <tID>
+	(
+	LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
+	(array_access() {access = true;} )? 
+	<tASSIGN>
+	type = expresion(null, null)
+	{
+		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+		Symbol symbol = semantic.getSymbol(id);
+
+		/* Comprobaciones relacionadas con arrays:
+		- Si es array:
+			- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
+			- comprobar que el tipo de la expresión coincide con el tipo base del array
+		- Si no: no puede accederse a una variable no array
+		*/
+		semantic.assigningArrayChecks(id, symbol, type, access);
+
+		/* Comprobaciones sobre los tipos de los asignables:
+		- Si es un procedimiento o función, error
+		- Asignable y expresión deben ser del mismo tipo
+		*/
+		semantic.assignableTypeChecks(id, symbol, type); // Solamente son asignables las variables simples y los elementos de un array
+	}
+	| // invocación_procedimiento()
+	// checkear que el id es un procedimiento y nada más
+	( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
+	{
+		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+		Symbol symbol = semantic.getSymbol(id);
+
+		semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
+	}
+	)
+}
+
+//inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
+void inst_if() :
+{
+	Symbol.Types type;
+	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
+			tokenImage[tELSIF] + " debe ser de tipo " + tokenImage[tBOOL] + ".";
+}
+{
+	<tIF>	  type = expresion(null, null) 
+	{
+		semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+	}
+	<tTHEN> ( instruccion() )+
+	(<tELSIF> type = expresion(null, null)
+	{
+		semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+	} <tTHEN> ( instruccion() )+ )* 
+	(<tELSE> ( instruccion() )+ )? 
+	<tEND> <tIF>
+}
+
+//inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
+void inst_while() : 
+{
+	Symbol.Types type;
+}
+{
+	<tWHILE> type = expresion(null, null)
+	{
+		semantic.whileChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
+	}
+	<tLOOP> ( instruccion() )+ <tEND> <tLOOP>
+}
+
+//inst_return: <tRETURN> expresion
+void inst_return() : 
+{
+	Symbol.Types returnType;
+}
+{
+	<tRETURN> returnType = expresion(null, null) 
+	{
+		semantic.inst_return(getToken(0), returnType);
+	}
+}
+
+/*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
+
+//expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
+/**
+ * Params:
+ * -param: != de null si es un parámetro de función/procedimiento, o bien una componente de un vector
+ * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
+ * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
+ */
+Symbol.Types expresion(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type;
+	boolean moreThanOne = false;
+	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
+}
+{
+	type = relacion(param, esAsignable)
+	(	(<tAND>
+		{
+			moreThanOne = true;
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		type = relacion(null, null) 
+		{
+			// Si hay más de una relación, deben ser todas BOOL
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		)+
+		| (<tOR>
+		{
+			moreThanOne = true;
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		type = relacion(null, null) 
+		{
+			// Si hay más de una relación, deben ser todas BOOL
+			if (type != Symbol.Types.BOOL)
+				semantic.error(getToken(0), errorMsg);
+		}
+		)+
+	)?
+	{
+		if (moreThanOne && esAsignable != null) esAsignable[0] = false; // Si hay más de una relación, la expresión no es asignable
+		return (moreThanOne) ? Symbol.Types.BOOL : type;
+	}
+}
+
+//relacion: expresion_simple (operador_relacional expresion_simple)?
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
+Symbol.Types relacion(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
+}
+{
+	type1 = expresion_simple(param, esAsignable)
+ 	( operador_relacional() type2 = expresion_simple(null, null) )?
+	{
+		// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
+		if (type2 != Symbol.Types.UNDEFINED) {
+			if (esAsignable != null) esAsignable[0] = false; // Si hay dos expresiones, la expresión no es asignable
+			if (type1 != type2)
+				semantic.error(getToken(0), "Las expresiones de una relación deben ser del mismo tipo, se encontró " + type1 + " y " + type2 + ".");
+
+			return Symbol.Types.BOOL; // Si hay dos expresiones, el resultado es booleano
+		}
+		// else: si hay solo una expresión, se devuelve su tipo
+		return type1;
+	}
+}
+
+//operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
+void operador_relacional() : {}
+{
+	(<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
+}
+
+//expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
+Symbol.Types expresion_simple(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type;
+	boolean sign = false;
+}
+{
+    ((<tPLUS> | <tMINUS>) {sign = true;}  )? type = termino(param, esAsignable) 
+	{
+		semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la expresión debe ser de tipo INT
+	}
+	(( <tPLUS> | <tMINUS> )  type = termino(null, null)
+	{
+		sign = true;
+		semantic.moreThanOneExpressionCheck(getToken(0), type); // Si hay más de un término, deben ser todos INT
+	}
+	)*
+	{
+		if (sign && esAsignable != null) esAsignable[0] = false; // Si hay signo o más de un término, la expresión no es asignable
+		return (sign) ? Symbol.Types.INT : type;
+	}
+}
+                                                                                                                                                                         
+//termino: factor (operador_multiplicativo factor)*
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
+Symbol.Types termino(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type;
+	boolean moreThanOne = false;
+}
+{
+    type = factor(param, esAsignable) 
+	( operador_multiplicativo()
+		{
+			moreThanOne = true;
+			semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
+		}
+	type = factor(null, null)
+		{ 
+			// Si hay más de un factor, deben ser todos INT
+			semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
+		}
+	)*
+	{
+		if (moreThanOne && esAsignable != null) esAsignable[0] = false; // Si hay más de un factor, la expresión no es asignable
+		return (moreThanOne) ? Symbol.Types.INT : type;
+	}
+}
+
+//operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
+void operador_multiplicativo() : {}
+{
+	(<tMULT> | <tDIV> | <tMOD>)
+}
+
+//factor: (<tNOT>)? primario
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
+Symbol.Types factor(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type;
+	boolean not = false;
+}
+{
+	( <tNOT> {not = true;} )? type = primario(param, esAsignable) 
+	{
+		if (not) {
+			if (esAsignable != null) esAsignable[0] = false;
+			semantic.notOperatorCheck(getToken(0), type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
+			return Symbol.Types.BOOL;
+		}
+		return type;
+	}
+}
+
+//primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
+//			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
+/**
+ * Params: análogo a los de la producción "expresion"
+ */
+Symbol.Types primario(Token param, boolean[] esAsignable) : 
+{
+	Symbol.Types type = Symbol.Types.UNDEFINED;
+	Token id;
+}
+{
+	(			    <tLPAREN> type = expresion(null, null) <tRPAREN>
+	|	<tINT2CHAR> <tLPAREN> type = expresion(null, null) <tRPAREN>
+	{
+		semantic.int2charCheck(getToken(0), type); // La expresión debe ser de tipo INT
+		type = Symbol.Types.CHAR;
+	}
+	|	<tCHAR2INT> <tLPAREN> type = expresion(null, null) <tRPAREN>
+	{
+		// La expresioón debe ser de tipo CHAR
+		semantic.char2intCheck(getToken(0), type); // La expresión debe ser de tipo CHAR
+		type = Symbol.Types.INT;
+	}
+	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> //invocar func. (con parámetros) o comp. array
+	{
+		if (! semantic.isSymbolDefined(id)) return Symbol.Types.UNDEFINED;
+		Symbol symbol = semantic.getSymbol(id);
+
+		switch (symbol.type) {
+			// Si es una función, devolver su tipo retorno
+			case FUNCTION: type = ((SymbolFunction) symbol).returnType; break;
+			// Checkear que no es procedimiento 
+			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break;
+			case ARRAY:
+				type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
+				if (esAsignable != null) esAsignable[0] = true;
+				id.clone(param);
+				break;
+			default: type = symbol.type;
+		}
+	}
+	|	id = <tID> // variable simple o func/proced sin parámetros
+	{
+		if (! semantic.isSymbolDefined(id)) return Symbol.Types.UNDEFINED;
+		Symbol symbol = semantic.getSymbol(id);
+
+		switch (symbol.type) {
+			case FUNCTION: 
+				SymbolFunction function = (SymbolFunction) symbol;
+				semantic.functionParametersCheck(id, function); // Checkear que la función no tenga parámetros
+				type = function.returnType;
+				break;
+			// Checkear que no es procedimiento
+			case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break; 
+			// Si es un array y no se espera un parámetro, debe accederse a un elemento
+			case ARRAY: semantic.arrayAccessCheck(id, param); 
+			default:
+				id.clone(param);
+				if (esAsignable != null) esAsignable[0] = true;
+				type = symbol.type;
+		}
+	}
+	|	<tCONST_INT>  {type = Symbol.Types.INT; }
+	|	<tCONST_CHAR> {type = Symbol.Types.CHAR;}
+	|	<tTRUE> 	  {type = Symbol.Types.BOOL;}
+	|	<tFALSE> 	  {type = Symbol.Types.BOOL;}
+	)
+	{
+		return type;
+	}
+}
+
+//lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
+/**
+ * Params:
+ * 	-id: Token de la función/procedimiento invocado, o del array accedido
+ */
+void lista_una_o_mas_exps(Token id) : 
+{ // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
+	List<Symbol.Types> types = new ArrayList<>();
+	Map<Token, Boolean> args = new LinkedHashMap<>();
+	boolean[] esAsignable = {false};
+
+	Symbol.Types type;
+	if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
+	Symbol symbol = semantic.getSymbol(id);
+	
+	Token t = new Token(0);
+}
+{
+	type = expresion(t, esAsignable)
+	{
+		types.add(type);
+		if (t.kind == 0) args.put(getToken(0), false);
+		else 			 args.put(t, esAsignable[0]);
+		esAsignable[0] = false;
+		t = new Token(0);
+	}
+	( <tCOMMA> type = expresion(t, esAsignable) 
+		{ // Iterate over all the parameters
+			types.add(type);
+			if (t.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
+			else 			 args.put(t, esAsignable[0]);
+			esAsignable[0] = false;
+			t = new Token(0);
+		}
+	)*
+	{
+		if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDURE) {
+
+			// Recuperar lista parámetros del Token 'id' 
+			List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
+
+			// Comprobar que el número de argumentos coincide con el número de parámetros
+			String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
+			msg += " '" + id.image + "'";
+			if (semantic.checkNumberOfArguments(id, parList.size(), types.size(), msg)) return; // Si no coinciden los parámetros, salir
+
+			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
+			semantic.checkArgumentTypes(id, types, parList, args, msg);
+
+		} else if (symbol.type == Symbol.Types.ARRAY) {
+			// SymbolArray array = (SymbolArray) symbol; 🎃 <-- is this necessary?
+			/*Comprobaciones sobre el array
+			- El acceso a un array debe tener un único índice
+			- El índice de un array debe ser de tipo integer
+			*/ 
+			semantic.arrayInListOfExpressionCheck(id, types);
+		} else { // Si id es un tipo simple, no puede accederse a un elemento
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
+		}
+	}
+}
