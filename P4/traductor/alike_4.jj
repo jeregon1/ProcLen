@@ -20,11 +20,13 @@ package traductor;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.tools.SemanticFunctions.SemanticFunctions;
+import lib.tools.codeGeneration.*;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
+
 
 public class alike_4 {
 
@@ -189,8 +191,14 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 void Programa() : 
 {
 	Token id;
+	CodeBlock programa;
 }
 {
+	{ // Inicialización del programa
+		String label = CGUtils.newLabel();
+		programa = new CodeBlock();
+		programa.addInst(PCodeInstruction.OpCode.ENP, label);
+	}
 	<tPROCEDURE> 
 	id = <tID>
 	{	// Procedimiento principal
