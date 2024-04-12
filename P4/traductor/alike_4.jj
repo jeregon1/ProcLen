@@ -273,6 +273,7 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
 	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
 }
 {
+	// 🎃 Cambiar para utilizar "TypeAttrib" en lugar de paramArray y paramClass por separado. 
 	( baseType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
 	{
 		return baseType; // Si es un tipo simple, se devuelve el tipo de la variable
