@@ -247,9 +247,7 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
 }
 {
 	( baseType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
-	{
-		return baseType; // Si es un tipo simple, se devuelve el tipo de la variable
-	}
+	{ return baseType; } // Si es un tipo simple, se devuelve el tipo de la variable
 }
 
 //tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
@@ -623,18 +621,16 @@ void inst_invocacion_procedimiento_o_asignacion() :
 void inst_if() :
 {
 	Symbol.Types type;
-	String errorMsg = "La guarda de una sentencia " + tokenImage[tIF] + " o " +
-			tokenImage[tELSIF] + " debe ser de tipo " + tokenImage[tBOOL] + ".";
 }
 {
 	<tIF>	  type = expresion(null, null) 
 	{
-		semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+		semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
 	}
 	<tTHEN> ( instruccion() )+
 	(<tELSIF> type = expresion(null, null)
 	{
-		semantic.ifChecks(getToken(0), type, errorMsg); // Comprobar que la guarda es de tipo BOOL
+		semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
 	} <tTHEN> ( instruccion() )+ )* 
 	(<tELSE> ( instruccion() )+ )? 
 	<tEND> <tIF>

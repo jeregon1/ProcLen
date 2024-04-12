@@ -226,9 +226,9 @@ public class SemanticFunctions {
 		}
 	}
 
-	public void ifChecks(Token t, Symbol.Types type, String errorMsg) {
+	public void ifChecks(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-			error(t, errorMsg);
+			error(t, "La guarda de una sentencia if o elsif debe ser de tipo boolean.");
 		}
 	}
 
