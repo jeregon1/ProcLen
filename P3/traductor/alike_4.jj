@@ -259,7 +259,7 @@ Symbol.Types tipo_variable(TypeAttrib typeAt) :
 		typeAt1.clone(typeAt); typeAt2.clone(typeAt);
 		typeAt1.paramArray = null;
 	}
-	( baseType = tipo_variable_simple(/* t, null, paramClass */typeAt1) | tipo_variable_array(/* t, paramArray, paramClass */ typeAt2) )
+	( baseType = tipo_variable_simple(typeAt1/* t, null, paramClass */) | tipo_variable_array(typeAt2/* t, paramArray, paramClass */ ) )
 	{ return baseType; } // Si es un tipo simple, se devuelve el tipo de la variable
 }
 
@@ -306,10 +306,10 @@ void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArr
 	{
 		if (isParameter){ // Parámetro ARRAY
 			// paramArray se ha creado en "parametro_formal" para rellenarse aquí
-			paramArray.minInd = min;
-			paramArray.maxInd = max;
-			paramArray.parClass = paramClass;
-			paramArray.baseType = baseType;
+			typeAt.paramArray.minInd = min;
+			typeAt.paramArray.maxInd = max;
+			typeAt.paramArray.parClass = paramClass;
+			typeAt.paramArray.baseType = baseType;
 		}
 	}
 }
@@ -322,41 +322,41 @@ void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArr
 				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
 	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-Symbol.Types tipo_variable_simple(List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass) : 
+Symbol.Types tipo_variable_simple(TypeAttrib typeAt/* List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass */) : 
 {
-	Symbol.Types type = null;
-	boolean isArray = (baseArray != null);
+	// Symbol.Types type = null;
+	boolean isArray = (typeAt.baseArray != null);
 	/* Si baseArray != de null, estamos en una declaración de
 	   array y contiene los valores de min, max y paramClass */
 }
 {
-	( <tINT>  { type = Symbol.Types.INT; }
-	| <tCHAR> { type = Symbol.Types.CHAR; }
-	| <tBOOL> { type = Symbol.Types.BOOL; }
+	( <tINT>  { typeAt.type = Symbol.Types.INT; }
+	| <tCHAR> { typeAt.type = Symbol.Types.CHAR; }
+	| <tBOOL> { typeAt.type = Symbol.Types.BOOL; }
 	)
 	{
-		if (t == null) { // Parámetros
+		if (typeAt.t == null) { // Parámetros
 			/* Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
 			   y estos se insertan en st en declaracion_procedimiento y declaracion_funcion */
-			return type;
+			return typeAt.type;
 		}
 		else if (isArray) { // Declaración de variables arrays
-			baseArray.baseType = type;
-			for (Token id : t) {
-				SymbolArray newArray = baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices y paramClass
+			typeAt.baseArray.baseType = typeAt.type;
+			for (Token id : typeAt.t) {
+				SymbolArray newArray = typeAt.baseArray.clone(); // Necesario para obtener un array nuevo con la info de índices y paramClass
 				newArray.name = id.image;
 				semantic.insertSymbol(id, newArray);
 			}
 		} else { // Declaración de variables simples
-			for (Token id : t) {
-				switch (type) {
-					case INT:  semantic.insertSymbol(id, new  SymbolInt(id.image, paramClass)); break;
-					case CHAR: semantic.insertSymbol(id, new SymbolChar(id.image, paramClass)); break;
-					case BOOL: semantic.insertSymbol(id, new SymbolBool(id.image, paramClass)); break;
+			for (Token id : typeAt.t) {
+				switch (typeAt.type) {
+					case INT:  semantic.insertSymbol(id, new  SymbolInt(id.image, typeAt.paramClass)); break;
+					case CHAR: semantic.insertSymbol(id, new SymbolChar(id.image, typeAt.paramClass)); break;
+					case BOOL: semantic.insertSymbol(id, new SymbolBool(id.image, typeAt.paramClass)); break;
 				}
 			}
 		}
-		return type;
+		return typeAt.type;
 	}
 }
 
@@ -398,13 +398,14 @@ void declaracion_funcion() :
 	Symbol.Types returnType;
 	SymbolFunction functionSymbol;
 	Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+	TypeAttrib typeAt = new TypeAttrib();
 }
 {
 	<tFUNCTION>
 	id = <tID>
 	( <tLPAREN> lista_parametros(params) <tRPAREN> )? // Puede NO tener parámetros
-	<tRETURN>
-	returnType = tipo_variable_simple(null, null, Symbol.ParameterClass.NONE)
+	<tRETURN> {typeAt.t = null;}
+	returnType = tipo_variable_simple(typeAt)
 	{
 		functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(params.values()), returnType);
 		semantic.insertSymbol(id, functionSymbol);
