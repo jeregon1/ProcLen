@@ -549,11 +549,12 @@ void inst_leer_elemento() :
 //array_access: <tLPAREN> expresion <tRPAREN>
 void array_access() : 
 {
-	Symbol.Types type;
+	ExpressionAttrib expAt = new ExpressionAttrib();
+	Symbol.Types type; // Se podría añadir a ExpressionAttrib y asignarlo en la producción "expresion" para no tener que declararlo aquí
 }
 {
 	<tLPAREN> 
-	type = expresion(null, null)
+	type = expresion(expAt)
 	{
 		semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de tipo INT
 		// No hace falta comprobar que el índice esté dentro del rango del array porque no se pide
@@ -574,11 +575,12 @@ void inst_escribir() : {}
 //inst_escribir_elemento: <tCONST_STRING> | expresion
 void inst_escribir_elemento() : 
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Symbol.Types type = Symbol.Types.STRING;
 	// Se pueden escribir constantes string y expresiones de tipo integer, character y boolean, incluidos los elementos de un array
 }
 {
-	(<tCONST_STRING> | type = expresion(null, null))
+	(<tCONST_STRING> | type = expresion(expAt))
 	{
 		switch (type) {
 			case INT:
@@ -605,6 +607,7 @@ void inst_escribir_linea() : {}
 //inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
 void inst_invocacion_procedimiento_o_asignacion() : 
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Token id;
 	Symbol.Types type;
 	boolean access = false;
@@ -615,7 +618,7 @@ void inst_invocacion_procedimiento_o_asignacion() :
 	LOOKAHEAD( (array_access())? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
 	(array_access() {access = true;} )? 
 	<tASSIGN>
-	type = expresion(null, null)
+	type = expresion(expAt)
 	{
 		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
 		Symbol symbol = semantic.getSymbol(id);
@@ -649,15 +652,16 @@ void inst_invocacion_procedimiento_o_asignacion() :
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if() :
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Symbol.Types type;
 }
 {
-	<tIF>	  type = expresion(null, null) 
+	<tIF>	  type = expresion(expAt) 
 	{
 		semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
 	}
 	<tTHEN> ( instruccion() )+
-	(<tELSIF> type = expresion(null, null)
+	(<tELSIF> type = expresion(expAt)
 	{
 		semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
 	} <tTHEN> ( instruccion() )+ )* 
@@ -668,10 +672,11 @@ void inst_if() :
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
 void inst_while() : 
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Symbol.Types type;
 }
 {
-	<tWHILE> type = expresion(null, null)
+	<tWHILE> type = expresion(expAt)
 	{
 		semantic.whileChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
 	}
@@ -681,10 +686,11 @@ void inst_while() :
 //inst_return: <tRETURN> expresion
 void inst_return() : 
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Symbol.Types returnType;
 }
 {
-	<tRETURN> returnType = expresion(null, null) 
+	<tRETURN> returnType = expresion(expAt) 
 	{
 		semantic.inst_return(getToken(0), returnType);
 	}
@@ -699,14 +705,17 @@ void inst_return() :
  * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
  * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
  */
-Symbol.Types expresion(Token param, boolean[] esAsignable) : 
+Symbol.Types expresion(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
 {
+	// Podría entrar en campos de ExpressionAttrib? 🎃
 	Symbol.Types type;
 	boolean moreThanOne = false;
 	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
 }
-{
-	type = relacion(param, esAsignable)
+{													// 🎃
+	type = relacion(expAt.param, expAt.esAsignable) // <-- realmente habría que cambiar tb en "relacion" los 2
+													// atributos por otra clase, o la misma pero con la funcionalidad de "relacion"
+													// lo mismo para: "expresion_simple", "termino", "factor", ...
 	(	(<tAND>
 		{
 			moreThanOne = true;
@@ -735,7 +744,7 @@ Symbol.Types expresion(Token param, boolean[] esAsignable) :
 		)+
 	)?
 	{
-		if (moreThanOne && esAsignable != null) esAsignable[0] = false; // Si hay más de una relación, la expresión no es asignable
+		if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay más de una relación, la expresión no es asignable
 		return (moreThanOne) ? Symbol.Types.BOOL : type;
 	}
 }
@@ -859,17 +868,18 @@ Symbol.Types factor(Token param, boolean[] esAsignable) :
  */
 Symbol.Types primario(Token param, boolean[] esAsignable) : 
 {
+	ExpressionAttrib expAt = new ExpressionAttrib();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
 }
 {
-	(			    <tLPAREN> type = expresion(null, null) <tRPAREN>
-	|	<tINT2CHAR> <tLPAREN> type = expresion(null, null) <tRPAREN>
+	(			    <tLPAREN> type = expresion(expAt) <tRPAREN>
+	|	<tINT2CHAR> <tLPAREN> type = expresion(expAt) <tRPAREN>
 	{
 		semantic.int2charCheck(getToken(0), type); // La expresión debe ser de tipo INT
 		type = Symbol.Types.CHAR;
 	}
-	|	<tCHAR2INT> <tLPAREN> type = expresion(null, null) <tRPAREN>
+	|	<tCHAR2INT> <tLPAREN> type = expresion(expAt) <tRPAREN>
 	{
 		// La expresioón debe ser de tipo CHAR
 		semantic.char2intCheck(getToken(0), type); // La expresión debe ser de tipo CHAR
@@ -933,30 +943,36 @@ void lista_una_o_mas_exps(Token id) :
 { // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
 	List<Symbol.Types> types = new ArrayList<>();
 	Map<Token, Boolean> args = new LinkedHashMap<>();
-	boolean[] esAsignable = {false};
 
 	Symbol.Types type;
 	if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
 	Symbol symbol = semantic.getSymbol(id);
 	
-	Token t = new Token(0);
+	ExpressionAttrib expAt = new ExpressionAttrib();
+	// 👇🏼 Sustituidos por 👆🏼
+	// boolean[] esAsignable = {false};
+	// Token t = new Token(0);
 }
 {
-	type = expresion(t, esAsignable)
+	{
+		expAt.param = new Token(0);
+		expAt.esAsignable = false;
+	}
+	type = expresion(expAt)
 	{
 		types.add(type);
-		if (t.kind == 0) args.put(getToken(0), false);
-		else 			 args.put(t, esAsignable[0]);
-		esAsignable[0] = false;
-		t = new Token(0);
+		if (expAt.param.kind == 0) args.put(getToken(0), false);
+		else 			 		   args.put(expAt.param, expAt.esAsignable);
+		expAt.esAsignable = false;
+		expAt.param = new Token(0);
 	}
-	( <tCOMMA> type = expresion(t, esAsignable) 
+	( <tCOMMA> type = expresion(expAt) 
 		{ // Iterate over all the parameters
 			types.add(type);
-			if (t.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
-			else 			 args.put(t, esAsignable[0]);
-			esAsignable[0] = false;
-			t = new Token(0);
+			if (expAt.param.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
+			else 			 		   args.put(expAt.param, expAt.esAsignable);
+			expAt.esAsignable = false;
+			expAt.param = new Token(0);
 		}
 	)*
 	{
