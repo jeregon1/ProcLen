@@ -363,18 +363,19 @@ Symbol.Types tipo_variable_simple(TypeAttrib typeAt/* List<Token> t, SymbolArray
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_procedimiento() : 
 {
-	Token id;
-	Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+	// Token id;
+	// Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 }
 {
 	<tPROCEDURE>
-	id = <tID> // Puede NO tener parámetros
-	( <tLPAREN> lista_parametros(params) <tRPAREN> )?
+	funcProcDecAt.id = <tID> // Puede NO tener parámetros
+	( <tLPAREN> lista_parametros(funcProcDecAt.params) <tRPAREN> )?
 	{
-		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>(params.values())));
+		semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())));
 		semantic.insertBlock();
 		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
-		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+		for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
 			semantic.insertSymbol(entry.getKey(), entry.getValue());
 		}
 	}
@@ -386,7 +387,7 @@ void declaracion_procedimiento() :
 	<tEND>
 	<tSEMICOLON>
 	{
-		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
+		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
 		semantic.removeBlock(); // Eliminación del bloque actual
 	}
 }
@@ -394,31 +395,32 @@ void declaracion_procedimiento() :
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_funcion() : 
 {
-	Token id;
-	Symbol.Types returnType;
-	SymbolFunction functionSymbol;
-	Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
+	// Token id;
+	// Symbol.Types returnType;
+	// SymbolFunction functionSymbol;
+	// Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
 	TypeAttrib typeAt = new TypeAttrib();
+	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 }
 {
 	<tFUNCTION>
-	id = <tID>
-	( <tLPAREN> lista_parametros(params) <tRPAREN> )? // Puede NO tener parámetros
+	funcProcDecAt.id = <tID>
+	( <tLPAREN> lista_parametros(funcProcDecAt.params) <tRPAREN> )? // Puede NO tener parámetros
 	<tRETURN> {typeAt.t = null;}
-	returnType = tipo_variable_simple(typeAt)
+	funcProcDecAt.returnType = tipo_variable_simple(typeAt)
 	{
-		functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(params.values()), returnType);
-		semantic.insertSymbol(id, functionSymbol);
+		funcProcDecAt.functionSymbol = new SymbolFunction(id.image, new ArrayList<Symbol>(funcProcDecAt.params.values()), returnType);
+		semantic.insertSymbol(id, funcProcDecAt.functionSymbol);
 		semantic.insertBlock();
 		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
-		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+		for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
 			semantic.insertSymbol(entry.getKey() ,entry.getValue());
 		}
 	}
 	<tIS>
 		(declaracion_var())*
 		( declaracion_procedimiento() | declaracion_funcion() )*
-	<tBEGIN> {semantic.enterFunction(functionSymbol);}
+	<tBEGIN> {semantic.enterFunction(funcProcDecAt.functionSymbol);}
 		(instruccion())+
 	<tEND>
 	{
@@ -435,10 +437,10 @@ void declaracion_funcion() :
  * Params:
  * 	-params: Diccionario de Token-Symbol de los parámetros
  */
-void lista_parametros(Map<Token,Symbol> params) : {}
+void lista_parametros(FuncProcDecAttrib funcProcDecAt/* Map<Token,Symbol> params */) : {}
 {
-	parametro_formal(params) 
-	( <tSEMICOLON> parametro_formal(params) )*
+	parametro_formal(funcProcDecAt.params) 
+	( <tSEMICOLON> parametro_formal(funcProcDecAt.params) )*
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
@@ -448,32 +450,39 @@ void lista_parametros(Map<Token,Symbol> params) : {}
  */
 void parametro_formal(Map<Token,Symbol> params) : 
 {
-	List<Token> t = new ArrayList<Token>();
-	SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
-	Symbol.Types baseType;
-	Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
+	ParVarAttrib parVarAt = new ParVarAttrib();
+	TypeAttrib typeAt = new TypeAttrib();
+	// List<Token> t = new ArrayList<Token>();
+	// SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
+	// Symbol.Types baseType;
+	// Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
 }
 {
-	lista_ids(t)
+	lista_ids(parVarAt.t)
 	<tCOLON>
-	( <tREF> {paramClass = Symbol.ParameterClass.REF;} )?
-	baseType = tipo_variable(null, paramArray, paramClass) 
+	( <tREF> {parVarAt.paramClass = Symbol.ParameterClass.REF;} )?
+	{
+		typeAt.t = null;
+		typeAt.paramArray = parVarAt.paramArray;
+		typeAt.paramClass = parVarAt.paramClass;
+	}
+	parVarAt.baseType = tipo_variable(typeAt) 
 	// Aquí es el único lugar donde se utiliza paramArray ya que aquí se leen parámetros
 	// Funciona de manera que en "tipo_variable_array" al ver que paramClass no es NONE (es VAL o REF), se rellenan los datos de paramArray con: min, max y paramClass
 	{
-		for (Token id : t) {
+		for (Token id : parVarAt.t) {
 		// Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
 
-			if (baseType == Symbol.Types.ARRAY) { // Parámetros array
+			if (parVarAt.baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = paramArray.clone();
 				newArray.name = id.image;
 				params.put(id, newArray); // Insertado de parámetro array en el diccionario de parámetros
 			} else { // Parámetros simples
-				switch (baseType) {
+				switch (parVarAt.baseType) {
 					// Insertado de parámetro (int|char|bool) en el diccionario de parámetros
-					case INT:  params.put(id, new  SymbolInt(id.image, paramClass)); break;
-					case CHAR: params.put(id, new SymbolChar(id.image, paramClass)); break;
-					case BOOL: params.put(id, new SymbolBool(id.image, paramClass)); break;
+					case INT:  params.put(id, new  SymbolInt(id.image, parVarAt.paramClass)); break;
+					case CHAR: params.put(id, new SymbolChar(id.image, parVarAt.paramClass)); break;
+					case BOOL: params.put(id, new SymbolBool(id.image, parVarAt.paramClass)); break;
 				}
 			}
 		}
