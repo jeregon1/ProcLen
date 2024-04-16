@@ -20,6 +20,7 @@ package traductor;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.tools.SemanticFunctions.SemanticFunctions;
+import lib.attributes.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -212,11 +213,15 @@ void Programa() :
 void declaracion_var() : 
 {
 	List<Token> t = new ArrayList<Token>();
+	TypeAttrib typeAt;
 }
 {
-	lista_ids(t)
+	{
+		typeAt = new TypeAttrib();
+	}
+	lista_ids(typeAt)
 	<tCOLON>
-	tipo_variable(t, null, Symbol.ParameterClass.NONE)
+	tipo_variable(typeAt)
 	<tSEMICOLON> 
 }
 
@@ -225,13 +230,14 @@ void declaracion_var() :
  * Params:
  * 	-tokens: lista de tokens de la enumeración de los identificadores de las variables
  */
-void lista_ids(List<Token> tokens) :
+void lista_ids(TypeAttrib typeAt) :
 {
 	Token t;
+	TypeAttrib typeAt;
 }
 {
-	t = <tID> {tokens.add(t);}
-	(<tCOMMA> t = <tID> {tokens.add(t);})*
+	t = <tID> {typeAt.t.add(t);}
+	(<tCOMMA> t = <tID> {typeAt.t.add(t);})*
 }
 
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
@@ -241,12 +247,19 @@ void lista_ids(List<Token> tokens) :
  *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
  *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
+// Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
+Symbol.Types tipo_variable(TypeAttrib typeAt) : 
 {
 	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
+	TypeAttrib typeAt1, typeAt2;
 }
 {
-	( baseType = tipo_variable_simple(t, null, paramClass) | tipo_variable_array(t, paramArray, paramClass) )
+	{
+		typeAt1 = new TypeAttrib(); typeAt2 = new TypeAttrib();
+		typeAt1.clone(typeAt); typeAt2.clone(typeAt);
+		typeAt1.paramArray = null;
+	}
+	( baseType = tipo_variable_simple(/* t, null, paramClass */typeAt1) | tipo_variable_array(/* t, paramArray, paramClass */ typeAt2) )
 	{ return baseType; } // Si es un tipo simple, se devuelve el tipo de la variable
 }
 
@@ -257,33 +270,39 @@ Symbol.Types tipo_variable(List<Token> t, SymbolArray paramArray, Symbol.Paramet
  *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
  *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
  */
-void tipo_variable_array(List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass) : 
+void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass */) : 
 {
-	Token tMin, tMax;
-	int min, max, minus1 = 1, minus2 = 1;
-	Symbol.Types baseType;
-	SymbolArray baseArray = null;
-	boolean isParameter = (paramClass != Symbol.ParameterClass.NONE);
+	ArrayTypeAttrib arrayTypeAt;
+	TypeAttrib typeAt2;
+	// Token tMin, tMax;
+	// int min, max, minus1 = 1, minus2 = 1;
+	// Symbol.Types baseType;
+	// SymbolArray baseArray = null;
+	boolean isParameter = (typeAt.paramClass != Symbol.ParameterClass.NONE);
 	boolean isDeclaration = !isParameter;
 }
 {
+	{
+		arrayTypeAt = new ArrayTypeAttrib();
+	}
 	<tARRAY> <tLPAREN>
-	(<tMINUS> {minus1 = -1;} | <tPLUS>)? tMin = <tCONST_INT> 
+	(<tMINUS> {arrayTypeAt.minus1 = -1;} | <tPLUS>)? arrayTypeAt.tMin = <tCONST_INT> 
 		<tRANGE> 
-	(<tMINUS> {minus2 = -1;} | <tPLUS>)? tMax = <tCONST_INT> 
+	(<tMINUS> {arrayTypeAt.minus2 = -1;} | <tPLUS>)? arrayTypeAt.tMax = <tCONST_INT> 
 	<tRPAREN>
 	{
-		min = Integer.parseInt(tMin.image) * minus1;
-		max = Integer.parseInt(tMax.image) * minus2;
-		semantic.emptyArrayRange(tMax, min, max); // Comprobar que el rango no es vacío (min > max)
+		arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image) * arrayTypeAt.minus1;
+		arrayTypeAt.max = Integer.parseInt(arrayTypeAt.tMax.image) * arrayTypeAt.minus2;
+		semantic.emptyArrayRange(arrayTypeAt.tMax, arrayTypeAt.min, arrayTypeAt.max); // Comprobar que el rango no es vacío (min > max)
 
 		if (isDeclaration) {
-			baseArray = new SymbolArray("", min, max, Symbol.Types.UNDEFINED, paramClass);
+			arrayTypeAt.baseArray = new SymbolArray("", arrayTypeAt.min, arrayTypeAt.max, Symbol.Types.UNDEFINED, typeAt.paramClass);
 			/* baseArray se crea aquí para que en "tipo_variable_simple" se pueda
 			   insertar en la tabla de símbolos con los valores de "min" y "max" */
 		}
 	}
-	<tOF> baseType = tipo_variable_simple(t, baseArray, null)
+	<tOF> { typeAt2 = new TypeAttrib(); typeAt2.clone(typeAt); typeAt2.paramArray = arrayTypeAt.baseArray; }
+	arrayTypeAt.baseType = tipo_variable_simple(/* t, baseArray, null */typeAt2)
 	{
 		if (isParameter){ // Parámetro ARRAY
 			// paramArray se ha creado en "parametro_formal" para rellenarse aquí
