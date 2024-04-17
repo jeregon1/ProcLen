@@ -176,22 +176,22 @@ public class SemanticFunctions {
 			// si es array, comprobar que el tipo del array es INT o CHAR
 			SymbolArray array = (SymbolArray) s;
 			if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
-				error(t, "El array '" + t.image + "' debe ser de tipo " + "integer"/* tokenImage[tINT] */ + " o " + "character"/* tokenImage[tCHAR] */ + ".");
+				error(t, "El array '" + t.image + "' debe ser de tipo " + "integer" + " o " + "character" + ".");
 			}
 		} else if (access) { // que no se acceda a una variable simple, procedimiento o función como a un array 
-			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por no ser de tipo " + "array"/* tokenImage[tARRAY] */ + " sino " + s.type + ".");
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por no ser de tipo " + "array" + " sino " + s.type + ".");
 		}		
 	}
 
 	public void isBooleanBeingRead(Token t, Symbol s){
 		if (s.type == Symbol.Types.BOOL) { // Comprobar que no se esté leyendo un booleano
-			error(t, "No se puede leer una variable de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+			error(t, "No se puede leer una variable de tipo " + "boolean" + ".");
 		}
 	}
 
 	public void indexIsInteger(Token t, Symbol.Types type){
 		if (type != Symbol.Types.INT) { // Comprobar que el índice es de tipo INT
-			error(t, "El índice de un array debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+			error(t, "El índice de un array debe ser de tipo " + "integer" + ".");
 		}
 	}
 
@@ -202,10 +202,10 @@ public class SemanticFunctions {
 			}
 			Symbol.Types baseType = ((SymbolArray) s).baseType;
 			if (baseType != type) { // Comprobar que el tipo de la expresión coincide con el tipo base del array
-				error(t, "El tipo " + type + " de la expresión no coincide con el tipo " + baseType + " base del array '" + t.image + "'.");
+				error(t, "El tipo '" + type + "' de la expresión no coincide con el tipo '" + baseType + "' base del array '" + t.image + "'.");
 			}
 		} else if (access) { // no puede accederse a una variable no array
-			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + "array"/* tokenImage[tARRAY] */ + " y no " + s.type + ".");
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + "array" + " y no " + s.type + ".");
 		}
 	}
 
@@ -226,50 +226,50 @@ public class SemanticFunctions {
 		}
 	}
 
-	public void ifChecks(Token t, Symbol.Types type, String errorMsg) {
+	public void ifChecks(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-			error(t, errorMsg);
+			error(t, "La guarda de una sentencia 'if' o 'elsif' debe ser de tipo 'boolean'.");
 		}
 	}
 
 	public void whileChecks(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-			error(t, "La guarda de un bucle " + "while"/* tokenImage[tWHILE] */ + " debe ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+			error(t, "La guarda de un bucle " + "while" + " debe ser de tipo " + "boolean" + ".");
 		}
 	}
 
 	public void signInExpressionCheck(Token t, Symbol.Types type, boolean sign) {
 		if (sign && (type != Symbol.Types.INT)) { // Si hay signo, la expresión debe ser de tipo INT
-			error(t, "Los signos " + "+"/* tokenImage[tPLUS] */ + " y " + "-"/* tokenImage[tMINUS] */ + 
-					" solo se puede usar con expresiones de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+			error(t, "Los signos " + "+" + " y " + "-" + 
+					" solo se puede usar con expresiones de tipo " + "integer" + ", se encontró " + type + ".");
 		}
 	}
 
 	public void moreThanOneExpressionCheck(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.INT) {
-			error(t, "Los términos de una suma o resta deben ser de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+			error(t, "Los términos de una suma o resta deben ser de tipo " + "'integer'" + ", se encontró '" + type + "'.");
 		}
 	}
 
 	public void multiplicativeFactorCheck(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.INT) {
-				error(t, "Los factores de una multiplicación, división y módulo deben ser de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+				error(t, "Los factores de una multiplicación, división y módulo deben ser de tipo " + "integer" + ", se encontró " + type + ".");
 		}
 	}
 
 	public void notOperatorCheck(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) {
-				error(t, "El operador " + "not"/* tokenImage[tNOT] */ + 
-						" solo se puede usar con variables de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".");
+				error(t, "El operador " + "not" + 
+						" solo se puede usar con variables de tipo " + "boolean" + ".");
 		}
 	}
 
 	public void int2charCheck(Token t, Symbol.Types type) {
-		if (type != Symbol.Types.INT) error(t, "La expresión debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+		if (type != Symbol.Types.INT) error(t, "La expresión debe ser de tipo " + "integer" + ".");
 	}
 
 	public void char2intCheck(Token t, Symbol.Types type) {
-		if (type != Symbol.Types.CHAR) error(t, "La expresión debe ser de tipo " + "character"/* tokenImage[tCHAR] */ + ".");
+		if (type != Symbol.Types.CHAR) error(t, "La expresión debe ser de tipo " + "character" + ".");
 	}
 
 	public void procedureInPrimaryError(Token t, String wrongType) {
@@ -299,7 +299,7 @@ public class SemanticFunctions {
 			error(id, "El acceso a un array debe tener un único índice.");
 		}
 		if (types.get(0) != Symbol.Types.INT) {
-			error(id, "El índice de un array debe ser de tipo " + "integer"/* tokenImage[tINT] */ + ".");
+			error(id, "El índice de un array debe ser de tipo " + "integer" + ".");
 		}
 	}
 
@@ -324,17 +324,17 @@ public class SemanticFunctions {
 					SymbolArray argArray = (SymbolArray) getSymbol(arg);
 					
 					if (argArray.baseType != paramArray.baseType) {
-						error(arg, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
+						error(id, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
 					}
 					if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
-						error(arg, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
+						error(id, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
 					}
 				} else {
 					// Si el parámetro es simple y por valor, no hay que comprobar nada más
 					// Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
 					if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
 						if (!assignables.get(i)) {
-							error(arg, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
+							error(id, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
 						}
 					}
 				}

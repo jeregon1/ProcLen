@@ -24,9 +24,9 @@ public class ErrorSemantico  {
         num_errores++;
         System.err.println("----------------------------------------");
         if (t == null) {
-            System.err.println("Semantic error: " + msg);
+            System.err.println("Error semántico: " + msg);
         } else {
-            System.err.println("Semantic error (" + t.beginLine + "," + t.beginColumn + "): Current symbol: '" + t.image + "'. " + msg);
+            System.err.println("Error semántico (" + t.beginLine + "," + t.beginColumn + "): Símbolo: '" + t.image + "'. " + msg);
         }
     }
 }
