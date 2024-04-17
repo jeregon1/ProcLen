@@ -143,8 +143,7 @@ if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de s
 }
 
 //declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
-  static final public void declaracion_var() throws ParseException {TypeAttrib typeAt;
-typeAt = new TypeAttrib();
+  static final public void declaracion_var() throws ParseException {TypeAttrib typeAt = new TypeAttrib();
     lista_ids(typeAt.t);
     jj_consume_token(tCOLON);
     tipo_variable(typeAt);
@@ -183,7 +182,7 @@ list.add(t);
  *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
  *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-  static final public Symbol.Types tipo_variable(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass */) throws ParseException {Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
+  static final public Symbol.Types tipo_variable(TypeAttrib typeAt) throws ParseException {Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
         TypeAttrib typeAt1, typeAt2;
 typeAt1 = new TypeAttrib(); typeAt2 = new TypeAttrib();
                 typeAt1.clone(typeAt); typeAt2.clone(typeAt);
@@ -192,11 +191,11 @@ typeAt1 = new TypeAttrib(); typeAt2 = new TypeAttrib();
     case tINT:
     case tCHAR:
     case tBOOL:{
-      baseType = tipo_variable_simple(typeAt1/* t, null, paramClass */);
+      baseType = tipo_variable_simple(typeAt1);
       break;
       }
     case tARRAY:{
-      tipo_variable_array(typeAt2/* t, paramArray, paramClass */);
+      tipo_variable_array(typeAt2);
       break;
       }
     default:
@@ -215,11 +214,7 @@ typeAt1 = new TypeAttrib(); typeAt2 = new TypeAttrib();
  *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
  *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
  */
-  static final public void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass */) throws ParseException {ArrayTypeAttrib arrayTypeAt = new ArrayTypeAttrib();
-        // Token tMin, tMax;
-        // int min, max, minus1 = 1, minus2 = 1;
-        // Symbol.Types baseType;
-        // SymbolArray baseArray = null;
+  static final public void tipo_variable_array(TypeAttrib typeAt) throws ParseException {ArrayTypeAttrib arrayTypeAt = new ArrayTypeAttrib();
         boolean isParameter = (typeAt.paramClass != Symbol.ParameterClass.NONE);
         boolean isDeclaration = !isParameter;
         TypeAttrib typeAt2;
@@ -288,7 +283,7 @@ arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image) * arrayTypeAt.minus1;
                 }
     jj_consume_token(tOF);
 typeAt2 = new TypeAttrib(); typeAt2.clone(typeAt); typeAt2.paramArray = arrayTypeAt.baseArray;
-    arrayTypeAt.baseType = tipo_variable_simple(/* t, baseArray, null */typeAt2);
+    arrayTypeAt.baseType = tipo_variable_simple(typeAt2);
 if (isParameter){ // Parámetro ARRAY
                         // paramArray se ha creado en "parametro_formal" para rellenarse aquí
                         typeAt.paramArray.minInd = arrayTypeAt.min;
@@ -306,7 +301,7 @@ if (isParameter){ // Parámetro ARRAY
 				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
 	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-  static final public Symbol.Types tipo_variable_simple(TypeAttrib typeAt/* List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass */) throws ParseException {// Symbol.Types type = null;
+  static final public Symbol.Types tipo_variable_simple(TypeAttrib typeAt) throws ParseException {// Symbol.Types type = null;
         boolean isArray = (typeAt.paramArray != null);
         /* Si baseArray != de null, estamos en una declaración de
 	   array y contiene los valores de min, max y paramClass */
@@ -358,9 +353,7 @@ if (typeAt.t == null) { // Parámetros
 }
 
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
-  static final public void declaracion_procedimiento() throws ParseException {// Token id;
-        // Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
-        FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
+  static final public void declaracion_procedimiento() throws ParseException {FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
     jj_consume_token(tPROCEDURE);
     funcProcDecAt.id = jj_consume_token(tID);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -451,11 +444,7 @@ if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de
 }
 
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
-  static final public void declaracion_funcion() throws ParseException {// Token id;
-        // Symbol.Types returnType;
-        // SymbolFunction functionSymbol;
-        // Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
-        TypeAttrib typeAt = new TypeAttrib();
+  static final public void declaracion_funcion() throws ParseException {TypeAttrib typeAt = new TypeAttrib();
         FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
     jj_consume_token(tFUNCTION);
     funcProcDecAt.id = jj_consume_token(tID);
@@ -582,11 +571,6 @@ semantic.exitFunction(getToken(0));
  */
   static final public void parametro_formal(Map<Token,Symbol> params) throws ParseException {ParVarAttrib parVarAt = new ParVarAttrib();
         TypeAttrib typeAt = new TypeAttrib();
-        // List<Token> t = new ArrayList<Token>();
-        // SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
-        // Symbol.Types baseType;
-        // Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
-
     lista_ids(parVarAt.t);
     jj_consume_token(tCOLON);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1038,17 +1022,13 @@ semantic.inst_return(t, returnType);
  * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
  * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
  */
-  static final public Symbol.Types expresion(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {// Podría entrar en campos de ExpressionAttrib? 🎃 --> Creo que no ya que si se reutiliza la calse para "relacion", "exp_simple", ...
-                                                                                                                // esos campos estarían vacíos y no se usarían (ineficiencia de espacio en memoria)
-                                                                                                                // entonces sería más eficiente tenerlos aquí separados
-        Symbol.Types type;
+  static final public Symbol.Types expresion(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
         boolean moreThanOne = false;
         String errorMsg = "Las relaciones de una expresi\u00f3n l\u00f3gica deben ser de tipo " + tokenImage[tBOOL] + ".";
 
         ExpressionAttrib expAt2 = new ExpressionAttrib(); // Se inicia con null, null
 
-    // 🎃
-            type = relacion(expAt);
+    type = relacion(expAt);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tAND:
     case tOR:{
@@ -1119,7 +1099,7 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types relacion(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
+  static final public Symbol.Types relacion(ExpressionAttrib expAt) throws ParseException {Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
         ExpressionAttrib expAt2 = new ExpressionAttrib();
     type1 = expresion_simple(expAt);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1188,7 +1168,7 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types expresion_simple(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {Symbol.Types type;
+  static final public Symbol.Types expresion_simple(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
         boolean sign = false;
         ExpressionAttrib expAt2 = new ExpressionAttrib();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1258,10 +1238,10 @@ if (sign && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay sign
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types termino(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {Symbol.Types type;
+  static final public Symbol.Types termino(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
         boolean moreThanOne = false;
         ExpressionAttrib expAt2 = new ExpressionAttrib();
-    type = factor(expAt/* param, esAsignable */);
+    type = factor(expAt);
     label_23:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1315,7 +1295,7 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types factor(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {Symbol.Types type;
+  static final public Symbol.Types factor(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
         boolean not = false;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tNOT:{
@@ -1327,7 +1307,7 @@ not = true;
       jj_la1[50] = jj_gen;
       ;
     }
-    type = primario(expAt/* param, esAsignable */);
+    type = primario(expAt);
 if (not) {
                         if (expAt.esAsignable != null) expAt.esAsignable = false;
                         semantic.notOperatorCheck(getToken(0), type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
@@ -1342,7 +1322,7 @@ if (not) {
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types primario(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) throws ParseException {ExpressionAttrib expAt2 = new ExpressionAttrib();
+  static final public Symbol.Types primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt2 = new ExpressionAttrib();
         Symbol.Types type = Symbol.Types.UNDEFINED;
         Token id;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1462,10 +1442,6 @@ type = Symbol.Types.BOOL;
         Symbol symbol = semantic.getSymbol(id);
 
         ExpressionAttrib expAt = new ExpressionAttrib();
-        // 👇🏼 Sustituidos por 👆🏼
-        // boolean[] esAsignable = {false};
-        // Token t = new Token(0);
-
 expAt.param = new Token(0);
                 expAt.esAsignable = false;
     type = expresion(expAt);
@@ -1508,7 +1484,6 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
                         semantic.checkArgumentTypes(id, types, parList, args, msg);
 
                 } else if (symbol.type == Symbol.Types.ARRAY) {
-                        // SymbolArray array = (SymbolArray) symbol; 🎃 <-- is this necessary?
                         /*Comprobaciones sobre el array
 			- El acceso a un array debe tener un único índice
 			- El índice de un array debe ser de tipo integer
@@ -1535,54 +1510,200 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     finally { jj_save(1, xla); }
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_975_11_54()
+  static private boolean jj_3R_expresion_695_9_27()
  {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_715_9_27()) return true;
+    if (jj_3R_relacion_741_9_28()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_698_17_29()) jj_scanpos = xsp;
     return false;
   }
 
-  static private boolean jj_3R_primario_882_9_43()
+  static private boolean jj_3R_factor_835_9_40()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_primario_882_37_45()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_883_17_46()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_888_17_47()) {
-    jj_scanpos = xsp;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_912_17_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_933_17_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_934_17_50()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_935_17_51()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_936_17_52()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
+    if (jj_3R_factor_835_11_42()) jj_scanpos = xsp;
+    if (jj_3R_primario_858_9_43()) return true;
     return false;
   }
 
-  static private boolean jj_3R_array_access_550_9_26()
+  static private boolean jj_3R_relacion_741_9_28()
  {
+    if (jj_3R_expresion_simple_774_5_30()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_742_11_31()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3_2()
+ {
+    if (jj_scan_token(tID)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_715_9_27()) return true;
+    if (jj_3R_lista_una_o_mas_exps_936_9_53()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_operador_relacional_784_9_37()
+  static private boolean jj_3R_primario_912_17_52()
+ {
+    if (jj_scan_token(tFALSE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_778_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_801_5_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_911_17_51()
+ {
+    if (jj_scan_token(tTRUE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_864_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_695_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_910_17_50()
+ {
+    if (jj_scan_token(tCONST_CHAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_909_17_49()
+ {
+    if (jj_scan_token(tCONST_INT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_operador_multiplicativo_822_9_44()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(57)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(58)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(59)) return true;
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_859_17_46()
+ {
+    if (jj_scan_token(tINT2CHAR)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_695_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_774_6_34()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_774_5_30()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_simple_774_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_801_5_35()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_simple_778_10_36()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_711_20_39()
+ {
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_741_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_array_access_533_9_26()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_695_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_711_19_33()
+ {
+    Token xsp;
+    if (jj_3R_expresion_711_20_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_711_20_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_858_9_43()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_primario_858_37_45()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_859_17_46()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_864_17_47()) {
+    jj_scanpos = xsp;
+    if (jj_3_2()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_888_17_48()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_909_17_49()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_910_17_50()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_911_17_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_912_17_52()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_948_11_54()
+ {
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_695_9_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_operador_relacional_760_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1605,103 +1726,73 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_termino_826_11_41()
+  static private boolean jj_3R_termino_802_11_41()
  {
-    if (jj_3R_operador_multiplicativo_846_9_44()) return true;
-    if (jj_3R_factor_859_9_40()) return true;
+    if (jj_3R_operador_multiplicativo_822_9_44()) return true;
+    if (jj_3R_factor_835_9_40()) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_912_17_48()
+  static private boolean jj_3R_primario_888_17_48()
  {
     if (jj_scan_token(tID)) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_721_18_38()
+  static private boolean jj_3R_expresion_698_18_38()
  {
     if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_764_9_28()) return true;
+    if (jj_3R_relacion_741_9_28()) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_721_17_29()
+  static private boolean jj_3R_expresion_698_17_29()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_expresion_721_17_32()) {
+    if (jj_3R_expresion_698_17_32()) {
     jj_scanpos = xsp;
-    if (jj_3R_expresion_734_19_33()) return true;
+    if (jj_3R_expresion_711_19_33()) return true;
     }
     return false;
   }
 
-  static private boolean jj_3R_expresion_721_17_32()
+  static private boolean jj_3R_expresion_698_17_32()
  {
     Token xsp;
-    if (jj_3R_expresion_721_18_38()) return true;
+    if (jj_3R_expresion_698_18_38()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_expresion_721_18_38()) { jj_scanpos = xsp; break; }
+      if (jj_3R_expresion_698_18_38()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_963_9_53()
+  static private boolean jj_3R_termino_801_5_35()
  {
-    if (jj_3R_expresion_715_9_27()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_lista_una_o_mas_exps_975_11_54()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_termino_825_5_35()
- {
-    if (jj_3R_factor_859_9_40()) return true;
+    if (jj_3R_factor_835_9_40()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_termino_826_11_41()) { jj_scanpos = xsp; break; }
+      if (jj_3R_termino_802_11_41()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_primario_882_37_45()
+  static private boolean jj_3R_lista_una_o_mas_exps_936_9_53()
  {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_715_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_766_11_31()
- {
-    if (jj_3R_operador_relacional_784_9_37()) return true;
-    if (jj_3R_expresion_simple_798_5_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_factor_859_11_42()
- {
-    if (jj_scan_token(tNOT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_factor_859_9_40()
- {
+    if (jj_3R_expresion_695_9_27()) return true;
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_factor_859_11_42()) jj_scanpos = xsp;
-    if (jj_3R_primario_882_9_43()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_lista_una_o_mas_exps_948_11_54()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
-  static private boolean jj_3R_null_612_21_25()
+  static private boolean jj_3R_null_595_21_25()
  {
-    if (jj_3R_array_access_550_9_26()) return true;
+    if (jj_3R_array_access_533_9_26()) return true;
     return false;
   }
 
@@ -1709,145 +1800,29 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_null_612_21_25()) jj_scanpos = xsp;
+    if (jj_3R_null_595_21_25()) jj_scanpos = xsp;
     if (jj_scan_token(tASSIGN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_relacion_764_9_28()
+  static private boolean jj_3R_primario_858_37_45()
  {
-    if (jj_3R_expresion_simple_798_5_30()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_relacion_766_11_31()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_715_9_27()
- {
-    if (jj_3R_relacion_764_9_28()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_721_17_29()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3_2()
- {
-    if (jj_scan_token(tID)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_lista_una_o_mas_exps_963_9_53()) return true;
+    if (jj_3R_expresion_695_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_936_17_52()
+  static private boolean jj_3R_relacion_742_11_31()
  {
-    if (jj_scan_token(tFALSE)) return true;
+    if (jj_3R_operador_relacional_760_9_37()) return true;
+    if (jj_3R_expresion_simple_774_5_30()) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_simple_802_10_36()
+  static private boolean jj_3R_factor_835_11_42()
  {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    if (jj_3R_termino_825_5_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_935_17_51()
- {
-    if (jj_scan_token(tTRUE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_888_17_47()
- {
-    if (jj_scan_token(tCHAR2INT)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_715_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_934_17_50()
- {
-    if (jj_scan_token(tCONST_CHAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_933_17_49()
- {
-    if (jj_scan_token(tCONST_INT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_multiplicativo_846_9_44()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(57)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(58)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(59)) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_883_17_46()
- {
-    if (jj_scan_token(tINT2CHAR)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_715_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_798_6_34()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_798_5_30()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_798_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_825_5_35()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_802_10_36()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_734_20_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_764_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_734_19_33()
- {
-    Token xsp;
-    if (jj_3R_expresion_734_20_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_734_20_39()) { jj_scanpos = xsp; break; }
-    }
+    if (jj_scan_token(tNOT)) return true;
     return false;
   }
 

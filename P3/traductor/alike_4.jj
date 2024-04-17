@@ -212,12 +212,9 @@ void Programa() :
 //declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
 void declaracion_var() : 
 {
-	TypeAttrib typeAt;
+	TypeAttrib typeAt = new TypeAttrib();
 }
 {
-	{
-		typeAt = new TypeAttrib();
-	}
 	lista_ids(typeAt.t)
 	<tCOLON>
 	tipo_variable(typeAt)
@@ -245,7 +242,7 @@ void lista_ids(List<Token> list) :
  *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
  *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-Symbol.Types tipo_variable(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass */) : 
+Symbol.Types tipo_variable(TypeAttrib typeAt) : 
 {
 	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
 	TypeAttrib typeAt1, typeAt2;
@@ -256,7 +253,7 @@ Symbol.Types tipo_variable(TypeAttrib typeAt/* List<Token> t, SymbolArray paramA
 		typeAt1.clone(typeAt); typeAt2.clone(typeAt);
 		typeAt1.paramArray = null;
 	}
-	( baseType = tipo_variable_simple(typeAt1/* t, null, paramClass */) | tipo_variable_array(typeAt2/* t, paramArray, paramClass */ ) )
+	( baseType = tipo_variable_simple(typeAt1) | tipo_variable_array(typeAt2) )
 	{ return baseType; } // Si es un tipo simple, se devuelve el tipo de la variable
 }
 
@@ -267,13 +264,9 @@ Symbol.Types tipo_variable(TypeAttrib typeAt/* List<Token> t, SymbolArray paramA
  *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
  *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
  */
-void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArray, Symbol.ParameterClass paramClass */) : 
+void tipo_variable_array(TypeAttrib typeAt) : 
 {
 	ArrayTypeAttrib arrayTypeAt = new ArrayTypeAttrib();
-	// Token tMin, tMax;
-	// int min, max, minus1 = 1, minus2 = 1;
-	// Symbol.Types baseType;
-	// SymbolArray baseArray = null;
 	boolean isParameter = (typeAt.paramClass != Symbol.ParameterClass.NONE);
 	boolean isDeclaration = !isParameter;
 	TypeAttrib typeAt2;
@@ -296,7 +289,7 @@ void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArr
 		}
 	}
 	<tOF> { typeAt2 = new TypeAttrib(); typeAt2.clone(typeAt); typeAt2.paramArray = arrayTypeAt.baseArray; }
-	arrayTypeAt.baseType = tipo_variable_simple(/* t, baseArray, null */typeAt2)
+	arrayTypeAt.baseType = tipo_variable_simple(typeAt2)
 	{
 		if (isParameter){ // Parámetro ARRAY
 			// paramArray se ha creado en "parametro_formal" para rellenarse aquí
@@ -316,14 +309,14 @@ void tipo_variable_array(TypeAttrib typeAt/* List<Token> t, SymbolArray paramArr
 				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
 	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-Symbol.Types tipo_variable_simple(TypeAttrib typeAt/* List<Token> t, SymbolArray baseArray, Symbol.ParameterClass paramClass */) : 
+Symbol.Types tipo_variable_simple(TypeAttrib typeAt) : 
 {
 	// Symbol.Types type = null;
 	boolean isArray = (typeAt.paramArray != null);
 	/* Si baseArray != de null, estamos en una declaración de
 	   array y contiene los valores de min, max y paramClass */
 }
-{ // En esta producción, antes se llamaba al parámetro "baseArray" (mirar params comentados👆🏼), pero ahora es "typeAt.paramArray"
+{
 	( <tINT>  { typeAt.type = Symbol.Types.INT; }
 	| <tCHAR> { typeAt.type = Symbol.Types.CHAR; }
 	| <tBOOL> { typeAt.type = Symbol.Types.BOOL; }
@@ -357,8 +350,6 @@ Symbol.Types tipo_variable_simple(TypeAttrib typeAt/* List<Token> t, SymbolArray
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_procedimiento() : 
 {
-	// Token id;
-	// Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 }
 {
@@ -389,10 +380,6 @@ void declaracion_procedimiento() :
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
 void declaracion_funcion() : 
 {
-	// Token id;
-	// Symbol.Types returnType;
-	// SymbolFunction functionSymbol;
-	// Map <Token,Symbol> params = new LinkedHashMap<Token,Symbol>(); // Linked para mantener el orden de inserción
 	TypeAttrib typeAt = new TypeAttrib();
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 }
@@ -446,10 +433,6 @@ void parametro_formal(Map<Token,Symbol> params) :
 {
 	ParVarAttrib parVarAt = new ParVarAttrib();
 	TypeAttrib typeAt = new TypeAttrib();
-	// List<Token> t = new ArrayList<Token>();
-	// SymbolArray paramArray = new SymbolArray(""); // Usado para parámetros array
-	// Symbol.Types baseType;
-	// Symbol.ParameterClass paramClass = Symbol.ParameterClass.VAL;
 }
 {
 	lista_ids(parVarAt.t)
@@ -700,22 +683,16 @@ void inst_return() :
  * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
  * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
  */
-Symbol.Types expresion(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types expresion(ExpressionAttrib expAt) : 
 {
-	// Podría entrar en campos de ExpressionAttrib? 🎃 --> Creo que no ya que si se reutiliza la calse para "relacion", "exp_simple", ...
-														// esos campos estarían vacíos y no se usarían (ineficiencia de espacio en memoria)
-														// entonces sería más eficiente tenerlos aquí separados
 	Symbol.Types type;
 	boolean moreThanOne = false;
 	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
 
 	ExpressionAttrib expAt2 = new ExpressionAttrib(); // Se inicia con null, null
 }
-{													// 🎃
+{
 	type = relacion(expAt)
-	// type = relacion(expAt.param, expAt.esAsignable) // <-- realmente habría que cambiar tb en "relacion" los 2
-													// atributos por otra clase, o la misma pero con la funcionalidad de "relacion"
-													// lo mismo para: "expresion_simple", "termino", "factor", ...
 	// 🎃 Añadir paréntesis opcionales? He probado a poner aquí: ( <tLPAREN> )? y al final ( <tRPAREN> )?
 	//    pero entonces jode otras producciones.
 	(	(<tAND>
@@ -755,14 +732,13 @@ Symbol.Types expresion(ExpressionAttrib expAt/* Token param, boolean[] esAsignab
 /**
  * Params: análogo a los de la producción "expresion"
  */
-Symbol.Types relacion(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types relacion(ExpressionAttrib expAt) : 
 {
 	Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
 	ExpressionAttrib expAt2 = new ExpressionAttrib();
 }
 {
 	type1 = expresion_simple(expAt)
-	// type1 = expresion_simple(param, esAsignable)
  	( operador_relacional() type2 = expresion_simple(expAt2) )?
 	{
 		// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
@@ -788,14 +764,14 @@ void operador_relacional() : {}
 /**
  * Params: análogo a los de la producción "expresion"
  */
-Symbol.Types expresion_simple(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types expresion_simple(ExpressionAttrib expAt) : 
 {
 	Symbol.Types type;
 	boolean sign = false;
 	ExpressionAttrib expAt2 = new ExpressionAttrib();
 }
 {
-    ((<tPLUS> | <tMINUS>) {sign = true;}  )? type = termino(expAt)/* termino(param, esAsignable) */ 
+    ((<tPLUS> | <tMINUS>) {sign = true;}  )? type = termino(expAt) 
 	{
 		semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la expresión debe ser de tipo INT
 	}
@@ -815,14 +791,14 @@ Symbol.Types expresion_simple(ExpressionAttrib expAt/* Token param, boolean[] es
 /**
  * Params: análogo a los de la producción "expresion"
  */
-Symbol.Types termino(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types termino(ExpressionAttrib expAt) : 
 {
 	Symbol.Types type;
 	boolean moreThanOne = false;
 	ExpressionAttrib expAt2 = new ExpressionAttrib();
 }
 {
-    type = factor(expAt/* param, esAsignable */) 
+    type = factor(expAt) 
 	( operador_multiplicativo()
 		{
 			moreThanOne = true;
@@ -850,13 +826,13 @@ void operador_multiplicativo() : {}
 /**
  * Params: análogo a los de la producción "expresion"
  */
-Symbol.Types factor(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types factor(ExpressionAttrib expAt) : 
 {
 	Symbol.Types type;
 	boolean not = false;
 }
 {
-	( <tNOT> {not = true;} )? type = primario(expAt/* param, esAsignable */) 
+	( <tNOT> {not = true;} )? type = primario(expAt) 
 	{
 		if (not) {
 			if (expAt.esAsignable != null) expAt.esAsignable = false;
@@ -872,7 +848,7 @@ Symbol.Types factor(ExpressionAttrib expAt/* Token param, boolean[] esAsignable 
 /**
  * Params: análogo a los de la producción "expresion"
  */
-Symbol.Types primario(ExpressionAttrib expAt/* Token param, boolean[] esAsignable */) : 
+Symbol.Types primario(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt2 = new ExpressionAttrib();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
@@ -955,9 +931,6 @@ void lista_una_o_mas_exps(Token id) :
 	Symbol symbol = semantic.getSymbol(id);
 	
 	ExpressionAttrib expAt = new ExpressionAttrib();
-	// 👇🏼 Sustituidos por 👆🏼
-	// boolean[] esAsignable = {false};
-	// Token t = new Token(0);
 }
 {
 	{
@@ -996,7 +969,6 @@ void lista_una_o_mas_exps(Token id) :
 			semantic.checkArgumentTypes(id, types, parList, args, msg);
 
 		} else if (symbol.type == Symbol.Types.ARRAY) {
-			// SymbolArray array = (SymbolArray) symbol; 🎃 <-- is this necessary?
 			/*Comprobaciones sobre el array
 			- El acceso a un array debe tener un único índice
 			- El índice de un array debe ser de tipo integer
