@@ -1490,7 +1490,7 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
 			*/
                         semantic.arrayInListOfExpressionCheck(id, types);
                 } else { // Si id es un tipo simple, no puede accederse a un elemento
-                        semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
+                        semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
                 }
 }
 

@@ -975,7 +975,7 @@ void lista_una_o_mas_exps(Token id) :
 			*/ 
 			semantic.arrayInListOfExpressionCheck(id, types);
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
-			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
 		}
 	}
 }
