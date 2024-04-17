@@ -693,8 +693,6 @@ Symbol.Types expresion(ExpressionAttrib expAt) :
 }
 {
 	type = relacion(expAt)
-	// 🎃 Añadir paréntesis opcionales? He probado a poner aquí: ( <tLPAREN> )? y al final ( <tRPAREN> )?
-	//    pero entonces jode otras producciones.
 	(	(<tAND>
 		{
 			moreThanOne = true;
