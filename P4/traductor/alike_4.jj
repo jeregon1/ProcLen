@@ -21,6 +21,7 @@ import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.tools.SemanticFunctions.SemanticFunctions;
 import lib.attributes.*;
+import lib.tools.codeGeneration.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -50,14 +51,15 @@ public class alike_4 {
 				parser = new alike_4(System.in);
 			}
 			else {
-				fileName = args[0] + ".al";
+				fileName = args[0]/*  + ".al" */;
 				parser = new alike_4(new java.io.FileInputStream(fileName));
 			}
 			//Programa es el símbolo inicial de la gramática
-			parser.Programa();
+			parser.Programa(fileName);
 			
-			if (!semantic.hayErrores())
-				System.out.println("***** Análisis terminado con éxito *****");
+			if (!semantic.hayErrores()) {
+				System.out.println("Compilación finalizada. Se ha generado el fichero " + fileName + ".pcode");
+			}
 			else
 				if (semantic.getNumErrores() == 1) {
 					System.out.println("Detectado 1 error semántico. No se genera código.");
@@ -66,7 +68,7 @@ public class alike_4 {
 				}
 		}
 		catch (java.io.FileNotFoundException e) {
-			System.err.println ("Fichero " + fileName + " no encontrado.");
+			System.err.println ("Fichero " + fileName + ".al" +" no encontrado.");
 		}
 		catch (TokenMgrError e) {
 			System.err.println("ERROR LÉXICO: " + e.getMessage());
@@ -187,13 +189,18 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 
 //------------ Símbolo inicial de la gramática.
 // Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
-void Programa() : 
+void Programa(String file) :
 {
 	Token id;
+	// Attributes at = new Attributes(); 🎃
+	CodeBlock programa;
 }
-{ /*
-	🎃 MIRAR EN GITHUB LOS CAMBIOS INICIALES DE GENERACIÓN DE CÓDIGO QUE HICE 🎃
-  */
+{
+	{ // Inicialización del programa
+		String label = CGUtils.newLabel();
+		programa = new CodeBlock();
+		programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
+	}
 	<tPROCEDURE> 
 	id = <tID>
 	{	// Procedimiento principal
@@ -208,6 +215,19 @@ void Programa() :
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
+		// programa.addBlock(at.code); 🎃
+		programa.addInst(PCodeInstruction.OpCode.LVP); // Leave Program
+		if (!semantic.hayErrores()) {
+			File f = new File(file + ".pcode");
+			try {
+				FileWriter fw = new FileWriter(f);
+				fw.write(programa.toString());
+				fw.close();
+			}
+			catch (IOException e) {
+				System.err.println("Error al abrir el fichero");
+			}
+		}
 	}
 }
 
