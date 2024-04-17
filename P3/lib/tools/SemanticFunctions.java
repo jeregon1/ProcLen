@@ -202,7 +202,7 @@ public class SemanticFunctions {
 			}
 			Symbol.Types baseType = ((SymbolArray) s).baseType;
 			if (baseType != type) { // Comprobar que el tipo de la expresión coincide con el tipo base del array
-				error(t, "El tipo " + type + " de la expresión no coincide con el tipo " + baseType + " base del array '" + t.image + "'.");
+				error(t, "El tipo '" + type + "' de la expresión no coincide con el tipo '" + baseType + "' base del array '" + t.image + "'.");
 			}
 		} else if (access) { // no puede accederse a una variable no array
 			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + "array"/* tokenImage[tARRAY] */ + " y no " + s.type + ".");
@@ -228,7 +228,7 @@ public class SemanticFunctions {
 
 	public void ifChecks(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-			error(t, "La guarda de una sentencia if o elsif debe ser de tipo boolean.");
+			error(t, "La guarda de una sentencia 'if' o 'elsif' debe ser de tipo 'boolean'.");
 		}
 	}
 
@@ -247,7 +247,7 @@ public class SemanticFunctions {
 
 	public void moreThanOneExpressionCheck(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.INT) {
-			error(t, "Los términos de una suma o resta deben ser de tipo " + "integer"/* tokenImage[tINT] */ + ", se encontró " + type + ".");
+			error(t, "Los términos de una suma o resta deben ser de tipo " + "'integer'"/* tokenImage[tINT] */ + ", se encontró '" + type + "'.");
 		}
 	}
 
@@ -324,17 +324,17 @@ public class SemanticFunctions {
 					SymbolArray argArray = (SymbolArray) getSymbol(arg);
 					
 					if (argArray.baseType != paramArray.baseType) {
-						error(arg, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
+						error(id, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
 					}
 					if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
-						error(arg, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
+						error(id, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
 					}
 				} else {
 					// Si el parámetro es simple y por valor, no hay que comprobar nada más
 					// Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
 					if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
 						if (!assignables.get(i)) {
-							error(arg, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
+							error(id, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
 						}
 					}
 				}

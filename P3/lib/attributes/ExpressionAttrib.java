@@ -2,10 +2,11 @@
 package lib.attributes;
 
 import lib.symbolTable.*;
+import traductor.*;
 
-public class ExpressionAttrib implements Attributes {
-    Token param;
-    boolean esAsignable;
+public class ExpressionAttrib extends Attributes {
+    public Token param;
+    public Boolean esAsignable;
 
     // Symbol.Types type;
     // boolean moreThanOne;
