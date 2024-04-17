@@ -4,14 +4,14 @@
 // Fichero:    SemanticFunctions.java
 // Fecha:      03/03/2022
 // Versión:    v1.0
-// Asignatura: Procesadores de Lenguajes, curso 2021-2022
+// Asignatura: Procesadores de Lenguajes, curso 2023-2024
 //*****************************************************************
 
 package lib.tools.SemanticFunctions;
 
 import java.util.*;
 import traductor.Token;
-import traductor.alikeConstants;
+import traductor.alike_4Constants;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.errores.*;
