@@ -75,6 +75,8 @@ procedure Programa is
 begin
     -- PRUEBA (cont) --> FUNCIONES Y PROCEDIMIENTOS
     --aux := f1(1, 2, 3); -- error semántico: número incorrecto de argumentos
+    --aux := f2(aux + 1); -- error semántico: argumento por referencia no es asignable
+    --aux := f2(-v(3)); -- error semántico: argumento por referencia no es asignable
     --aux := f2(1); -- error semántico: argumento por referencia no es asignable
     --aux := f3(v); -- error semántico: argumento por valor no es asignable
     --aux := f4(v); -- error semántico: argumento por referencia no es asignable
