@@ -15,11 +15,11 @@ Jesús López Ansón, 839922
 - El fichero alike_4.jar se encuentra en el directorio "dist". De este modo, se debe de 
 aportar una ruta hasta el mismo, o estar en el propio directorio al lanzar el programa.
 
-- El fichero fuente debe de contener el nombre completo, 
-incluido el ".al" relativo a la extensión del lenguaje alike
+- El fichero fuente debe de contener el nombre completo sin la extensión .al
 
 - Si se invoca sin parámetros, lee desde la entrada estándar.
 
+- Si se invoca con el parámetro "-v", se mostrará información adicional sobre el proceso de compilación, como la tabla de símbolos al acabar cada bloque.
 
 --> Características generales:
 Consiste en un compilador que realiza el análisis léxico, sintáctico y semántico de la entrada recibida 
@@ -31,6 +31,8 @@ Se ha incluido una opción verbose, que permite mostrar información adicional s
 De este modo, cada vez que se cierre un bloque de la tabla de símbolos, se mostrará la información de la misma.
 
 --> En caso de detección de errores:
+- Si se detecta un erro léxico, se muestra el lugar donde se ha producido y se sustituye el carácter en cuestión por un espacio en blanco.
+
 - Si se detecta algún error sintáctico, se muestra el lugar donde se ha producido y se interrumpe el
 proceso de compilación. A su vez se muestra qué símbolo ha producido el error, y los tokens esperados.
 
@@ -41,9 +43,10 @@ produce ningún error sintáctico, se muestra también la cantidad de errores se
 
 
 --> Organización del proyecto:
-El proyecto gira en torno a la clase "alike_4.jj", donde se realizan los distintos análisis.
-Para ello, se apoya de las clases: 
-- "Token" 
+El proyecto tiene como fichero principal "alike_4.jj", donde se realizan los distintos análisis.
+Para ello, se apoya de las clases:
+- "Token", en la que hemos definido un método clone() para poder realizar copias de los tokens.
+- "TokenMgrError", en la que se ha modificado el método LexicalErr() para mostrar el mensaje de error tal y como nosotros queremos.
 - Todas las clases que hacen alusión a los "Símbolos" y "Tabla de Símbolos"
 - "ErrorSemantico" útil para la impresión de errores con el mismo formato, y para recopilar 
    información sobre el número de errores semánticos detectados.
@@ -51,3 +54,4 @@ Para ello, se apoya de las clases:
    a la lógica semántica del compilador. A su vez, el uso de la Tabla de Símbolos está realmente
    encapsulado en esta clase, al igual que otros detalles varios como flags necesarios para el 
    correcto funcionamiento del compilador.
+- Las clases en lib/attributes, en las que se guardan datos útiles durante el análisis semántico.
