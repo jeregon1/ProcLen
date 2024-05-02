@@ -106,8 +106,8 @@ public class ParseException extends Exception {
       }
     }
 
-    String retval = "Syntax error (" + currentToken.beginLine + "," + currentToken.beginColumn + ")";
-    retval += ": Current symbol: ";
+    String retval = "Error sintáctico (" + currentToken.beginLine + "," + currentToken.beginColumn + ")";
+    retval += ": Símbolo: ";
     Token tok = currentToken.next;
     for (int i = 0; i < maxSize; i++) {
       if (i != 0) retval += " ";
@@ -115,14 +115,15 @@ public class ParseException extends Exception {
         retval += tokenImage[0];
         break;
       }
-      retval += " " + tokenImage[tok.kind];
-      retval += " '";
+      // retval += " " + tokenImage[tok.kind];
+      // retval += " '";
+      retval += "'";
       retval += add_escapes(tok.image);
       retval += "'";
       tok = tok.next;
     }
     retval += EOL;
-    retval += "Expected tokens: " + expected.toString();
+    retval += "Tokens esperados: " + expected.toString();
     
     return retval;
   }

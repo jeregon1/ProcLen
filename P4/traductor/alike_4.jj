@@ -21,6 +21,7 @@ import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.tools.SemanticFunctions.SemanticFunctions;
 import lib.attributes.*;
+
 import lib.tools.codeGeneration.*;
 
 import java.util.List;
@@ -192,8 +193,8 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 void Programa(String file) :
 {
 	Token id;
-	// Attributes at = new Attributes(); 🎃
 	CodeBlock programa;
+	Attributes at = new Attributes();
 }
 {
 	{ // Inicialización del programa
@@ -201,21 +202,21 @@ void Programa(String file) :
 		programa = new CodeBlock();
 		programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
 	}
-	<tPROCEDURE> 
+	<tPROCEDURE>
 	id = <tID>
 	{	// Procedimiento principal
 		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()));
 		semantic.setMainProcedureName(id.image);
 	}
 	<tIS>
-		( declaracion_var() )*
-		( declaracion_procedimiento() | declaracion_funcion() )*
+		( declaracion_var(at) )*
+		( declaracion_procedimiento(at) | declaracion_funcion(at) )*
 	<tBEGIN>
-		(instruccion())+
+		(instruccion(at))+
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
-		// programa.addBlock(at.code); 🎃
+		programa.addBlock(at.code);
 		programa.addInst(PCodeInstruction.OpCode.LVP); // Leave Program
 		if (!semantic.hayErrores()) {
 			File f = new File(file + ".pcode");
@@ -232,15 +233,16 @@ void Programa(String file) :
 }
 
 //declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
-void declaracion_var() : 
+void declaracion_var(Attributes at) :
 {
 	TypeAttrib typeAt = new TypeAttrib();
 }
 {
-	lista_ids(typeAt.t)
+	lista_ids(typeAt/* .t */)
 	<tCOLON>
 	tipo_variable(typeAt)
 	<tSEMICOLON> 
+	{ at.code.addBlock(typeAt.code); }
 }
 
 //lista_ids: <tID> (<tCOMMA> <tID>)*
@@ -248,13 +250,13 @@ void declaracion_var() :
  * Params:
  * 	-tokens: lista de tokens de la enumeración de los identificadores de las variables
  */
-void lista_ids(List<Token> list) :
+void lista_ids(Attributes at/* List<Token> list */) :
 {
 	Token t;
 }
 {
-	t = <tID> {list.add(t);}
-	(<tCOMMA> t = <tID> {list.add(t);})*
+	t = <tID> {at.t.add(t);}
+	(<tCOMMA> t = <tID> {at.t.add(t);})*
 }
 
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
@@ -267,15 +269,16 @@ void lista_ids(List<Token> list) :
 Symbol.Types tipo_variable(TypeAttrib typeAt) : 
 {
 	Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
-	TypeAttrib typeAt1, typeAt2;
+
+	TypeAttrib typeAt1 = new TypeAttrib(), typeAt2 = new TypeAttrib();
+	typeAt1.clone(typeAt); typeAt2.clone(typeAt);
+	typeAt1.paramArray = null;
 }
 {
-	{
-		typeAt1 = new TypeAttrib(); typeAt2 = new TypeAttrib();
-		typeAt1.clone(typeAt); typeAt2.clone(typeAt);
-		typeAt1.paramArray = null;
-	}
-	( baseType = tipo_variable_simple(typeAt1) | tipo_variable_array(typeAt2) )
+	( 
+		baseType = tipo_variable_simple(typeAt1) { typeAt.code.addBlock(typeAt1.code); }
+	|   		   tipo_variable_array(typeAt2)  { typeAt.code.addBlock(typeAt2.code); }
+	)
 	{ return baseType; } // Si es un tipo simple, se devuelve el tipo de la variable
 }
 
@@ -370,7 +373,7 @@ Symbol.Types tipo_variable_simple(TypeAttrib typeAt) :
 }
 
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
-void declaracion_procedimiento() : 
+void declaracion_procedimiento(Attributes at) : 
 {
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 }
@@ -379,6 +382,7 @@ void declaracion_procedimiento() :
 	funcProcDecAt.id = <tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN> )?
 	{
+		
 		semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())));
 		semantic.insertBlock();
 		// insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
@@ -396,11 +400,13 @@ void declaracion_procedimiento() :
 	{
 		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
 		semantic.removeBlock(); // Eliminación del bloque actual
+		at.code.addBlock(funcProcDecAt.code);
+		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 }
 
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
-void declaracion_funcion() : 
+void declaracion_funcion(Attributes at) : 
 {
 	TypeAttrib typeAt = new TypeAttrib();
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
@@ -430,6 +436,9 @@ void declaracion_funcion() :
 		semantic.exitFunction(getToken(0));
 		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
 		semantic.removeBlock(); // Eliminación del bloque actual
+
+		at.code.addBlock(funcProcDecAt.code);
+		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 	<tSEMICOLON>
 }
@@ -457,7 +466,7 @@ void parametro_formal(Map<Token,Symbol> params) :
 	TypeAttrib typeAt = new TypeAttrib();
 }
 {
-	lista_ids(parVarAt.t)
+	lista_ids(parVarAt/* .t */)
 	<tCOLON>
 	( <tREF> {parVarAt.paramClass = Symbol.ParameterClass.REF;} )?
 	{
@@ -492,17 +501,20 @@ void parametro_formal(Map<Token,Symbol> params) :
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 //instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
-void instruccion(): {}
+void instruccion(Attributes at): 
 {
-	(	inst_leer()
-	|	<tSKIP_LINE> // Nunca recibe argumentos
-	|   inst_escribir()
-	|   inst_escribir_linea()
-	|   inst_invocacion_procedimiento_o_asignacion()
-	|   inst_if()
-	|   inst_while()
-	|   <tNULL>
-	|   inst_return()
+	Attributes at1 = new Attributes();
+}
+{
+	(	inst_leer(at1) {at.code.addBlock(at1.code);}
+	|	<tSKIP_LINE> // Nunca recibe argumentos (🎃 hacer algo del codeBlock?)
+	|   inst_escribir(at1) {at.code.addBlock(at1.code);}
+	|   inst_escribir_linea(at1) {at.code.addBlock(at1.code);}
+	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);}
+	|   inst_if(at1) {at.code.addBlock(at1.code);}
+	|   inst_while(at1) {at.code.addBlock(at1.code);}
+	|   <tNULL> // (🎃 hacer algo del codeBlock?)
+	|   inst_return(at1) {at.code.addBlock(at1.code);}
 	)
 	<tSEMICOLON>
 }
@@ -715,8 +727,6 @@ Symbol.Types expresion(ExpressionAttrib expAt) :
 }
 {
 	type = relacion(expAt)
-	// 🎃 Añadir paréntesis opcionales? He probado a poner aquí: ( <tLPAREN> )? y al final ( <tRPAREN> )?
-	//    pero entonces jode otras producciones.
 	(	(<tAND>
 		{
 			moreThanOne = true;
@@ -852,15 +862,22 @@ Symbol.Types factor(ExpressionAttrib expAt) :
 {
 	Symbol.Types type;
 	boolean not = false;
+	ExpressionAttrib expAt1 = new ExpressionAttrib();
+	expAt1.clone(expAt);
 }
 {
-	( <tNOT> {not = true;} )? type = primario(expAt) 
+	( <tNOT> {not = true;} )? type = primario(expAt1) 
 	{
 		if (not) {
-			if (expAt.esAsignable != null) expAt.esAsignable = false;
+			if (expAt1.esAsignable != null) expAt1.esAsignable = false;
 			semantic.notOperatorCheck(getToken(0), type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
+
+			expAt.code.addBlock(expAt1.code);
+			expAt.code.addInst(PCodeInstruction.OpCode.NGB);
+
 			return Symbol.Types.BOOL;
 		}
+
 		return type;
 	}
 }
@@ -997,7 +1014,7 @@ void lista_una_o_mas_exps(Token id) :
 			*/ 
 			semantic.arrayInListOfExpressionCheck(id, types);
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
-			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no  " + tokenImage[tARRAY] + ".");
+			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
 		}
 	}
 }

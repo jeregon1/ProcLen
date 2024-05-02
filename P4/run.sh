@@ -2,9 +2,9 @@
 
 if [ $(whoami) == "jesus" ]
 then
-    dir=~/proclen/P3
+    dir=~/proclen/P4
 else
-    dir=~/PL/P3
+    dir=~/PL/P4
 fi
 
 # Comprobar que hay dos parámetros: el fichero alike.jar y el fichero de prueba
@@ -24,3 +24,4 @@ else
 fi
 
 # Su compilador--> java -jar ../other/alike/alike.jar p
+# (Borrar posteriormente) 🎃 Ejemplo de ejecución en terminal--> java -jar ~/PL/P4/dist/alike_4.jar ./test/test_func

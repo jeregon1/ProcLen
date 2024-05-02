@@ -192,6 +192,19 @@ void declaracion_variables(Attributes at) :
     lista_vars(at2)
 }
 
+void lista_vars(Attributes at) :
+{
+    Attributes at1 = new Attributes();
+    at1.type = at.type; 
+}
+{
+    variable(at1)
+    (
+        < tC >
+        variable(at1)
+    )*
+}
+
 void variable(Attributes at) :
 {
     Token t1, t2;
@@ -205,19 +218,6 @@ void variable(Attributes at) :
     { sf.variable_array(t1, t2, at, st); }
 |   t1 = < tID >
     { sf.variable(t1, at, st); }
-}
-
-void lista_vars(Attributes at) :
-{
-    Attributes at1 = new Attributes();
-    at1.type = at.type; 
-}
-{
-    variable(at1)
-    (
-        < tC >
-        variable(at1)
-    )*
 }
 
 void declaracion_func_proc(Attributes at) :
@@ -250,7 +250,7 @@ void declaracion_func_proc(Attributes at) :
                         at.code.addInst(PCodeInstruction.OpCode.ASGI);
                     }
                 }
-            } 
+            }
             else {
                 ((SymbolFunction) s).parList = at2.parList;
                 ArrayList<Symbol> parametros = ((SymbolFunction) s).parList;
