@@ -126,10 +126,9 @@ public class SemanticFunctions {
 
 	public void insertSymbol(Token id, Symbol s) {
 		try {
-			// previo a la inserción, se asigna la dirección de memoria al símbolo (s.dir)
+			// 🎃 previo a la inserción, se asigna la dirección de memoria al símbolo (s.dir)
 			// a su vez, se modifica CGUtils.memorySpaces para gestionar los bloques de memoria
-			// llevando cuenta del tamaño de cada bloque de activación (memorySpaces)
-			
+			// llevando cuenta del tamaño de cada bloque de activación (memorySpaces)		
 
 			st.insertSymbol(s);
 		}

@@ -10,7 +10,7 @@
 options {
 	IGNORE_CASE = true;
 	UNICODE_INPUT = true;
-	// DEBUG_PARSER = true;
+	DEBUG_PARSER = true;
 }
 
 PARSER_BEGIN(alike_4)
@@ -187,6 +187,37 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 	 	}
 }
 
+/*  RESUMEN GRAMÁTICA
+	Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
+	declaracion_var: lista_ids <tCOLON> tipo_variable <tSEMICOLON>
+	lista_ids: <tID> (<tCOMMA> <tID>)*
+	tipo_variable: (tipo_variable_simple | tipo_variable_array)
+	tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
+	tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
+	declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
+	declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
+	lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
+	parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
+	inst_leer: <tGET> <tLPAREN> inst_leer_elemento ( <tCOMMA> inst_leer_elemento )* <tRPAREN>
+	inst_leer_elemento: <tID> ( array_access )?
+	array_access: <tLPAREN> expresion <tRPAREN>
+		--> INSTRUCCIONES
+	inst_escribir: <tPUT> <tLPAREN> inst_escribir_elemento ( <tCOMMA> inst_escribir_elemento )* <tRPAREN>
+	inst_escribir_elemento: <tCONST_STRING> | expresion
+	inst_escribir_linea: <tPUT_LINE> (<tLPAREN> inst_escribir_elemento (<tCOMMA> inst_escribir_elemento)* <tRPAREN>)?
+	inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
+	inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
+	inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
+	inst_return: <tRETURN> expresion
+	expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
+	relacion: expresion_simple (operador_relacional expresion_simple)?
+	operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
+	termino: factor (operador_multiplicativo factor)*
+	operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
+	primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
+				| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
+	lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
+*/
 
 //------------ Símbolo inicial de la gramática.
 // Programa: <tPROCEDURE> <tID> <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> instruccion+ <tEND> <tSEMICOLON> <EOF>
@@ -711,7 +742,7 @@ void inst_return() :
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
-/**
+/** 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN
  * Params:
  * -param: != de null si es un parámetro de función/procedimiento, o bien una componente de un vector
  * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
