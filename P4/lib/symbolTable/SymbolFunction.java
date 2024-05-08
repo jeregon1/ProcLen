@@ -18,6 +18,9 @@ public class SymbolFunction extends Symbol implements Cloneable {
     //necesario mantener la información de los parámetros.
     public ArrayList<Symbol> parList;
 
+    // Nuevo atributo para guardar el Label de la función (será el 3er atributo de OSF)
+    public String label;
+
     public Types returnType; //tipo de la función
 
     public SymbolFunction(String _name, ArrayList<Symbol> _parList, 

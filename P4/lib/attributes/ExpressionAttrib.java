@@ -19,4 +19,10 @@ public class ExpressionAttrib extends Attributes {
         // this.moreThanOne = false;
         // this.errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".";
     }
+
+    public ExpressionAttrib clone(ExpressionAttrib e) {
+        this.param = e.param;
+        this.esAsignable = e.esAsignable;
+        return this;
+    }
 }

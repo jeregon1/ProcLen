@@ -11,7 +11,7 @@ package lib.attributes;
 import lib.tools.codeGeneration.*;
 import lib.tools.codeGeneration.CodeBlock;
 
-public abstract class Attributes implements Cloneable {
+public class Attributes implements Cloneable {
     public CodeBlock code; //para traducción a p-code
 
     public Attributes() {

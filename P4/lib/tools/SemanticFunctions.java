@@ -16,6 +16,8 @@ import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import lib.errores.*;
 
+import lib.tools.codeGeneration.*;
+
 public class SemanticFunctions {
 
 	private SymbolTable st; //tabla de símbolos
@@ -124,11 +126,19 @@ public class SemanticFunctions {
 		System.err.println(st.toString(id_image));
 	}
 
-	public void insertSymbol(Token id, Symbol s) {
+	// El parámetro "label" será el label del procedimiento o función que ha llamado a insertar el símbolo.
+	// Si no, será null.
+	public void insertSymbol(Token id, Symbol s, String label) {
 		try {
-			// 🎃 previo a la inserción, se asigna la dirección de memoria al símbolo (s.dir)
-			// a su vez, se modifica CGUtils.memorySpaces para gestionar los bloques de memoria
-			// llevando cuenta del tamaño de cada bloque de activación (memorySpaces)		
+			// Función o procedimiento, donde se asigna el label como dirección de memoria
+			switch (s.type) {
+				case FUNCTION: ((SymbolFunction) s).label = label; break;
+				case PROCEDURE: ((SymbolProcedure) s).label = label; break;
+				default:
+					CGUtils.memorySpaces[st.level]++;
+					s.dir = CGUtils.memorySpaces[st.level] + 2; 
+					break;
+			}
 
 			st.insertSymbol(s);
 		}
