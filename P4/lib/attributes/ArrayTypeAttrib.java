@@ -4,7 +4,7 @@ package lib.attributes;
 import lib.symbolTable.*;
 import traductor.*;
 
-// Utilizar en lugar del vector con 1 única componente
+
 public class ArrayTypeAttrib extends Attributes { 
 	public Token tMin, tMax;
 	public int min, max, minus1 = 1, minus2 = 1;

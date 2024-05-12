@@ -12,7 +12,6 @@ public class FuncProcDecAttrib extends Attributes {
     public Map <Token,Symbol> params;
     public Symbol.Types returnType; // Utilizado solo en caso de función
     public SymbolFunction functionSymbol; // Utilizado solo en caso de función
-    // Mirar si se pueden añadir alguno más como "returnType", etc.
 
     public FuncProcDecAttrib() {
         this.id = null;

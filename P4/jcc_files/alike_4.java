@@ -42,7 +42,7 @@ public class alike_4 implements alike_4Constants {
                         }
                         else {
                                 fileName = args[0];
-                                parser = new alike_4(new java.io.FileInputStream(fileName));
+                                parser = new alike_4(new java.io.FileInputStream(fileName+".al"));
                         }
                         //Programa es el símbolo inicial de la gramática
                         parser.Programa(fileName);
@@ -83,7 +83,8 @@ public class alike_4 implements alike_4Constants {
                 label = CGUtils.newLabel();
                 programa = new CodeBlock();
                 programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
-                programa.addLabel(label);
+                programa.addLabel(label); // Añadir la etiqueta al programa
+
     jj_consume_token(tPROCEDURE);
     id = jj_consume_token(tID);
 // Procedimiento principal
@@ -158,7 +159,7 @@ if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de s
                 programa.addBlock(at.code);
                 programa.addInst(PCodeInstruction.OpCode.LVP); // Leave Program
                 if (!semantic.hayErrores()) {
-                        file = file.substring(0, file.lastIndexOf('.')); // Eliminar extensión
+                        // file = file.substring(0, file.lastIndexOf('.')); // Eliminar extensión
                         File f = new File(file + ".pcode");
                         System.out.println("Generando fichero " + file + ".pcode");
                         try {
@@ -213,22 +214,23 @@ typeAt.t.add(t);
  *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
  *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-  static final public Symbol.Types tipo_variable(TypeAttrib typeAt) throws ParseException {Symbol.Types baseType = Symbol.Types.ARRAY; // Si no es tipo simple, es un array
-
-        TypeAttrib typeAt1 = new TypeAttrib(), typeAt2 = new TypeAttrib();
+  static final public void tipo_variable(TypeAttrib typeAt) throws ParseException {TypeAttrib typeAt1 = new TypeAttrib(), typeAt2 = new TypeAttrib();
         typeAt1.clone(typeAt); typeAt2.clone(typeAt);
         typeAt1.paramArray = null;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tINT:
     case tCHAR:
     case tBOOL:{
-      baseType = tipo_variable_simple(typeAt1);
+      tipo_variable_simple(typeAt1);
 typeAt.code.addBlock(typeAt1.code);
+                        typeAt.type = typeAt1.type;     // Si es un tipo simple, se asigna el tipo de la variable
+
       break;
       }
     case tARRAY:{
       tipo_variable_array(typeAt2);
 typeAt.code.addBlock(typeAt2.code);
+                        typeAt.type = typeAt2.type;
       break;
       }
     default:
@@ -236,16 +238,13 @@ typeAt.code.addBlock(typeAt2.code);
       jj_consume_token(-1);
       throw new ParseException();
     }
-{if ("" != null) return baseType;}
-    throw new Error("Missing return statement in function");
 }
 
 //tipo_variable_array: <tARRAY> <tLPAREN> <tCONST_INT> <tRANGE> <tCONST_INT> <tRPAREN> <tOF> tipo_variable_simple
-/**
- * Params:
- *	-t: lista de tokens de la enumeración de los identificadores de las variables
- *	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
- *	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
+/*
+	-t: lista de tokens de la enumeración de los identificadores de las variables
+	-paramArray: necesario para heredar el valor de la producción previa "tipo_variable"
+	-paramClass: valor != de NONE en caso de ser un parámetro (heredado de "tipo_variable")
  */
   static final public void tipo_variable_array(TypeAttrib typeAt) throws ParseException {ArrayTypeAttrib arrayTypeAt = new ArrayTypeAttrib();
         boolean isParameter = (typeAt.paramClass != Symbol.ParameterClass.NONE);
@@ -316,7 +315,8 @@ arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image) * arrayTypeAt.minus1;
                 }
     jj_consume_token(tOF);
 typeAt2 = new TypeAttrib(); typeAt2.clone(typeAt); typeAt2.paramArray = arrayTypeAt.baseArray;
-    arrayTypeAt.baseType = tipo_variable_simple(typeAt2);
+    tipo_variable_simple(typeAt2);
+arrayTypeAt.baseType = typeAt2.type;
 if (isParameter){ // Parámetro ARRAY
                         // paramArray se ha creado en "parametro_formal" para rellenarse aquí
                         typeAt.paramArray.minInd = arrayTypeAt.min;
@@ -324,19 +324,18 @@ if (isParameter){ // Parámetro ARRAY
                         typeAt.paramArray.parClass = typeAt.paramClass;
                         typeAt.paramArray.baseType = arrayTypeAt.baseType;
                 }
+                typeAt.type = Symbol.Types.ARRAY;
 }
 
 //tipo_variable_simple: <tINT> | <tCHAR> | <tBOOL>
 /*
- Params:
 	-t: lista de tokens de la enumeración de los identificadores de las variables
-	-baseArray: creado en "tipo_variable_array" para rellenar datos del array (índices y paramClass). 
+	-paramArray: creado en "tipo_variable_array" para rellenar datos del array (índices y paramClass). 
 				En esta producción se termina de rellenar (nombre) y se inserta en la tabla de símbolos.
 	-paramClass: valor != de NONE en caso de ser un parámetro
  */
-  static final public Symbol.Types tipo_variable_simple(TypeAttrib typeAt) throws ParseException {// Symbol.Types type = null;
-        boolean isArray = (typeAt.paramArray != null);
-        /* Si baseArray != de null, estamos en una declaración de
+  static final public void tipo_variable_simple(TypeAttrib typeAt) throws ParseException {boolean isArray = (typeAt.paramArray != null);
+        /* Si paramArray != de null, estamos en una declaración de
 	   array y contiene los valores de min, max y paramClass */
 
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -362,8 +361,8 @@ typeAt.type = Symbol.Types.BOOL;
     }
 if (typeAt.t == null) { // Parámetros
                         /* Si no hay tokens, devolver el tipo de la variable porque se están leyendo parámetros
-			   y estos se insertan en st en declaracion_procedimiento y declaracion_funcion */
-                        {if ("" != null) return typeAt.type;}
+			   y estos se insertan en la st en 'declaracion_procedimiento' y 'declaracion_funcion' */
+                        {if ("" != null) return;}
                 }
                 else if (isArray) { // Declaración de variables arrays
                         typeAt.paramArray.baseType = typeAt.type;
@@ -385,15 +384,14 @@ if (typeAt.t == null) { // Parámetros
                                 }
                         }
                 }
-                {if ("" != null) return typeAt.type;}
-    throw new Error("Missing return statement in function");
 }
 
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
   static final public void declaracion_procedimiento(Attributes at) throws ParseException {FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
         Attributes at1 = new Attributes();
     jj_consume_token(tPROCEDURE);
-    funcProcDecAt.id = jj_consume_token(tID);
+    // TODO: add OSF?
+            funcProcDecAt.id = jj_consume_token(tID);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tLPAREN:{
       jj_consume_token(tLPAREN);
@@ -407,7 +405,7 @@ if (typeAt.t == null) { // Parámetros
     }
 semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())), null);
                 semantic.insertBlock();
-                // insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+                        // se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
                 for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
                         semantic.insertSymbol(entry.getKey(), entry.getValue(), null);
                 }
@@ -480,7 +478,8 @@ if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de
                 semantic.removeBlock(); // Eliminación del bloque actual
                 at.code.addBlock(funcProcDecAt.code);
                 at.code.addBlock(at1.code);
-                at.code.addInst(PCodeInstruction.OpCode.CSF);
+                at.code.addInst(PCodeInstruction.OpCode.CSF); // 🎃 CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
+
 }
 
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
@@ -504,11 +503,12 @@ label = CGUtils.newLabel();
     }
     jj_consume_token(tRETURN);
 typeAt.t = null;
-    funcProcDecAt.returnType = tipo_variable_simple(typeAt);
+    tipo_variable_simple(typeAt);
+funcProcDecAt.returnType = typeAt.type;
 funcProcDecAt.functionSymbol = new SymbolFunction(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values()), funcProcDecAt.returnType);
                 semantic.insertSymbol(funcProcDecAt.id, funcProcDecAt.functionSymbol, label);
                 semantic.insertBlock();
-                // insertar params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+                        // se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
                 for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
                         semantic.insertSymbol(entry.getKey() ,entry.getValue(), null);
                 }
@@ -577,23 +577,20 @@ semantic.enterFunction(funcProcDecAt.functionSymbol);
       }
     }
     jj_consume_token(tEND);
+    jj_consume_token(tSEMICOLON);
 semantic.exitFunction(getToken(0));
                 if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
                 semantic.removeBlock(); // Eliminación del bloque actual
 
                 at.code.addBlock(funcProcDecAt.code);
                 at.code.addBlock(at1.code);
-                at.code.addInst(PCodeInstruction.OpCode.CSF);
-    jj_consume_token(tSEMICOLON);
+                at.code.addInst(PCodeInstruction.OpCode.CSF); // TODO: CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
+
 }
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
-/**
- * Params:
- * 	-params: Diccionario de Token-Symbol de los parámetros
- */
   static final public void lista_parametros(FuncProcDecAttrib funcProcDecAt) throws ParseException {
-    parametro_formal(funcProcDecAt.params);
+    parametro_formal(funcProcDecAt);
     label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -606,18 +603,14 @@ semantic.exitFunction(getToken(0));
         break label_11;
       }
       jj_consume_token(tSEMICOLON);
-      parametro_formal(funcProcDecAt.params);
+      parametro_formal(funcProcDecAt);
     }
 }
 
 //parametro_formal: lista_ids <tCOLON> <tREF>? tipo_variable
-/**
- * Params:
- * 	-params: Diccionario de Token-Symbol de los parámetros
- */
-  static final public void parametro_formal(Map<Token,Symbol> params) throws ParseException {ParVarAttrib parVarAt = new ParVarAttrib();
+  static final public void parametro_formal(FuncProcDecAttrib funcProcDecAt) throws ParseException {ParVarAttrib parVarAt = new ParVarAttrib();
         TypeAttrib typeAt = new TypeAttrib();
-    lista_ids(typeAt/* .t */);
+    lista_ids(typeAt);
     jj_consume_token(tCOLON);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tREF:{
@@ -632,20 +625,22 @@ parVarAt.paramClass = Symbol.ParameterClass.REF;
 typeAt.t = null;
                 typeAt.paramArray = parVarAt.paramArray;
                 typeAt.paramClass = parVarAt.paramClass;
-    parVarAt.baseType = tipo_variable(typeAt);
-for (Token id : parVarAt.t) {
+    tipo_variable(typeAt);
+parVarAt.baseType = typeAt.type;
+
+                for (Token id : parVarAt.t) {
                 // Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
 
                         if (parVarAt.baseType == Symbol.Types.ARRAY) { // Parámetros array
                                 SymbolArray newArray = typeAt.paramArray.clone();
                                 newArray.name = id.image;
-                                params.put(id, newArray); // Insertado de parámetro array en el diccionario de parámetros
+                                funcProcDecAt.params.put(id, newArray); // Insertado de parámetro array en el diccionario de parámetros
                         } else { // Parámetros simples
                                 switch (parVarAt.baseType) {
                                         // Insertado de parámetro (int|char|bool) en el diccionario de parámetros
-                                        case INT:  params.put(id, new  SymbolInt(id.image, parVarAt.paramClass)); break;
-                                        case CHAR: params.put(id, new SymbolChar(id.image, parVarAt.paramClass)); break;
-                                        case BOOL: params.put(id, new SymbolBool(id.image, parVarAt.paramClass)); break;
+                                        case INT:  funcProcDecAt.params.put(id, new  SymbolInt(id.image, parVarAt.paramClass)); break;
+                                        case CHAR: funcProcDecAt.params.put(id, new SymbolChar(id.image, parVarAt.paramClass)); break;
+                                        case BOOL: funcProcDecAt.params.put(id, new SymbolBool(id.image, parVarAt.paramClass)); break;
                                 }
                         }
                 }
@@ -727,6 +722,7 @@ at.code.addBlock(at1.code);
       inst_leer_elemento(at1);
     }
     jj_consume_token(tRPAREN);
+at.code.addBlock(at1.code);
 }
 
 //inst_leer_elemento: <tID> ( array_access )?
@@ -762,18 +758,24 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // El error de sí
 
                 semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
 
+                {
+                        at.code.addBlock(at1.code);
+
+                        System.out.println("Leyendo " + id.image + "con nivel: " + symbol.nivel + " y direcci\u00f3n: " + symbol.dir);
+                        at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
+                        at.code.addInst(PCodeInstruction.OpCode.RD, symbol.type == Symbol.Types.CHAR ? 0 : 1);
+                }
 }
 
 //array_access: <tLPAREN> expresion <tRPAREN>
   static final public void array_access(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
-        Symbol.Types type; // Se podría añadir a ExpressionAttrib y asignarlo en la producción "expresion" para no tener que declararlo aquí
-
     jj_consume_token(tLPAREN);
-    type = expresion(expAt);
-semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de tipo INT
+    expresion(expAt);
+semantic.indexIsInteger(getToken(0), expAt.type); // Comprobar que el índice es de tipo INT
                 // No hace falta comprobar que el índice esté dentro del rango del array porque no se pide
 
     jj_consume_token(tRPAREN);
+at.code.addBlock(expAt.code);
 }
 
 //inst_escribir: <tPUT> <tLPAREN> inst_escribir_elemento ( <tCOMMA> inst_escribir_elemento )* <tRPAREN>
@@ -796,58 +798,7 @@ semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de ti
       inst_escribir_elemento(at1);
     }
     jj_consume_token(tRPAREN);
-}
-
-//inst_escribir_elemento: <tCONST_STRING> | expresion
-  static final public void inst_escribir_elemento(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
-        Symbol.Types type = Symbol.Types.STRING;
-        Token value;
-        // Se pueden escribir constantes string y expresiones de tipo integer, character y boolean, incluidos los elementos de un array
-
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case tCONST_STRING:{
-      value = jj_consume_token(tCONST_STRING);
-// System.out.println("Escribiendo string: '" + value.image + "'");
-                // System.out.println("Char: '" + value.image.charAt(0) + "'");
-
-                // Iterar en el valor del string y escribir uno a uno los ascii de los caracteres
-                for (int i = 0; i < value.image.length(); i++) {
-                        expAt.code.addInst(PCodeInstruction.OpCode.STC, value.image.charAt(i));
-                        expAt.code.addInst(PCodeInstruction.OpCode.WRT, 0);
-                }
-      break;
-      }
-    case tLPAREN:
-    case tINT2CHAR:
-    case tCHAR2INT:
-    case tTRUE:
-    case tFALSE:
-    case tCONST_INT:
-    case tCONST_CHAR:
-    case tNOT:
-    case tPLUS:
-    case tMINUS:
-    case tID:{
-      type = expresion(expAt);
-      break;
-      }
-    default:
-      jj_la1[27] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-// System.out.println("Codigo: " + expAt.code.toString());
-                at.code.addBlock(expAt.code);
-
-                switch (type) {
-                        case INT:
-                        case BOOL:
-                        case CHAR:
-                        case STRING: break;
-                        case ARRAY: semantic.error(getToken(0), "No se puede escribir un array entero, pero s\u00ed componentes de array."); break;
-                        default: semantic.error(getToken(0),
-                                        "Solo se pueden escribir valores de tipo " + tokenImage[tINT] + ", " + tokenImage[tCHAR] + ", " + tokenImage[tBOOL] + " y " + tokenImage[tCONST_STRING] + ".");
-                }
+at.code.addBlock(at1.code);
 }
 
 //inst_escribir_linea: <tPUT_LINE> (<tLPAREN> inst_escribir_elemento (<tCOMMA> inst_escribir_elemento)* <tRPAREN>)?
@@ -866,7 +817,7 @@ semantic.indexIsInteger(getToken(0), type); // Comprobar que el índice es de ti
           break;
           }
         default:
-          jj_la1[28] = jj_gen;
+          jj_la1[27] = jj_gen;
           break label_14;
         }
         jj_consume_token(tCOMMA);
@@ -877,19 +828,67 @@ hasString = true;
       break;
       }
     default:
-      jj_la1[29] = jj_gen;
+      jj_la1[28] = jj_gen;
       ;
     }
 if (hasString) {
-                        // Escribir uno a uno el ascii de o bien un literal string (iterando uno a uno en el valor del string),
-                        // o bien el valor de una variable (expresión).
+                        at.code.addBlock(at1.code);
                 }
-                at.code.addBlock(at1.code);
-                // Añadir el salto de línea: CR + LF (asciis 13 y 10 respectivamente)
+
+                // Añadir siempre el salto de línea: CR + LF (asciis 13 y 10 respectivamente)
                 at.code.addInst(PCodeInstruction.OpCode.STC, 13);
                 at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
                 at.code.addInst(PCodeInstruction.OpCode.STC, 10);
                 at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
+}
+
+//inst_escribir_elemento: <tCONST_STRING> | expresion
+  static final public void inst_escribir_elemento(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
+        expAt.type = Symbol.Types.STRING; // default value
+        Token value;
+        // Se pueden escribir constantes string y expresiones de tipo integer, character y boolean, incluidos los elementos de un array
+
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case tCONST_STRING:{
+      value = jj_consume_token(tCONST_STRING);
+// Iterar en el valor del string y escribir uno a uno los ascii de los caracteres
+                        for (int i = 0; i < value.image.length(); i++) {
+                                expAt.code.addInst(PCodeInstruction.OpCode.STC, value.image.charAt(i));
+                                expAt.code.addInst(PCodeInstruction.OpCode.WRT, 0);
+                        }
+                        at.code.addBlock(expAt.code);
+      break;
+      }
+    case tLPAREN:
+    case tINT2CHAR:
+    case tCHAR2INT:
+    case tTRUE:
+    case tFALSE:
+    case tCONST_INT:
+    case tCONST_CHAR:
+    case tNOT:
+    case tPLUS:
+    case tMINUS:
+    case tID:{
+      expresion(expAt);
+at.code.addBlock(expAt.code);
+                at.code.addInst(PCodeInstruction.OpCode.WRT, expAt.type == Symbol.Types.CHAR ? 0 : 1);
+      break;
+      }
+    default:
+      jj_la1[29] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+switch (expAt.type) {
+                        case INT:
+                        case BOOL:
+                        case CHAR:
+                        case STRING: break;
+                        case ARRAY: semantic.error(getToken(0), "No se puede escribir un array entero, pero s\u00ed componentes de array."); break;
+                        default: semantic.error(getToken(0),
+                                        "Solo se pueden escribir valores de tipo " + tokenImage[tINT] + ", " + tokenImage[tCHAR] + ", " + tokenImage[tBOOL] + " y " + tokenImage[tCONST_STRING] + ".");
+                }
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
@@ -911,7 +910,7 @@ access = true;
         ;
       }
       jj_consume_token(tASSIGN);
-      type = expresion(expAt);
+      expresion(expAt);
 if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está definido, no se puede comprobar nada más
                 Symbol symbol = semantic.getSymbol(id);
 
@@ -921,13 +920,13 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
 			- comprobar que el tipo de la expresión coincide con el tipo base del array
 		- Si no: no puede accederse a una variable no array
 		*/
-                semantic.assigningArrayChecks(id, symbol, type, access);
+                semantic.assigningArrayChecks(id, symbol, expAt.type, access);
 
                 /* Comprobaciones sobre los tipos de los asignables:
 		- Si es un procedimiento o función, error
 		- Asignable y expresión deben ser del mismo tipo
 		*/
-                semantic.assignableTypeChecks(id, symbol, type); // Solamente son asignables las variables simples y los elementos de un array
+                semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -952,10 +951,9 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
   static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
         Attributes at1 = new Attributes();
-        Symbol.Types type;
     jj_consume_token(tIF);
-    type = expresion(expAt);
-semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
+    expresion(expAt);
+semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
 
     jj_consume_token(tTHEN);
     label_15:
@@ -991,8 +989,8 @@ semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
         break label_16;
       }
       jj_consume_token(tELSIF);
-      type = expresion(expAt);
-semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
+      expresion(expAt);
+semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
 
       jj_consume_token(tTHEN);
       label_17:
@@ -1049,15 +1047,17 @@ semantic.ifChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
     }
     jj_consume_token(tEND);
     jj_consume_token(tIF);
+// TODO: REVISAR QUE FUNCIONE
+                at.code.addBlock(expAt.code);
+                at.code.addBlock(at1.code);
 }
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
   static final public void inst_while(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
         Attributes at1 = new Attributes();
-        Symbol.Types type;
     jj_consume_token(tWHILE);
-    type = expresion(expAt);
-semantic.whileChecks(getToken(0), type); // Comprobar que la guarda es de tipo BOOL
+    expresion(expAt);
+semantic.whileChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
 
     jj_consume_token(tLOOP);
     label_19:
@@ -1083,15 +1083,18 @@ semantic.whileChecks(getToken(0), type); // Comprobar que la guarda es de tipo B
     }
     jj_consume_token(tEND);
     jj_consume_token(tLOOP);
+// TODO: REVISAR QUE FUNCIONE
+                at.code.addBlock(expAt.code);
+                at.code.addBlock(at1.code);
 }
 
 //inst_return: <tRETURN> expresion
   static final public void inst_return(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
-        Symbol.Types returnType;
         Token t;
     t = jj_consume_token(tRETURN);
-    returnType = expresion(expAt);
-semantic.inst_return(t, returnType);
+    expresion(expAt);
+semantic.inst_return(t, expAt.type);
+                at.code.addBlock(expAt.code);
 }
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/
@@ -1103,13 +1106,13 @@ semantic.inst_return(t, returnType);
  * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
  * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
  */
-  static final public Symbol.Types expresion(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
+  static final public void expresion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
+        ExpressionAttrib expAt2 = new ExpressionAttrib();
+        Symbol.Types type;
         boolean moreThanOne = false;
         String errorMsg = "Las relaciones de una expresi\u00f3n l\u00f3gica deben ser de tipo " + tokenImage[tBOOL] + ".";
-
-        ExpressionAttrib expAt2 = new ExpressionAttrib(); // Se inicia con null, null
-
-    type = relacion(expAt);
+        Token op = new Token();
+    relacion(expAt1);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tAND:
     case tOR:{
@@ -1117,14 +1120,14 @@ semantic.inst_return(t, returnType);
       case tAND:{
         label_20:
         while (true) {
-          jj_consume_token(tAND);
+          op = jj_consume_token(tAND);
 moreThanOne = true;
-                        if (type != Symbol.Types.BOOL)
-                                semantic.error(getToken(0), errorMsg);
-          type = relacion(expAt2);
+                                if (expAt1.type != Symbol.Types.BOOL)
+                                        semantic.error(getToken(0), errorMsg);
+          relacion(expAt2);
 // Si hay más de una relación, deben ser todas BOOL
-                        if (type != Symbol.Types.BOOL)
-                                semantic.error(getToken(0), errorMsg);
+                                if (expAt2.type != Symbol.Types.BOOL)
+                                        semantic.error(getToken(0), errorMsg);
           switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
           case tAND:{
             ;
@@ -1140,14 +1143,14 @@ moreThanOne = true;
       case tOR:{
         label_21:
         while (true) {
-          jj_consume_token(tOR);
+          op = jj_consume_token(tOR);
 moreThanOne = true;
-                        if (type != Symbol.Types.BOOL)
-                                semantic.error(getToken(0), errorMsg);
-          type = relacion(expAt2);
+                                if (expAt1.type != Symbol.Types.BOOL)
+                                        semantic.error(getToken(0), errorMsg);
+          relacion(expAt2);
 // Si hay más de una relación, deben ser todas BOOL
-                        if (type != Symbol.Types.BOOL)
-                                semantic.error(getToken(0), errorMsg);
+                                if (expAt2.type != Symbol.Types.BOOL)
+                                        semantic.error(getToken(0), errorMsg);
           switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
           case tOR:{
             ;
@@ -1171,18 +1174,28 @@ moreThanOne = true;
       jj_la1[41] = jj_gen;
       ;
     }
-if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay más de una relación, la expresión no es asignable
-                {if ("" != null) return (moreThanOne) ? Symbol.Types.BOOL : type;}
-    throw new Error("Missing return statement in function");
+expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+
+                if (moreThanOne && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay más de una relación, la expresión no es asignable
+                expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt1.type;
+
+                if (moreThanOne) {
+                        // apilar operador lógico
+                        switch (op.kind) {
+                                case tAND: expAt.code.addInst(PCodeInstruction.OpCode.AND); break;
+                                case tOR:  expAt.code.addInst(PCodeInstruction.OpCode.OR); break;
+                        }
+                }
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types relacion(ExpressionAttrib expAt) throws ParseException {Symbol.Types type1, type2 = Symbol.Types.UNDEFINED;
+  static final public void relacion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
-    type1 = expresion_simple(expAt);
+        Token op = new Token();
+    expresion_simple(expAt1);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tEQ:
     case tNEQ:
@@ -1190,52 +1203,67 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
     case tLE:
     case tGT:
     case tGE:{
-      operador_relacional();
-      type2 = expresion_simple(expAt2);
+      op = operador_relacional();
+      expresion_simple(expAt2);
       break;
       }
     default:
       jj_la1[42] = jj_gen;
       ;
     }
-// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
-                if (type2 != Symbol.Types.UNDEFINED) {
-                        if (expAt.esAsignable != null) expAt.esAsignable = false; // Si hay dos expresiones, la expresión no es asignable
-                        if (type1 != type2)
-                                semantic.error(getToken(0), "Las expresiones de una relaci\u00f3n deben ser del mismo tipo, se encontr\u00f3 " + type1 + " y " + type2 + ".");
+expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 
-                        {if ("" != null) return Symbol.Types.BOOL;} // Si hay dos expresiones, el resultado es booleano
+                // Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
+                if (expAt2.type != null) {
+                        if (expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay dos expresiones, la expresión no es asignable
+                        if (expAt1.type != expAt2.type)
+                                semantic.error(getToken(0), "Las expresiones de una relaci\u00f3n deben ser del mismo tipo, se encontr\u00f3 " + expAt1.type + " y " + expAt2.type + ".");
+
+                        expAt.type = Symbol.Types.BOOL; // Si hay dos expresiones, el resultado es booleano
                 }
                 // else: si hay solo una expresión, se devuelve su tipo
-                {if ("" != null) return type1;}
-    throw new Error("Missing return statement in function");
+                else { expAt.type = expAt1.type; }
+
+                // Si hay dos expresiones, entonces apilar el código de la segunda y el operador relacional
+                if (expAt2.type != null) {
+                        expAt.code.addBlock(expAt2.code);
+                        // apilar operador relacional
+                        switch (op.kind) {
+                                case tEQ:  expAt.code.addInst(PCodeInstruction.OpCode.EQ); break;
+                                case tLT:  expAt.code.addInst(PCodeInstruction.OpCode.LT); break;
+                                case tGT:  expAt.code.addInst(PCodeInstruction.OpCode.GT); break;
+                                case tLE:  expAt.code.addInst(PCodeInstruction.OpCode.LTE); break;
+                                case tGE:  expAt.code.addInst(PCodeInstruction.OpCode.GTE); break;
+                                case tNEQ: expAt.code.addInst(PCodeInstruction.OpCode.NEQ); break;
+                        }
+                }
 }
 
 //operador_relacional: (<tEQ> | <tLT> | <tGT> | <tLE> | <tGE> | <tNEQ>)
-  static final public void operador_relacional() throws ParseException {
+  static final public Token operador_relacional() throws ParseException {Token op = new Token();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tEQ:{
-      jj_consume_token(tEQ);
+      op = jj_consume_token(tEQ);
       break;
       }
     case tLT:{
-      jj_consume_token(tLT);
+      op = jj_consume_token(tLT);
       break;
       }
     case tGT:{
-      jj_consume_token(tGT);
+      op = jj_consume_token(tGT);
       break;
       }
     case tLE:{
-      jj_consume_token(tLE);
+      op = jj_consume_token(tLE);
       break;
       }
     case tGE:{
-      jj_consume_token(tGE);
+      op = jj_consume_token(tGE);
       break;
       }
     case tNEQ:{
-      jj_consume_token(tNEQ);
+      op = jj_consume_token(tNEQ);
       break;
       }
     default:
@@ -1243,15 +1271,18 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
       jj_consume_token(-1);
       throw new ParseException();
     }
+{if ("" != null) return op;}
+    throw new Error("Missing return statement in function");
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types expresion_simple(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
-        boolean sign = false;
+  static final public void expresion_simple(ExpressionAttrib expAt) throws ParseException {boolean sign = false;
+        ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
+        Token op = new Token();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tPLUS:
     case tMINUS:{
@@ -1276,8 +1307,8 @@ sign = true;
       jj_la1[45] = jj_gen;
       ;
     }
-    type = termino(expAt);
-semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la expresión debe ser de tipo INT
+    termino(expAt1);
+semantic.signInExpressionCheck(getToken(0), expAt1.type, sign); // Si hay signo, la expresión debe ser de tipo INT
 
     label_22:
     while (true) {
@@ -1293,11 +1324,11 @@ semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la exp
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tPLUS:{
-        jj_consume_token(tPLUS);
+        op = jj_consume_token(tPLUS);
         break;
         }
       case tMINUS:{
-        jj_consume_token(tMINUS);
+        op = jj_consume_token(tMINUS);
         break;
         }
       default:
@@ -1305,24 +1336,35 @@ semantic.signInExpressionCheck(getToken(0), type, sign); // Si hay signo, la exp
         jj_consume_token(-1);
         throw new ParseException();
       }
-      type = termino(expAt2);
+      termino(expAt2);
 sign = true;
-                semantic.moreThanOneExpressionCheck(getToken(0), type); // Si hay más de un término, deben ser todos INT
+                semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
 
     }
-if (sign && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay signo o más de un término, la expresión no es asignable
-                {if ("" != null) return (sign) ? Symbol.Types.INT : type;}
-    throw new Error("Missing return statement in function");
+expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+
+                if (sign && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay signo o más de un término, la expresión no es asignable
+                expAt.type = (sign) ? Symbol.Types.INT : expAt1.type;
+
+                // Si hay más de un término, añadir el código del segundo término y apilar el operador
+                if (expAt2.type != null) {
+                        expAt.code.addBlock(expAt2.code);
+                        switch (op.kind) {
+                                case tPLUS: expAt.code.addInst(PCodeInstruction.OpCode.PLUS); break;
+                                case tMINUS: expAt.code.addInst(PCodeInstruction.OpCode.SBT); break;
+                        }
+                }
 }
 
 //termino: factor (operador_multiplicativo factor)*
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types termino(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
-        boolean moreThanOne = false;
+  static final public void termino(ExpressionAttrib expAt) throws ParseException {boolean moreThanOne = false;
+        ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
-    type = factor(expAt);
+        Token op = new Token();
+    factor(expAt1);
     label_23:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1336,33 +1378,45 @@ if (sign && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay sign
         jj_la1[48] = jj_gen;
         break label_23;
       }
-      operador_multiplicativo();
+      op = operador_multiplicativo();
 moreThanOne = true;
-                        semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
+                        semantic.multiplicativeFactorCheck(getToken(0), expAt1.type); // Los factores deben ser todos INT para poder operar con *, /, %
 
-      type = factor(expAt2);
+      factor(expAt2);
 // Si hay más de un factor, deben ser todos INT
-                        semantic.multiplicativeFactorCheck(getToken(0), type); // Los factores deben ser todos INT para poder operar con *, /, %
+                        semantic.multiplicativeFactorCheck(getToken(0), expAt2.type); // Los factores deben ser todos INT para poder operar con *, /, %
 
     }
-if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si hay más de un factor, la expresión no es asignable
-                {if ("" != null) return (moreThanOne) ? Symbol.Types.INT : type;}
-    throw new Error("Missing return statement in function");
+expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+
+                if (moreThanOne && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay más de un factor, la expresión no es asignable
+                expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt1.type;
+
+                // Si hay más de un factor, añadir el código del segundo factor y apilar el operador
+                if (expAt2.type != null) {
+                        expAt.code.addBlock(expAt2.code);
+
+                        switch (op.kind) {
+                                case tMULT: expAt.code.addInst(PCodeInstruction.OpCode.TMS); break;
+                                case tDIV:  expAt.code.addInst(PCodeInstruction.OpCode.DIV); break;
+                                case tMOD:  expAt.code.addInst(PCodeInstruction.OpCode.MOD); break;
+                        }
+                }
 }
 
 //operador_multiplicativo: (<tMULT> | <tDIV> | <tMOD>)
-  static final public void operador_multiplicativo() throws ParseException {
+  static final public Token operador_multiplicativo() throws ParseException {Token op = new Token();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tMULT:{
-      jj_consume_token(tMULT);
+      op = jj_consume_token(tMULT);
       break;
       }
     case tDIV:{
-      jj_consume_token(tDIV);
+      op = jj_consume_token(tDIV);
       break;
       }
     case tMOD:{
-      jj_consume_token(tMOD);
+      op = jj_consume_token(tMOD);
       break;
       }
     default:
@@ -1370,16 +1424,19 @@ if (moreThanOne && expAt.esAsignable != null) expAt.esAsignable = false; // Si h
       jj_consume_token(-1);
       throw new ParseException();
     }
+{if ("" != null) return op;}
+    throw new Error("Missing return statement in function");
 }
 
 //factor: (<tNOT>)? primario
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types factor(ExpressionAttrib expAt) throws ParseException {Symbol.Types type;
+  static final public void factor(ExpressionAttrib expAt) throws ParseException {// Symbol.Types type;
         boolean not = false;
         ExpressionAttrib expAt1 = new ExpressionAttrib();
-        expAt1.clone(expAt);
+        // expAt1.clone(expAt);
+
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tNOT:{
       jj_consume_token(tNOT);
@@ -1390,19 +1447,19 @@ not = true;
       jj_la1[50] = jj_gen;
       ;
     }
-    type = primario(expAt1);
-if (not) {
+    primario(expAt1);
+expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+
+                if (not) {
                         if (expAt1.esAsignable != null) expAt1.esAsignable = false;
-                        semantic.notOperatorCheck(getToken(0), type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
+                        semantic.notOperatorCheck(getToken(0), expAt1.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 
                         expAt.code.addBlock(expAt1.code);
                         expAt.code.addInst(PCodeInstruction.OpCode.NGB);
 
-                        {if ("" != null) return Symbol.Types.BOOL;}
+                        expAt.type = Symbol.Types.BOOL;
                 }
-
-                {if ("" != null) return type;}
-    throw new Error("Missing return statement in function");
+                expAt.type = expAt1.type;
 }
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
@@ -1410,33 +1467,36 @@ if (not) {
 /**
  * Params: análogo a los de la producción "expresion"
  */
-  static final public Symbol.Types primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt2 = new ExpressionAttrib();
+  static final public void primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
         Symbol.Types type = Symbol.Types.UNDEFINED;
         Token id;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tLPAREN:{
       jj_consume_token(tLPAREN);
-      type = expresion(expAt2);
+      expresion(expAt1);
       jj_consume_token(tRPAREN);
+expAt.code.addBlock(expAt1.code);
       break;
       }
     case tINT2CHAR:{
       jj_consume_token(tINT2CHAR);
       jj_consume_token(tLPAREN);
-      type = expresion(expAt2);
+      expresion(expAt1);
       jj_consume_token(tRPAREN);
-semantic.int2charCheck(getToken(0), type); // La expresión debe ser de tipo INT
-                type = Symbol.Types.CHAR;
+expAt.code.addBlock(expAt1.code);
+                semantic.int2charCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo INT
+                expAt1.type = Symbol.Types.CHAR;
       break;
       }
     case tCHAR2INT:{
       jj_consume_token(tCHAR2INT);
       jj_consume_token(tLPAREN);
-      type = expresion(expAt2);
+      expresion(expAt1);
       jj_consume_token(tRPAREN);
-// La expresioón debe ser de tipo CHAR
-                semantic.char2intCheck(getToken(0), type); // La expresión debe ser de tipo CHAR
-                type = Symbol.Types.INT;
+expAt.code.addBlock(expAt1.code);
+                // La expresioón debe ser de tipo CHAR
+                semantic.char2intCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo CHAR
+                expAt1.type = Symbol.Types.INT;
       break;
       }
     default:
@@ -1446,33 +1506,33 @@ semantic.int2charCheck(getToken(0), type); // La expresión debe ser de tipo INT
         jj_consume_token(tLPAREN);
         lista_una_o_mas_exps(id);
         jj_consume_token(tRPAREN);
-if (! semantic.isSymbolDefined(id)) {if ("" != null) return Symbol.Types.UNDEFINED;}
+if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                 Symbol symbol = semantic.getSymbol(id);
 
                 switch (symbol.type) {
                         // Si es una función, devolver su tipo retorno
-                        case FUNCTION: type = ((SymbolFunction) symbol).returnType; break;
+                        case FUNCTION: expAt1.type = ((SymbolFunction) symbol).returnType; break;
                         // Checkear que no es procedimiento 
                         case PROCEDURE: semantic.procedureInPrimaryError(id, "funci\u00f3n"); break;
                         case ARRAY:
-                                type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
+                                expAt1.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
                                 if (expAt.esAsignable != null) expAt.esAsignable = true;
                                 id.clone(expAt.param);
                                 break;
-                        default: type = symbol.type;
+                        default: expAt1.type = symbol.type;
                 }
       } else {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tID:{
           id = jj_consume_token(tID);
-if (! semantic.isSymbolDefined(id)) {if ("" != null) return Symbol.Types.UNDEFINED;}
+if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                 Symbol symbol = semantic.getSymbol(id);
 
                 switch (symbol.type) {
                         case FUNCTION:
                                 SymbolFunction function = (SymbolFunction) symbol;
                                 semantic.functionParametersCheck(id, function); // Checkear que la función no tenga parámetros
-                                type = function.returnType;
+                                expAt1.type = function.returnType;
                                 break;
                         // Checkear que no es procedimiento
                         case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break;
@@ -1481,28 +1541,38 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return Symbol.Types.UNDEFIN
                         default:
                                 id.clone(expAt.param);
                                 if (expAt.esAsignable != null) expAt.esAsignable = true;
-                                type = symbol.type;
+                                expAt1.type = symbol.type;
+                                expAt.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir); // TODO: creo que el nivel está mal, nivel es la cantidad de bloques que hay que subir!
+                                expAt.code.addInst(PCodeInstruction.OpCode.DRF);
                 }
           break;
           }
         case tCONST_INT:{
           jj_consume_token(tCONST_INT);
-type = Symbol.Types.INT;
+// guardar el valor del int y hacer: STC (ascii del int)
+                        expAt1.type = Symbol.Types.INT;
+                        expAt.code.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(getToken(0).image));
           break;
           }
         case tCONST_CHAR:{
           jj_consume_token(tCONST_CHAR);
-type = Symbol.Types.CHAR;
+// STC (ascii del char)
+                        expAt1.type = Symbol.Types.CHAR;
+                        expAt.code.addInst(PCodeInstruction.OpCode.STC, getToken(0).image.charAt(1));
           break;
           }
         case tTRUE:{
           jj_consume_token(tTRUE);
-type = Symbol.Types.BOOL;
+// STC 1
+                        expAt1.type = Symbol.Types.BOOL;
+                        expAt.code.addInst(PCodeInstruction.OpCode.STC, 1);
           break;
           }
         case tFALSE:{
           jj_consume_token(tFALSE);
-type = Symbol.Types.BOOL;
+// STC 0
+                        expAt1.type = Symbol.Types.BOOL;
+                        expAt.code.addInst(PCodeInstruction.OpCode.STC, 0);
           break;
           }
         default:
@@ -1512,8 +1582,9 @@ type = Symbol.Types.BOOL;
         }
       }
     }
-{if ("" != null) return type;}
-    throw new Error("Missing return statement in function");
+// No estoy seguro si los STC con 🎃 estarían bien, ya que no sé si en todos los casos
+                // se debería de hacer el STC o solo en algunos casos determinados
+                expAt.type = expAt1.type;
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
@@ -1525,15 +1596,14 @@ type = Symbol.Types.BOOL;
         List<Symbol.Types> types = new ArrayList<>();
         Map<Token, Boolean> args = new LinkedHashMap<>();
 
-        Symbol.Types type;
         if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
         Symbol symbol = semantic.getSymbol(id);
 
         ExpressionAttrib expAt = new ExpressionAttrib();
 expAt.param = new Token(0);
                 expAt.esAsignable = false;
-    type = expresion(expAt);
-types.add(type);
+    expresion(expAt);
+types.add(expAt.type);
                 if (expAt.param.kind == 0) args.put(getToken(0), false);
                 else                                       args.put(expAt.param, expAt.esAsignable);
                 expAt.esAsignable = false;
@@ -1550,9 +1620,9 @@ types.add(type);
         break label_24;
       }
       jj_consume_token(tCOMMA);
-      type = expresion(expAt);
+      expresion(expAt);
 // Iterate over all the parameters
-                        types.add(type);
+                        types.add(expAt.type);
                         if (expAt.param.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
                         else                                       args.put(expAt.param, expAt.esAsignable);
                         expAt.esAsignable = false;
@@ -1598,188 +1668,213 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     finally { jj_save(1, xla); }
   }
 
-  static private boolean jj_3R_factor_930_9_40()
+  static private boolean jj_3R_expresion_824_19_39()
  {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_factor_930_11_42()) jj_scanpos = xsp;
-    if (jj_3R_primario_958_9_43()) return true;
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_865_9_28()) return true;
     return false;
   }
 
-  static private boolean jj_3R_relacion_834_9_28()
- {
-    if (jj_3R_expresion_simple_867_5_30()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_relacion_835_11_31()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1012_17_52()
+  static private boolean jj_3R_primario_1107_17_52()
  {
     if (jj_scan_token(tFALSE)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_1011_17_51()
+  static private boolean jj_3R_primario_1040_37_45()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_824_17_33()
+ {
+    Token xsp;
+    if (jj_3R_expresion_824_19_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_824_19_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_array_access_595_9_26()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_923_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_958_5_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1103_17_51()
  {
     if (jj_scan_token(tTRUE)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_964_17_47()
+  static private boolean jj_3_2()
  {
-    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tID)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_790_9_27()) return true;
+    if (jj_3R_lista_una_o_mas_exps_1135_9_53()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_1010_17_50()
+  static private boolean jj_3R_primario_1099_17_50()
  {
     if (jj_scan_token(tCONST_CHAR)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_1009_17_49()
+  static private boolean jj_3R_factor_1011_11_42()
+ {
+    if (jj_scan_token(tNOT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_factor_1011_9_40()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_factor_1011_11_42()) jj_scanpos = xsp;
+    if (jj_3R_primario_1040_9_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_919_6_34()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1095_17_49()
  {
     if (jj_scan_token(tCONST_INT)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_959_17_46()
+  static private boolean jj_3R_relacion_866_11_31()
+ {
+    if (jj_3R_operador_relacional_903_9_37()) return true;
+    if (jj_3R_expresion_simple_919_5_30()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_919_5_30()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_simple_919_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_958_5_35()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_simple_923_10_36()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_1147_11_54()
+ {
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1047_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_termino_959_11_41()
+ {
+    if (jj_3R_operador_multiplicativo_995_9_44()) return true;
+    if (jj_3R_factor_1011_9_40()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_810_19_38()
+ {
+    if (jj_scan_token(tAND)) return true;
+    if (jj_3R_relacion_865_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_865_9_28()
+ {
+    if (jj_3R_expresion_simple_919_5_30()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_866_11_31()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_810_17_29()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_810_17_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_expresion_824_17_33()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_810_17_32()
+ {
+    Token xsp;
+    if (jj_3R_expresion_810_19_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_810_19_38()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1041_17_46()
  {
     if (jj_scan_token(tINT2CHAR)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_790_9_27()) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_simple_871_10_36()
+  static private boolean jj_3R_termino_958_5_35()
  {
+    if (jj_3R_factor_1011_9_40()) return true;
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    if (jj_3R_termino_894_5_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_array_access_589_9_26()
- {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_790_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_multiplicativo_915_9_44()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(57)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(58)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(59)) return true;
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_958_9_43()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_primario_958_37_45()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_959_17_46()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_964_17_47()) {
-    jj_scanpos = xsp;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_988_17_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_1009_17_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_1010_17_50()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_1011_17_51()) {
-    jj_scanpos = xsp;
-    if (jj_3R_primario_1012_17_52()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_867_6_34()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_867_5_30()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_867_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_894_5_35()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_871_10_36()) { jj_scanpos = xsp; break; }
+      if (jj_3R_termino_959_11_41()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_1048_11_54()
- {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_790_9_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_804_20_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_834_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_804_19_33()
- {
-    Token xsp;
-    if (jj_3R_expresion_804_20_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_804_20_39()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_988_17_48()
- {
-    if (jj_scan_token(tID)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_relacional_853_9_37()
+  static private boolean jj_3R_operador_relacional_903_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1802,75 +1897,75 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_termino_895_11_41()
+  static private boolean jj_3R_expresion_808_9_27()
  {
-    if (jj_3R_operador_multiplicativo_915_9_44()) return true;
-    if (jj_3R_factor_930_9_40()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_lista_una_o_mas_exps_1036_9_53()
- {
-    if (jj_3R_expresion_790_9_27()) return true;
+    if (jj_3R_relacion_865_9_28()) return true;
     Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_lista_una_o_mas_exps_1048_11_54()) { jj_scanpos = xsp; break; }
-    }
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_810_17_29()) jj_scanpos = xsp;
     return false;
   }
 
-  static private boolean jj_3R_expresion_791_18_38()
- {
-    if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_834_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_791_17_29()
+  static private boolean jj_3R_operador_multiplicativo_995_9_44()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_expresion_791_17_32()) {
+    if (jj_scan_token(57)) {
     jj_scanpos = xsp;
-    if (jj_3R_expresion_804_19_33()) return true;
+    if (jj_scan_token(58)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(59)) return true;
+    }
     }
     return false;
   }
 
-  static private boolean jj_3R_expresion_791_17_32()
+  static private boolean jj_3R_lista_una_o_mas_exps_1135_9_53()
  {
-    Token xsp;
-    if (jj_3R_expresion_791_18_38()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_791_18_38()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_958_37_45()
- {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_790_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_termino_894_5_35()
- {
-    if (jj_3R_factor_930_9_40()) return true;
+    if (jj_3R_expresion_808_9_27()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_termino_895_11_41()) { jj_scanpos = xsp; break; }
+      if (jj_3R_lista_una_o_mas_exps_1147_11_54()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_null_688_21_25()
+  static private boolean jj_3R_primario_1040_9_43()
  {
-    if (jj_3R_array_access_589_9_26()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_primario_1040_37_45()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1041_17_46()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1047_17_47()) {
+    jj_scanpos = xsp;
+    if (jj_3_2()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1072_17_48()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1095_17_49()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1099_17_50()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1103_17_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_primario_1107_17_52()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_null_697_21_25()
+ {
+    if (jj_3R_array_access_595_9_26()) return true;
     return false;
   }
 
@@ -1878,39 +1973,14 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_null_688_21_25()) jj_scanpos = xsp;
+    if (jj_3R_null_697_21_25()) jj_scanpos = xsp;
     if (jj_scan_token(tASSIGN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_factor_930_11_42()
- {
-    if (jj_scan_token(tNOT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_790_9_27()
- {
-    if (jj_3R_relacion_834_9_28()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_791_17_29()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_835_11_31()
- {
-    if (jj_3R_operador_relacional_853_9_37()) return true;
-    if (jj_3R_expresion_simple_867_5_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2()
+  static private boolean jj_3R_primario_1072_17_48()
  {
     if (jj_scan_token(tID)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_lista_una_o_mas_exps_1036_9_53()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
@@ -1934,10 +2004,10 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x0,0x6000000,0x6000000,0x80280000,0x400,0x1e000,0x0,0x0,0x0,0x0,0xe000,0x800,0x0,0x6000000,0x6000000,0x80280000,0x800,0x0,0x6000000,0x6000000,0x80280000,0x100,0x8000000,0x80280000,0x400,0x800,0x400,0x800,0x400,0x800,0x800,0x800,0x80280000,0x800000,0x80280000,0x80280000,0x1000000,0x80280000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x400,};
+	   jj_la1_0 = new int[] {0x0,0x6000000,0x6000000,0x80280000,0x400,0x1e000,0x0,0x0,0x0,0x0,0xe000,0x800,0x0,0x6000000,0x6000000,0x80280000,0x800,0x0,0x6000000,0x6000000,0x80280000,0x100,0x8000000,0x80280000,0x400,0x800,0x400,0x400,0x800,0x800,0x800,0x800,0x80280000,0x800000,0x80280000,0x80280000,0x1000000,0x80280000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x400,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x10000000,0x0,0x0,0x1000008f,0x0,0x0,0x1800000,0x1800000,0x1800000,0x1800000,0x0,0x0,0x10000000,0x0,0x0,0x1000008f,0x0,0x10000000,0x0,0x0,0x1000008f,0x0,0x0,0x1000008f,0x0,0x0,0x0,0x11811f30,0x0,0x0,0x0,0x0,0x1000008f,0x0,0x1000008f,0x1000008f,0x0,0x1000008f,0x4000,0x8000,0xc000,0xc000,0x7e0000,0x7e0000,0x1800000,0x1800000,0x1800000,0x1800000,0xe000000,0xe000000,0x10000,0x30,0x10000f00,0x0,};
+	   jj_la1_1 = new int[] {0x10000000,0x0,0x0,0x1000008f,0x0,0x0,0x1800000,0x1800000,0x1800000,0x1800000,0x0,0x0,0x10000000,0x0,0x0,0x1000008f,0x0,0x10000000,0x0,0x0,0x1000008f,0x0,0x0,0x1000008f,0x0,0x0,0x0,0x0,0x0,0x11811f30,0x0,0x0,0x1000008f,0x0,0x1000008f,0x1000008f,0x0,0x1000008f,0x4000,0x8000,0xc000,0xc000,0x7e0000,0x7e0000,0x1800000,0x1800000,0x1800000,0x1800000,0xe000000,0xe000000,0x10000,0x30,0x10000f00,0x0,};
 	}
   static final private JJCalls[] jj_2_rtns = new JJCalls[2];
   static private boolean jj_rescan = false;
