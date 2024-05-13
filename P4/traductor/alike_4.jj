@@ -197,7 +197,7 @@ void Programa(String file) :
 {
 	Token id;
 	CodeBlock programa;
-	Attributes at = new Attributes();
+	Attributes at = new Attributes(), at1 = new Attributes();
 	String label;
 }
 {
@@ -205,7 +205,6 @@ void Programa(String file) :
 		label = CGUtils.newLabel();
 		programa = new CodeBlock();
 		programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
-		programa.addLabel(label); // Añadir la etiqueta al programa
 	}
 	<tPROCEDURE>
 	id = <tID>
@@ -217,11 +216,13 @@ void Programa(String file) :
 		( declaracion_var(at) )*
 		( declaracion_procedimiento(at) | declaracion_funcion(at) )*
 	<tBEGIN>
-		(instruccion(at))+
+		(instruccion(at1))+
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
 		programa.addBlock(at.code);
+		programa.addLabel(label); // Añadir la etiqueta de inicio del programa
+		programa.addBlock(at1.code);
 		programa.addInst(PCodeInstruction.OpCode.LVP); // Leave Program
 		if (!semantic.hayErrores()) {
 			// file = file.substring(0, file.lastIndexOf('.')); // Eliminar extensión
@@ -245,7 +246,7 @@ void declaracion_var(Attributes at) :
 	TypeAttrib typeAt = new TypeAttrib();
 }
 {
-	lista_ids(typeAt)
+	lista_ids(typeAt.t)
 	<tCOLON>
 	tipo_variable(typeAt)
 	<tSEMICOLON> 
@@ -257,13 +258,13 @@ void declaracion_var(Attributes at) :
  * Params:
  * 	-tokens: lista de tokens de la enumeración de los identificadores de las variables
  */
-void lista_ids(TypeAttrib typeAt) :
+void lista_ids(List<Token> list) :
 {
 	Token t;
 }
 {
-	t = <tID> {typeAt.t.add(t);}
-	(<tCOMMA> t = <tID> {typeAt.t.add(t);})*
+	t = <tID> {list.add(t);}
+	(<tCOMMA> t = <tID> {list.add(t);})*
 }
 
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
@@ -391,14 +392,19 @@ void declaracion_procedimiento(Attributes at) :
 {
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
 	Attributes at1 = new Attributes();
+	String label;
 }
 {
+	{ 
+		label = CGUtils.newLabel(); 
+		at1.code.addLabel(label);
+	}
 	<tPROCEDURE>
-	// TODO: add OSF?
 	funcProcDecAt.id = <tID> // Puede NO tener parámetros
-	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN> )?
+	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN>)?
  	{
-		semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())), null);
+
+		semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())), label);
 		semantic.insertBlock();
 			// se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
 		for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
@@ -406,17 +412,23 @@ void declaracion_procedimiento(Attributes at) :
 		}
 	}
 	<tIS>
-		(declaracion_var(at))*
+		( declaracion_var(at1) )*
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
 	<tBEGIN>
+		{ 
+			label = CGUtils.newLabel();
+
+			at1.code.addInst(PCodeInstruction.OpCode.JMP, label); // Salto a la instrucción de inicio del procedimiento
+			at1.code.addLabel(label); // Etiqueta de inicio del procedimiento
+		} 
 		(instruccion(at1))+
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
 		semantic.removeBlock(); // Eliminación del bloque actual
-		at.code.addBlock(funcProcDecAt.code);
 		at.code.addBlock(at1.code);
-		at.code.addInst(PCodeInstruction.OpCode.CSF); // 🎃 CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
+		at.code.addBlock(funcProcDecAt.code);
+		at.code.addInst(PCodeInstruction.OpCode.CSF); // TODO: CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
 	}
 }
 
@@ -429,10 +441,21 @@ void declaracion_funcion(Attributes at) :
 	String label;
 }
 {
-	{ label = CGUtils.newLabel(); }
+	{
+		label = CGUtils.newLabel();
+		at1.code.addLabel(label);
+	}
 	<tFUNCTION>
 	funcProcDecAt.id = <tID>
-	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN> )? // Puede NO tener parámetros
+	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN> 
+	// { TODO: revisar esto
+	// 	// Iterar sobre los parámetros y añadirlos a la tabla de símbolos
+	// 	for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
+	// 		System.out.println("Parámetro: " + entry.getKey().image + " de tipo " + entry.getValue().getType());
+	// 		semantic.insertSymbol(entry.getKey(), entry.getValue(), null);
+	// 	}
+	// } 
+	)? // Puede NO tener parámetros
 	<tRETURN> {typeAt.t = null;} // Indicar que se están leyendo parámetros, y que los símbolos se insertan aquí y no en "tipo_variable_simple"
 	tipo_variable_simple(typeAt)
 	{funcProcDecAt.returnType = typeAt.type;}
@@ -448,7 +471,13 @@ void declaracion_funcion(Attributes at) :
 	<tIS>
 		(declaracion_var(at))*
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
-	<tBEGIN> {semantic.enterFunction(funcProcDecAt.functionSymbol);}
+	<tBEGIN> 
+		{
+			semantic.enterFunction(funcProcDecAt.functionSymbol);
+			label = CGUtils.newLabel();
+			at1.code.addInst(PCodeInstruction.OpCode.JMP, label); // Salto a la instrucción de inicio de la función
+			at1.code.addLabel(label); // Etiqueta de inicio de la función
+		}
 		(instruccion(at1))+
 	<tEND> <tSEMICOLON>
 	{
@@ -477,7 +506,7 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 	TypeAttrib typeAt = new TypeAttrib();
 }
 {
-	lista_ids(typeAt)
+	lista_ids(parVarAt.t)
 	<tCOLON>
 	( <tREF> {parVarAt.paramClass = Symbol.ParameterClass.REF;} )?
 	{
@@ -493,6 +522,7 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 
 		for (Token id : parVarAt.t) {
 		// Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
+			System.out.println("ID: " + id.image);
 
 			if (parVarAt.baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = typeAt.paramArray.clone();
@@ -507,6 +537,8 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 				}
 			}
 		}
+		// System.out.println("Lista de parámetros: " + funcProcDecAt.params);
+
 	}
 }
 
@@ -519,31 +551,38 @@ void instruccion(Attributes at):
 	Attributes at1 = new Attributes();
 }
 {
-	(	inst_leer(at1) {at.code.addBlock(at1.code);} // TODO
-	|	<tSKIP_LINE>  skip_line(at1) {at.code.addBlock(at1.code)} // TODO
-	|   inst_escribir(at1) {at.code.addBlock(at1.code);} 
+	(	inst_leer(at1) {at.code.addBlock(at1.code);}
+	|	<tSKIP_LINE>  skip_line(at1) {at.code.addBlock(at1.code);}
+	|   inst_escribir(at1) {at.code.addBlock(at1.code);}
 	|   inst_escribir_linea(at1) {at.code.addBlock(at1.code);}
-	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);} // TODO
+	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);} // TODO: falta solo invocación a proced
 	|   inst_if(at1) {at.code.addBlock(at1.code);} // TODO
 	|   inst_while(at1) {at.code.addBlock(at1.code);} // TODO
-	|   <tNULL> // (🎃 hacer algo del codeBlock?)
-	|   inst_return(at1) {at.code.addBlock(at1.code);} // TODO
-	)
+	|   inst_return(at1) {at.code.addBlock(at1.code);}
+	|   inst_exit(at1) {at.code.addBlock(at1.code);}
+	|   <tNULL> )
 	<tSEMICOLON>
 }
 
-void skip_line(Attributes at) : {}
+
+void skip_line(Attributes at) : 
 {
-	// códido generado por compilador de los profesores
-	String label = CGUtils.newLabel();
-	at.code.addLabel(label);
-	at.code.addInst(PCodeInstruction.OpCode.SRF, 0, 6);
-	at.code.addInst(PCodeInstruction.OpCode.RD, 0);
-	at.code.addInst(PCodeInstruction.OpCode.SRF, 0, 6);
-	at.code.addInst(PCodeInstruction.OpCode.DRF);
-	at.code.addInst(PCodeInstruction.OpCode.STC, 10);
-	at.code.addInst(PCodeInstruction.OpCode.EQ);
-	at.code.addInst(PCodeInstruction.OpCode.JMF, label);
+	long last_dir;
+}
+{
+	{
+		last_dir = semantic.getLastSymbolAddress();
+		// System.out.println("Dirección de almacenamiento temporal: " + last_dir);
+		String label = CGUtils.newLabel();
+		at.code.addLabel(label);
+		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, (int) last_dir); // Dirección de almacén temporal (var local)
+		at.code.addInst(PCodeInstruction.OpCode.RD, 0); // Leer de stdin y asignarlo a var_local
+		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, (int) last_dir); 
+		at.code.addInst(PCodeInstruction.OpCode.DRF); // Obtener valor que se acaba de escribir
+		at.code.addInst(PCodeInstruction.OpCode.STC, 10);
+		at.code.addInst(PCodeInstruction.OpCode.EQ); // Compararlo con el salto de línea
+		at.code.addInst(PCodeInstruction.OpCode.JMF, label); // Repetir si no es así
+	}
 }
 
 //inst_leer: <tGET> <tLPAREN> inst_leer_elemento ( <tCOMMA> inst_leer_elemento )* <tRPAREN>
@@ -592,7 +631,7 @@ void inst_leer_elemento(Attributes at) :
 		{ 
 			at.code.addBlock(at1.code);
 
-			System.out.println("Leyendo " + id.image + "con nivel: " + symbol.nivel + " y dirección: " + symbol.dir);
+			// System.out.println("Leyendo " + id.image + "con nivel: " + symbol.nivel + " y dirección: " + symbol.dir);
 			at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
 			at.code.addInst(PCodeInstruction.OpCode.RD, symbol.type == Symbol.Types.CHAR ? 0 : 1);
 		}
@@ -701,43 +740,56 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 	Attributes at1 = new Attributes();
 	ExpressionAttrib expAt = new ExpressionAttrib();
 	Token id;
-	Symbol.Types type;
 	boolean access = false;
 }
 {
 	id = <tID>
-	(
-	LOOKAHEAD( (array_access(at1))? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
-	(array_access(at1) {access = true;} )? 
-	<tASSIGN>
-	expresion(expAt)
-	{
-		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
-		Symbol symbol = semantic.getSymbol(id);
+	(   // asignacion()
+		LOOKAHEAD( (array_access(at1))? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
+		(array_access(at1) {access = true;} )? 
+		<tASSIGN>
+		expresion(expAt)
+		{
+			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+			Symbol symbol = semantic.getSymbol(id);
 
-		/* Comprobaciones relacionadas con arrays:
-		- Si es array:
-			- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
-			- comprobar que el tipo de la expresión coincide con el tipo base del array
-		- Si no: no puede accederse a una variable no array
-		*/
-		semantic.assigningArrayChecks(id, symbol, expAt.type, access);
+			/* Comprobaciones relacionadas con arrays:
+			- Si es array:
+				- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
+				- comprobar que el tipo de la expresión coincide con el tipo base del array
+			- Si no: no puede accederse a una variable no array
+			*/
+			semantic.assigningArrayChecks(id, symbol, expAt.type, access);
 
-		/* Comprobaciones sobre los tipos de los asignables:
-		- Si es un procedimiento o función, error
-		- Asignable y expresión deben ser del mismo tipo
-		*/
-		semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
-	}
-	| // invocación_procedimiento()
-	// checkear que el id es un procedimiento y nada más
-	( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
-	{
-		if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
-		Symbol symbol = semantic.getSymbol(id);
+			/* Comprobaciones sobre los tipos de los asignables:
+			- Si es un procedimiento o función, error
+			- Asignable y expresión deben ser del mismo tipo
+			*/
+			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
-		semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
-	}
+			{
+				at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
+				at.code.addBlock(expAt.code);
+				at.code.addInst(PCodeInstruction.OpCode.ASG);
+			}
+		}
+		| // invocación_procedimiento()
+		// checkear que el id es un procedimiento y nada más
+		( <tLPAREN> lista_una_o_mas_exps(id) <tRPAREN> )? 
+		{
+			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
+			Symbol symbol = semantic.getSymbol(id);
+
+			semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
+
+			{
+				// apilar los parámetros
+
+				// 	public void addOSFInst (int s, int l, String label) {
+				semantic.getLabelFromSymbol(id);
+				at.code.addOSFInst(symbol.nivel, (int) symbol.dir);
+			}
+		}
 	)
 }
 
@@ -796,8 +848,17 @@ void inst_return(Attributes at) :
 	{
 		semantic.inst_return(t, expAt.type);
 		at.code.addBlock(expAt.code);
+		at.code.addInst(PCodeInstruction.OpCode.CSF); // Añadida siempre tras un return
 	}
 }
+
+//inst_exit: <tEXIT>
+void inst_exit(Attributes at) : {}
+{
+	<tEXIT>
+	{ at.code.addInst(PCodeInstruction.OpCode.LVP); }
+}
+
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
@@ -921,7 +982,7 @@ Token operador_relacional() :
 /**
  * Params: análogo a los de la producción "expresion"
  */
-void expresion_simple(ExpressionAttrib expAt) : 
+void expresion_simple(ExpressionAttrib expAt) :
 {
 	boolean sign = false;
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
@@ -929,15 +990,16 @@ void expresion_simple(ExpressionAttrib expAt) :
 	Token op = new Token();
 }
 {
-    ((<tPLUS> | <tMINUS>) {sign = true;}  )? termino(expAt1) 
-	{
-		semantic.signInExpressionCheck(getToken(0), expAt1.type, sign); // Si hay signo, la expresión debe ser de tipo INT
-	}
-	(( op = <tPLUS> | op = <tMINUS> )  termino(expAt2)
-	{
-		sign = true;
-		semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
-	}
+    (( op = <tPLUS> | op = <tMINUS>) { sign = true; } )? termino(expAt1) 
+		{
+			semantic.signInExpressionCheck(getToken(0), expAt1.type, sign); // Si hay signo, la expresión debe ser de tipo INT
+			if (op.kind == tMINUS) expAt1.code.addInst(PCodeInstruction.OpCode.NGI); // Si hay signo negativo, añadir instrucción de negación
+		}
+	(( op = <tPLUS> | op = <tMINUS> ) termino(expAt2)
+		{
+			sign = true;
+			semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
+		}
 	)*
 	{
 		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
@@ -1101,7 +1163,8 @@ void primario(ExpressionAttrib expAt) :
 				id.clone(expAt.param);
 				if (expAt.esAsignable != null) expAt.esAsignable = true;
 				expAt1.type = symbol.type;
-				expAt.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir); // TODO: creo que el nivel está mal, nivel es la cantidad de bloques que hay que subir!
+				int currentLevel = semantic.getCurrentLevel();
+				expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel-symbol.nivel, (int) symbol.dir); // TODO: creo que el nivel está mal, nivel es la cantidad de bloques que hay que subir!
 				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
 		}
 	}

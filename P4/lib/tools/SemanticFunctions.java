@@ -126,6 +126,14 @@ public class SemanticFunctions {
 		System.err.println(st.toString(id_image));
 	}
 
+	public long getLastSymbolAddress() {
+		return st.getLastSymbolAddress();
+	}
+
+	public int getCurrentLevel() {
+		return st.level;
+	}
+
 	// El parámetro "label" será el label del procedimiento o función que ha llamado a insertar el símbolo.
 	// Si no, será null.
 	public void insertSymbol(Token id, Symbol s, String label) {
@@ -136,11 +144,13 @@ public class SemanticFunctions {
 				case PROCEDURE: ((SymbolProcedure) s).label = label; break;
 				default:
 					CGUtils.memorySpaces[st.level]++;
-					s.dir = CGUtils.memorySpaces[st.level] + 2; 
+ 					s.dir = CGUtils.memorySpaces[st.level] + 2; 
+					// System.out.println("Insertando símbolo: " + s.name + " en la dirección de memoria " + s.dir);
 					break;
 			}
 
 			st.insertSymbol(s);
+			// System.out.println("Tabla de símbolos: " + st.toString(id.image));
 		}
 		catch (AlreadyDefinedSymbolException e) {
 			error(id, "El símbolo '" + id.image + "' ya está definido.");

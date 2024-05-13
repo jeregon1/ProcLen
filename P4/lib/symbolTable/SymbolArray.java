@@ -49,7 +49,7 @@ public class SymbolArray extends Symbol implements Cloneable {
 
     public String toString() {
         return "(" + name + "," + type +  "," +  minInd + ".." + maxInd + ", base:" + 
-                     baseType + ", " + parClass + ", lvl " + nivel + ")";
+                     baseType + ", " + parClass + ", lvl " + nivel + ", dir " + this.dir  + ")";
     }
     
     public SymbolArray clone () {

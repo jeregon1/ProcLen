@@ -26,7 +26,7 @@ public class SymbolBool extends Symbol implements Cloneable {
     }
 
     public String toString() {
-        return "(" + name + "," + type + "," + value + "," + parClass + ", lvl " + nivel + ")";
+        return "(" + name + "," + type + "," + value + "," + parClass + ", lvl " + nivel + ", dir " + this.dir  + ")";
     }
     
     public SymbolBool clone () {
