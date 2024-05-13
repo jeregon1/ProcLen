@@ -409,9 +409,21 @@ label = CGUtils.newLabel();
     }
 semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())), label);
                 semantic.insertBlock();
-                        // se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
-                for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
-                        semantic.insertSymbol(entry.getKey(), entry.getValue(), null);
+
+                int params_size = funcProcDecAt.params.size();
+                if (params_size > 0) {
+                                // Se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+                        for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
+                                semantic.insertSymbol(entry.getKey(), entry.getValue(), null);
+                        }
+
+                        // Desapilado de parámetros en orden inverso
+                        // level: número de bloques que hay que bajar para obtener la variable
+                        int level = 0; // TODO: nivel fijado a 0, no sé si es lo correcto
+                        for (int i = params_size; i > 0; i--) {
+                                at1.code.addInst(PCodeInstruction.OpCode.SRF, level, i+2);
+                                at1.code.addInst(PCodeInstruction.OpCode.ASGI);
+                        }
                 }
     jj_consume_token(tIS);
     label_5:
@@ -488,8 +500,7 @@ if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de
                 semantic.removeBlock(); // Eliminación del bloque actual
                 at.code.addBlock(at1.code);
                 at.code.addBlock(funcProcDecAt.code);
-                at.code.addInst(PCodeInstruction.OpCode.CSF); // TODO: CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
-
+                at.code.addInst(PCodeInstruction.OpCode.CSF);
 }
 
 //declaracion_funcion: <tFUNCTION> <tID> ( <tLPAREN> lista_parametros <tRPAREN> )? <tRETURN> tipo_variable_simple <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
@@ -519,9 +530,21 @@ funcProcDecAt.returnType = typeAt.type;
 funcProcDecAt.functionSymbol = new SymbolFunction(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values()), funcProcDecAt.returnType);
                 semantic.insertSymbol(funcProcDecAt.id, funcProcDecAt.functionSymbol, label);
                 semantic.insertBlock();
-                        // se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
-                for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
-                        semantic.insertSymbol(entry.getKey() ,entry.getValue(), null);
+
+                int params_size = funcProcDecAt.params.size();
+                if (params_size > 0) {
+                                // Se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+                        for (Map.Entry<Token, Symbol> entry : funcProcDecAt.params.entrySet()) {
+                                semantic.insertSymbol(entry.getKey() ,entry.getValue(), null);
+                        }
+
+                                // Desapilado de parámetros en orden inverso
+                        // level: número de bloques que hay que bajar para obtener la variable
+                        int level = 0; // TODO: nivel fijado a 0, no sé si es lo correcto
+                        for (int i = params_size; i > 0; i--) {
+                                at1.code.addInst(PCodeInstruction.OpCode.SRF, level, i+2);
+                                at1.code.addInst(PCodeInstruction.OpCode.ASGI);
+                        }
                 }
     jj_consume_token(tIS);
     label_8:
@@ -566,6 +589,7 @@ funcProcDecAt.functionSymbol = new SymbolFunction(funcProcDecAt.id.image, new Ar
     }
     jj_consume_token(tBEGIN);
 semantic.enterFunction(funcProcDecAt.functionSymbol);
+
                         label = CGUtils.newLabel();
                         at1.code.addInst(PCodeInstruction.OpCode.JMP, label); // Salto a la instrucción de inicio de la función
                         at1.code.addLabel(label); // Etiqueta de inicio de la función
@@ -597,11 +621,9 @@ semantic.enterFunction(funcProcDecAt.functionSymbol);
 semantic.exitFunction(getToken(0));
                 if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
                 semantic.removeBlock(); // Eliminación del bloque actual
-
-                at.code.addBlock(funcProcDecAt.code);
                 at.code.addBlock(at1.code);
-                at.code.addInst(PCodeInstruction.OpCode.CSF); // TODO: CREO QUE ESTÁ MAL, DEBERÍA DE IR AL FINAL DE: "inst_invocacion_procedimiento_o_asignacion"
-
+                at.code.addBlock(funcProcDecAt.code);
+                at.code.addInst(PCodeInstruction.OpCode.CSF);
 }
 
 //lista_parametros: parametro_formal (<tSEMICOLON> parametro_formal)*
@@ -971,13 +993,14 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
                         {
                                 at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
                                 at.code.addBlock(expAt.code);
+                                at.code.addBlock(at1.code);
                                 at.code.addInst(PCodeInstruction.OpCode.ASG);
                         }
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tLPAREN:{
         jj_consume_token(tLPAREN);
-        lista_una_o_mas_exps(id);
+        lista_una_o_mas_exps(id, at1);
         jj_consume_token(tRPAREN);
         break;
         }
@@ -992,17 +1015,26 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
 
                         {
                                 // apilar los parámetros
+                                at.code.addBlock(expAt.code);
+                                at.code.addBlock(at1.code);
 
-                                // 	public void addOSFInst (int s, int l, String label) {
-                                semantic.getLabelFromSymbol(id);
-                                at.code.addOSFInst(symbol.nivel, (int) symbol.dir);
+                                // addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
+                                String label = semantic.getLabelFromSymbol(id);
+                                at.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
                         }
     }
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
   static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
+        ExpressionAttrib expAt1 = new ExpressionAttrib();
         Attributes at1 = new Attributes();
+        Attributes at2 = new Attributes();
+        Attributes at3 = new Attributes();
+        Boolean hasElsif = false;
+String label_elsif = CGUtils.newLabel();
+                String label_end = CGUtils.newLabel();
+                String label_else = CGUtils.newLabel();
     jj_consume_token(tIF);
     expresion(expAt);
 semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
@@ -1042,13 +1074,14 @@ semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tip
         break label_16;
       }
       jj_consume_token(tELSIF);
-      expresion(expAt);
-semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
+      expresion(expAt1);
+hasElsif = true;
+                semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
 
       jj_consume_token(tTHEN);
       label_17:
       while (true) {
-        instruccion(at1);
+        instruccion(at2);
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tWHILE:
         case tIF:
@@ -1074,7 +1107,7 @@ semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tip
       jj_consume_token(tELSE);
       label_18:
       while (true) {
-        instruccion(at1);
+        instruccion(at3);
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tWHILE:
         case tIF:
@@ -1102,9 +1135,30 @@ semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tip
     }
     jj_consume_token(tEND);
     jj_consume_token(tIF);
-// TODO: REVISAR QUE FUNCIONE
-                at.code.addBlock(expAt.code);
-                at.code.addBlock(at1.code);
+/* Backup de If-else funcional:
+			at.code.addBlock(expAt.code); // If: Guarda 
+			at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
+			at.code.addBlock(at1.code);	// If: Instrucciones
+			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+			at.code.addLabel(label_else); // Else
+			at.code.addBlock(at3.code); // Else: Instrucciones
+			at.code.addLabel(label_end); // Fin del if
+		*/
+
+                // Elsif (1 nivel) funcional. TODO: hacer recursivo para más niveles
+                at.code.addBlock(expAt.code); // If: Guarda 
+                if (hasElsif) at.code.addInst(PCodeInstruction.OpCode.JMF, label_elsif); // Salto a Elsif si la guarda es falsa
+                at.code.addBlock(at1.code);     // If: Instrucciones
+                at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+                at.code.addLabel(label_elsif); // Elsif
+                at.code.addBlock(expAt1.code); // Elsif: Guarda
+                at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
+                at.code.addBlock(at2.code); // Elsif: Instrucciones
+                at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+                at.code.addLabel(label_else); // Else
+                at.code.addBlock(at3.code); // Else: Instrucciones
+                at.code.addLabel(label_end); // Fin del if
+
 }
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
@@ -1533,6 +1587,7 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
  * Params: análogo a los de la producción "expresion"
  */
   static final public void primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
+        Attributes at = new Attributes(); // TODO: revisar si hay que meter esto o el expAt1 en lista_una_o_mas_exps
         Symbol.Types type = Symbol.Types.UNDEFINED;
         Token id;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1569,7 +1624,7 @@ expAt.code.addBlock(expAt1.code);
       if (jj_2_2(2)) {
         id = jj_consume_token(tID);
         jj_consume_token(tLPAREN);
-        lista_una_o_mas_exps(id);
+        lista_una_o_mas_exps(id, at);
         jj_consume_token(tRPAREN);
 if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                 Symbol symbol = semantic.getSymbol(id);
@@ -1586,6 +1641,12 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                                 break;
                         default: expAt1.type = symbol.type;
                 }
+
+                // apilar los parámetros y llamar a OSF
+                expAt.code.addBlock(at.code);
+                String label = semantic.getLabelFromSymbol(id);
+                expAt.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
+
       } else {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tID:{
@@ -1598,6 +1659,8 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                                 SymbolFunction function = (SymbolFunction) symbol;
                                 semantic.functionParametersCheck(id, function); // Checkear que la función no tenga parámetros
                                 expAt1.type = function.returnType;
+                                String label = semantic.getLabelFromSymbol(id);
+                                expAt.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
                                 break;
                         // Checkear que no es procedimiento
                         case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break;
@@ -1607,8 +1670,9 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
                                 id.clone(expAt.param);
                                 if (expAt.esAsignable != null) expAt.esAsignable = true;
                                 expAt1.type = symbol.type;
-                                int currentLevel = semantic.getCurrentLevel();
-                                expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel-symbol.nivel, (int) symbol.dir); // TODO: creo que el nivel está mal, nivel es la cantidad de bloques que hay que subir!
+                                // int currentLevel = semantic.getCurrentLevel();
+                                int level = 0; // TODO: revisar el nivel (al igual que en 'declaracion_procedimiento')
+                                expAt.code.addInst(PCodeInstruction.OpCode.SRF, level, (int) symbol.dir);
                                 expAt.code.addInst(PCodeInstruction.OpCode.DRF);
                 }
           break;
@@ -1658,7 +1722,7 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
  * Params:
  * 	-id: Token de la función/procedimiento invocado, o del array accedido
  */
-  static final public void lista_una_o_mas_exps(Token id) throws ParseException {// Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
+  static final public void lista_una_o_mas_exps(Token id, Attributes at) throws ParseException {// Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
         List<Symbol.Types> types = new ArrayList<>();
         Map<Token, Boolean> args = new LinkedHashMap<>();
 
@@ -1666,8 +1730,8 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
         Symbol symbol = semantic.getSymbol(id);
 
         ExpressionAttrib expAt = new ExpressionAttrib();
-expAt.param = new Token(0);
-                expAt.esAsignable = false;
+expAt.esAsignable = false;
+                expAt.param = new Token(0);
     expresion(expAt);
 types.add(expAt.type);
                 if (expAt.param.kind == 0) args.put(getToken(0), false);
@@ -1716,6 +1780,7 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
                 } else { // Si id es un tipo simple, no puede accederse a un elemento
                         semantic.error(id, "No se puede acceder a un elemento del s\u00edmbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
                 }
+                at.code.addBlock(expAt.code);
 }
 
   static private boolean jj_2_1(int xla)
@@ -1734,7 +1799,245 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     finally { jj_save(1, xla); }
   }
 
-  static private boolean jj_3R_operador_relacional_977_9_37()
+  static private boolean jj_3R_primario_1204_17_48()
+ {
+    if (jj_scan_token(tID)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_null_765_29_25()
+ {
+    if (jj_3R_array_access_664_9_26()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_1()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_null_765_29_25()) jj_scanpos = xsp;
+    if (jj_scan_token(tASSIGN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1243_17_52()
+ {
+    if (jj_scan_token(tFALSE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1239_17_51()
+ {
+    if (jj_scan_token(tTRUE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1235_17_50()
+ {
+    if (jj_scan_token(tCONST_CHAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1166_37_45()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_932_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_948_19_39()
+ {
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_989_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1231_17_49()
+ {
+    if (jj_scan_token(tCONST_INT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_1283_11_54()
+ {
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_932_9_27()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_948_17_33()
+ {
+    Token xsp;
+    if (jj_3R_expresion_948_19_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_948_19_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1048_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_1083_5_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3_2()
+ {
+    if (jj_scan_token(tID)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_lista_una_o_mas_exps_1271_9_53()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_factor_1136_11_42()
+ {
+    if (jj_scan_token(tNOT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_factor_1136_9_40()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_factor_1136_11_42()) jj_scanpos = xsp;
+    if (jj_3R_primario_1166_9_43()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1173_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_932_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_array_access_664_9_26()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_932_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1043_6_34()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_termino_1084_11_41()
+ {
+    if (jj_3R_operador_multiplicativo_1120_9_44()) return true;
+    if (jj_3R_factor_1136_9_40()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_990_11_31()
+ {
+    if (jj_3R_operador_relacional_1027_9_37()) return true;
+    if (jj_3R_expresion_simple_1043_5_30()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1043_5_30()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_simple_1043_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_1083_5_35()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_simple_1048_10_36()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_934_19_38()
+ {
+    if (jj_scan_token(tAND)) return true;
+    if (jj_3R_relacion_989_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_lista_una_o_mas_exps_1271_9_53()
+ {
+    if (jj_3R_expresion_932_9_27()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_lista_una_o_mas_exps_1283_11_54()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_934_17_29()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_934_17_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_expresion_948_17_33()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_934_17_32()
+ {
+    Token xsp;
+    if (jj_3R_expresion_934_19_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_934_19_38()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_989_9_28()
+ {
+    if (jj_3R_expresion_simple_1043_5_30()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_990_11_31()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1167_17_46()
+ {
+    if (jj_scan_token(tINT2CHAR)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_932_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_termino_1083_5_35()
+ {
+    if (jj_3R_factor_1136_9_40()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_termino_1084_11_41()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_operador_relacional_1027_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1757,18 +2060,7 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_1211_9_53()
- {
-    if (jj_3R_expresion_882_9_27()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_lista_una_o_mas_exps_1223_11_54()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_operador_multiplicativo_1070_9_44()
+  static private boolean jj_3R_operador_multiplicativo_1120_9_44()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1782,44 +2074,36 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_array_access_647_9_26()
+  static private boolean jj_3R_expresion_932_9_27()
  {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_882_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
+    if (jj_3R_relacion_989_9_28()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_934_17_29()) jj_scanpos = xsp;
     return false;
   }
 
-  static private boolean jj_3R_expresion_882_9_27()
- {
-    if (jj_3R_relacion_939_9_28()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_884_17_29()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1115_9_43()
+  static private boolean jj_3R_primario_1166_9_43()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_primario_1115_37_45()) {
+    if (jj_3R_primario_1166_37_45()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1116_17_46()) {
+    if (jj_3R_primario_1167_17_46()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1122_17_47()) {
+    if (jj_3R_primario_1173_17_47()) {
     jj_scanpos = xsp;
     if (jj_3_2()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1147_17_48()) {
+    if (jj_3R_primario_1204_17_48()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1171_17_49()) {
+    if (jj_3R_primario_1231_17_49()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1175_17_50()) {
+    if (jj_3R_primario_1235_17_50()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1179_17_51()) {
+    if (jj_3R_primario_1239_17_51()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1183_17_52()) return true;
+    if (jj_3R_primario_1243_17_52()) return true;
     }
     }
     }
@@ -1827,225 +2111,6 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     }
     }
     }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1147_17_48()
- {
-    if (jj_scan_token(tID)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1183_17_52()
- {
-    if (jj_scan_token(tFALSE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_null_748_29_25()
- {
-    if (jj_3R_array_access_647_9_26()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1115_37_45()
- {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_882_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3_1()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_null_748_29_25()) jj_scanpos = xsp;
-    if (jj_scan_token(tASSIGN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_898_19_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_939_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_898_17_33()
- {
-    Token xsp;
-    if (jj_3R_expresion_898_19_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_898_19_39()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1179_17_51()
- {
-    if (jj_scan_token(tTRUE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_998_10_36()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    if (jj_3R_termino_1033_5_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3_2()
- {
-    if (jj_scan_token(tID)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_lista_una_o_mas_exps_1211_9_53()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1175_17_50()
- {
-    if (jj_scan_token(tCONST_CHAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_factor_1086_11_42()
- {
-    if (jj_scan_token(tNOT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_factor_1086_9_40()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_factor_1086_11_42()) jj_scanpos = xsp;
-    if (jj_3R_primario_1115_9_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1171_17_49()
- {
-    if (jj_scan_token(tCONST_INT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_lista_una_o_mas_exps_1223_11_54()
- {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_882_9_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_993_6_34()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1122_17_47()
- {
-    if (jj_scan_token(tCHAR2INT)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_882_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_termino_1034_11_41()
- {
-    if (jj_3R_operador_multiplicativo_1070_9_44()) return true;
-    if (jj_3R_factor_1086_9_40()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_940_11_31()
- {
-    if (jj_3R_operador_relacional_977_9_37()) return true;
-    if (jj_3R_expresion_simple_993_5_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_993_5_30()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_993_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_1033_5_35()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_998_10_36()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_884_19_38()
- {
-    if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_939_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_884_17_29()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_884_17_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_expresion_898_17_33()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_884_17_32()
- {
-    Token xsp;
-    if (jj_3R_expresion_884_19_38()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_884_19_38()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_939_9_28()
- {
-    if (jj_3R_expresion_simple_993_5_30()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_relacion_940_11_31()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1116_17_46()
- {
-    if (jj_scan_token(tINT2CHAR)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_882_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_termino_1033_5_35()
- {
-    if (jj_3R_factor_1086_9_40()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_termino_1034_11_41()) { jj_scanpos = xsp; break; }
     }
     return false;
   }

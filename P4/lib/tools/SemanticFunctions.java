@@ -130,6 +130,18 @@ public class SemanticFunctions {
 		return st.getLastSymbolAddress();
 	}
 
+	public String getLabelFromSymbol(Token id) {
+		Symbol s = getSymbol(id);
+		if (s == null) return null;
+		if (s.type == Symbol.Types.FUNCTION) {
+			return ((SymbolFunction) s).label;
+		} else if (s.type == Symbol.Types.PROCEDURE) {
+			return ((SymbolProcedure) s).label;
+		} else {
+			return null;
+		}
+	}
+
 	public int getCurrentLevel() {
 		return st.level;
 	}
