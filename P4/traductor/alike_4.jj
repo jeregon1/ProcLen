@@ -29,6 +29,7 @@ import lib.attributes.*;
 import lib.tools.codeGeneration.*;
 
 import java.util.List;
+import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -537,8 +538,6 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 
 		for (Token id : parVarAt.t) {
 		// Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
-			System.out.println("ID: " + id.image);
-
 			if (parVarAt.baseType == Symbol.Types.ARRAY) { // Parámetros array
 				SymbolArray newArray = typeAt.paramArray.clone();
 				newArray.name = id.image;
@@ -552,7 +551,6 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 				}
 			}
 		}
-		System.out.println("Lista de parámetros: " + funcProcDecAt.params);
 
 	}
 }
@@ -815,57 +813,76 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if(Attributes at) :
 {
-	ExpressionAttrib expAt = new ExpressionAttrib();
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
+	ExpressionAttrib expAt2 = new ExpressionAttrib();
 	Attributes at1 = new Attributes();
 	Attributes at2 = new Attributes();
 	Attributes at3 = new Attributes();
 	Boolean hasElsif = false;
+	List<String> labelsEnd = new ArrayList<>();
 }
 {
 	{ 
 		String label_elsif = CGUtils.newLabel();
-	  	String label_end = CGUtils.newLabel();
-		String label_else = CGUtils.newLabel(); 
+	  	String label_end;
+		String label_else; 
+		String label_next = label_elsif;
 	}
-	<tIF> expresion(expAt) 
+	<tIF> expresion(expAt1) 
 	{
-		semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
-	}
-	<tTHEN> ( instruccion(at1) )+
-	(<tELSIF> expresion(expAt1)
-	{
-		hasElsif = true;
 		semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
-	} <tTHEN> ( instruccion(at2) )+ )* 
-	(<tELSE>  ( instruccion(at3) )+ )? 
+
+		at.code.addBlock(expAt1.code); // If: Guarda
+		at.code.addInst(PCodeInstruction.OpCode.JMF, label_next);
+	}
+	<tTHEN> ( instruccion(at1) )+ 
+	{
+		at.code.addBlock(at1.code);	// If: Instrucciones
+		label_end = CGUtils.newLabel();
+		labelsEnd.add(label_end);
+		at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+	}
+	(<tELSIF> expresion(expAt2)
+		{
+			semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de tipo BOOL
+
+			at.code.addLabel(label_next);
+			label_next = CGUtils.newLabel(); // Siguiente etiqueta para caso recursivo
+
+			at.code.addBlock(expAt2.code); // Elsif: Guarda
+			expAt2 = new ExpressionAttrib(); // Reiniciar expAt2 para que no se acumulen las instrucciones
+
+			label_end = CGUtils.newLabel();
+			labelsEnd.add(label_end);
+
+			at.code.addInst(PCodeInstruction.OpCode.JMF, label_next); // Salto al final del if
+
+		} 
+		<tTHEN> ( instruccion(at2) )+ 
+		{
+			at.code.addBlock(at2.code); // Elsif: Instrucciones
+			at2 = new Attributes(); // Reiniciar at2 para que no se acumulen las instrucciones
+			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+		}
+	)* 
+	(<tELSE>  ( instruccion(at3) )+ 
+		{
+			at.code.addLabel(label_next); // label_next tiene la siguiente etiqueta para añadir
+			at.code.addBlock(at3.code); // Else: Instrucciones
+		}
+	)? 
 	<tEND> <tIF>
 	{
-		/* Backup de If-else funcional:
-			at.code.addBlock(expAt.code); // If: Guarda 
-			at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
-			at.code.addBlock(at1.code);	// If: Instrucciones
-			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-			at.code.addLabel(label_else); // Else
-			at.code.addBlock(at3.code); // Else: Instrucciones
-			at.code.addLabel(label_end); // Fin del if
-		*/
-
-		// Elsif (1 nivel) funcional. TODO: hacer recursivo para más niveles
-		at.code.addBlock(expAt.code); // If: Guarda 
-		if (hasElsif) at.code.addInst(PCodeInstruction.OpCode.JMF, label_elsif); // Salto a Elsif si la guarda es falsa
-		at.code.addBlock(at1.code);	// If: Instrucciones
-		at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-		at.code.addLabel(label_elsif); // Elsif
-		at.code.addBlock(expAt1.code); // Elsif: Guarda
-		at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
-		at.code.addBlock(at2.code); // Elsif: Instrucciones
-		at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-		at.code.addLabel(label_else); // Else
-		at.code.addBlock(at3.code); // Else: Instrucciones
-		at.code.addLabel(label_end); // Fin del if
+		// Añadir las etiquetas de fin de cada bloque en orden inverso
+		ListIterator<String> iterator = labelsEnd.listIterator(labelsEnd.size());
+		while (iterator.hasPrevious()) {
+			String label = iterator.previous();
+			at.code.addLabel(label);
+		}
 	}
 }
+
+
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
 void inst_while(Attributes at) : 
@@ -920,13 +937,8 @@ void inst_exit(Attributes at) : {}
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
+// 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN 🎃
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
-/** 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN
- * Params:
- * -param: != de null si es un parámetro de función/procedimiento, o bien una componente de un vector
- * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
- * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
- */
 void expresion(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
@@ -984,9 +996,6 @@ void expresion(ExpressionAttrib expAt) :
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
-/**
- * Params: análogo a los de la producción "expresion"
- */
 void relacion(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
@@ -1037,9 +1046,6 @@ Token operador_relacional() :
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
-/**
- * Params: análogo a los de la producción "expresion"
- */
 void expresion_simple(ExpressionAttrib expAt) :
 {
 	boolean sign = false;
@@ -1077,9 +1083,6 @@ void expresion_simple(ExpressionAttrib expAt) :
 }
                                                                                                                                                                          
 //termino: factor (operador_multiplicativo factor)*
-/**
- * Params: análogo a los de la producción "expresion"
- */
 void termino(ExpressionAttrib expAt) : 
 {
 	boolean moreThanOne = false;
@@ -1130,15 +1133,10 @@ Token operador_multiplicativo() :
 }
 
 //factor: (<tNOT>)? primario
-/**
- * Params: análogo a los de la producción "expresion"
- */
 void factor(ExpressionAttrib expAt) : 
 {
-	// Symbol.Types type;
 	boolean not = false;
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	// expAt1.clone(expAt);
 }
 {
 	( <tNOT> {not = true;} )? primario(expAt1) 
@@ -1160,9 +1158,6 @@ void factor(ExpressionAttrib expAt) :
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-/**
- * Params: análogo a los de la producción "expresion"
- */
 void primario(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
@@ -1253,15 +1248,12 @@ void primario(ExpressionAttrib expAt) :
 		}
 	)
 	{
-		// No estoy seguro si los STC con 🎃 estarían bien, ya que no sé si en todos los casos
-		// se debería de hacer el STC o solo en algunos casos determinados
 		expAt.type = expAt1.type;
 	}
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
 /**
- * Params:
  * 	-id: Token de la función/procedimiento invocado, o del array accedido
  */
 void lista_una_o_mas_exps(Token id, Attributes at) : 

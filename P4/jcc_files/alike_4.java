@@ -14,6 +14,7 @@ import lib.attributes.*;
 import lib.tools.codeGeneration.*;
 
 import java.util.List;
+import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -539,10 +540,9 @@ funcProcDecAt.functionSymbol = new SymbolFunction(funcProcDecAt.id.image, new Ar
                         }
 
                                 // Desapilado de parámetros en orden inverso
-                        // level: número de bloques que hay que bajar para obtener la variable
-                        int level = 0; // TODO: nivel fijado a 0, no sé si es lo correcto
                         for (int i = params_size; i > 0; i--) {
-                                at1.code.addInst(PCodeInstruction.OpCode.SRF, level, i+2);
+                                // Como los parámetros están en el mismo bloque, tienes que bajar 0 (level) bloques para obtener su valor
+                                at1.code.addInst(PCodeInstruction.OpCode.SRF, 0, i+2);
                                 at1.code.addInst(PCodeInstruction.OpCode.ASGI);
                         }
                 }
@@ -668,8 +668,6 @@ parVarAt.baseType = typeAt.type;
 
                 for (Token id : parVarAt.t) {
                 // Comprobar si hay algún parámetro con el mismo nombre (se hace tras declarar todos los parámetros)
-                        System.out.println("ID: " + id.image);
-
                         if (parVarAt.baseType == Symbol.Types.ARRAY) { // Parámetros array
                                 SymbolArray newArray = typeAt.paramArray.clone();
                                 newArray.name = id.image;
@@ -683,7 +681,6 @@ parVarAt.baseType = typeAt.type;
                                 }
                         }
                 }
-                System.out.println("Lista de par\u00e1metros: " + funcProcDecAt.params);
 }
 
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/
@@ -1026,19 +1023,79 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
-  static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt = new ExpressionAttrib();
-        ExpressionAttrib expAt1 = new ExpressionAttrib();
+// void inst_if(Attributes at) :
+// {
+// 	ExpressionAttrib expAt1 = new ExpressionAttrib();
+// 	ExpressionAttrib expAt2 = new ExpressionAttrib();
+// 	Attributes at1 = new Attributes();
+// 	Attributes at2 = new Attributes();
+// 	Attributes at3 = new Attributes();
+// 	Boolean hasElsif = false;
+// }
+// {
+// 	{ 
+// 		String label_elsif = CGUtils.newLabel();
+// 	  	String label_end = CGUtils.newLabel();
+// 		String label_else = CGUtils.newLabel(); 
+// 	}
+// 	<tIF> expresion(expAt1) 
+// 	{
+// 		semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
+// 	}
+// 	<tTHEN> ( instruccion(at1) )+
+// 	(<tELSIF> expresion(expAt2)
+// 	{
+// 		hasElsif = true;
+// 		semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de tipo BOOL
+// 	} <tTHEN> ( instruccion(at2) )+ )* 
+// 	(<tELSE>  ( instruccion(at3) )+ )? 
+// 	<tEND> <tIF>
+// 	{
+// 		/* Backup de If-else funcional:
+// 			at.code.addBlock(expAt1.code); // If: Guarda 
+// 			at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
+// 				at.code.addBlock(at1.code);	// If: Instrucciones
+// 				at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+// 			at.code.addLabel(label_else); // Else
+// 				at.code.addBlock(at3.code); // Else: Instrucciones
+// 			at.code.addLabel(label_end); // Fin del if
+// 		*/
+
+// 		// Elsif (1 nivel) funcional. TODO: hacer recursivo para más niveles
+// 		at.code.addBlock(expAt1.code); // If: Guarda 
+// 		if (hasElsif) at.code.addInst(PCodeInstruction.OpCode.JMF, label_elsif); // Salto a Elsif si la guarda es falsa
+// 			at.code.addBlock(at1.code);	// If: Instrucciones
+// 			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+// 		at.code.addLabel(label_elsif); // Elsif
+// 		at.code.addBlock(expAt2.code); // Elsif: Guarda
+// 		at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
+// 			at.code.addBlock(at2.code); // Elsif: Instrucciones
+// 			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+// 		at.code.addLabel(label_else); // Else
+// 			at.code.addBlock(at3.code); // Else: Instrucciones
+// 		at.code.addLabel(label_end); // Fin del if
+// 	}
+// }
+
+// 🎃 Versión experimental 🎃
+  static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
+        ExpressionAttrib expAt2 = new ExpressionAttrib();
         Attributes at1 = new Attributes();
         Attributes at2 = new Attributes();
         Attributes at3 = new Attributes();
         Boolean hasElsif = false;
+        List<String> labelsEnd = new ArrayList<>();
 String label_elsif = CGUtils.newLabel();
-                String label_end = CGUtils.newLabel();
-                String label_else = CGUtils.newLabel();
+                String label_end;
+                String label_else;
+                String label_next = label_elsif;
+                String label_aux;
     jj_consume_token(tIF);
-    expresion(expAt);
-semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
+    expresion(expAt1);
+semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
 
+                at.code.addBlock(expAt1.code); // If: Guarda
+                at.code.addInst(PCodeInstruction.OpCode.JMF, label_next);
     jj_consume_token(tTHEN);
     label_15:
     while (true) {
@@ -1062,6 +1119,11 @@ semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tip
         break label_15;
       }
     }
+at.code.addBlock(at1.code);     // If: Instrucciones
+                label_end = CGUtils.newLabel();
+                labelsEnd.add(label_end);
+                at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+
     label_16:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1074,9 +1136,19 @@ semantic.ifChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tip
         break label_16;
       }
       jj_consume_token(tELSIF);
-      expresion(expAt1);
-hasElsif = true;
-                semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
+      expresion(expAt2);
+semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de tipo BOOL
+
+                        at.code.addLabel(label_next);
+                        label_next = CGUtils.newLabel(); // Siguiente etiqueta para caso recursivo
+
+                        at.code.addBlock(expAt2.code); // Elsif: Guarda
+                        expAt2 = new ExpressionAttrib(); // Reiniciar expAt2 para que no se acumulen las instrucciones
+
+                        label_end = CGUtils.newLabel();
+                        labelsEnd.add(label_end);
+
+                        at.code.addInst(PCodeInstruction.OpCode.JMF, label_next); // Salto al final del if
 
       jj_consume_token(tTHEN);
       label_17:
@@ -1101,6 +1173,10 @@ hasElsif = true;
           break label_17;
         }
       }
+at.code.addBlock(at2.code); // Elsif: Instrucciones
+                        at2 = new Attributes(); // Reiniciar at2 para que no se acumulen las instrucciones
+                        at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
+
     }
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tELSE:{
@@ -1127,6 +1203,9 @@ hasElsif = true;
           break label_18;
         }
       }
+at.code.addLabel(label_next); // label_next tiene la siguiente etiqueta para añadir
+                        at.code.addBlock(at3.code); // Else: Instrucciones
+
       break;
       }
     default:
@@ -1135,30 +1214,12 @@ hasElsif = true;
     }
     jj_consume_token(tEND);
     jj_consume_token(tIF);
-/* Backup de If-else funcional:
-			at.code.addBlock(expAt.code); // If: Guarda 
-			at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
-			at.code.addBlock(at1.code);	// If: Instrucciones
-			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-			at.code.addLabel(label_else); // Else
-			at.code.addBlock(at3.code); // Else: Instrucciones
-			at.code.addLabel(label_end); // Fin del if
-		*/
-
-                // Elsif (1 nivel) funcional. TODO: hacer recursivo para más niveles
-                at.code.addBlock(expAt.code); // If: Guarda 
-                if (hasElsif) at.code.addInst(PCodeInstruction.OpCode.JMF, label_elsif); // Salto a Elsif si la guarda es falsa
-                at.code.addBlock(at1.code);     // If: Instrucciones
-                at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-                at.code.addLabel(label_elsif); // Elsif
-                at.code.addBlock(expAt1.code); // Elsif: Guarda
-                at.code.addInst(PCodeInstruction.OpCode.JMF, label_else); // Salto a Else si la guarda es falsa
-                at.code.addBlock(at2.code); // Elsif: Instrucciones
-                at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
-                at.code.addLabel(label_else); // Else
-                at.code.addBlock(at3.code); // Else: Instrucciones
-                at.code.addLabel(label_end); // Fin del if
-
+// Añadir las etiquetas de fin de cada bloque en orden inverso
+                ListIterator<String> iterator = labelsEnd.listIterator(labelsEnd.size());
+                while (iterator.hasPrevious()) {
+                        String label = iterator.previous();
+                        at.code.addLabel(label);
+                }
 }
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
@@ -1224,13 +1285,8 @@ at.code.addInst(PCodeInstruction.OpCode.LVP);
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/
 
+// 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN 🎃
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
-/** 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN
- * Params:
- * -param: != de null si es un parámetro de función/procedimiento, o bien una componente de un vector
- * -esAsignable: array de un único booleano para comprobar si la expresión es asignable. Debe ser un array
- * 				 para ser un elemento mutable y poder modificar su valor en las producciones que lo necesiten.
- */
   static final public void expresion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
         Symbol.Types type;
@@ -1314,9 +1370,6 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
-/**
- * Params: análogo a los de la producción "expresion"
- */
   static final public void relacion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
         Token op = new Token();
@@ -1401,9 +1454,6 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
-/**
- * Params: análogo a los de la producción "expresion"
- */
   static final public void expresion_simple(ExpressionAttrib expAt) throws ParseException {boolean sign = false;
         ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
@@ -1483,9 +1533,6 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 }
 
 //termino: factor (operador_multiplicativo factor)*
-/**
- * Params: análogo a los de la producción "expresion"
- */
   static final public void termino(ExpressionAttrib expAt) throws ParseException {boolean moreThanOne = false;
         ExpressionAttrib expAt1 = new ExpressionAttrib();
         ExpressionAttrib expAt2 = new ExpressionAttrib();
@@ -1555,14 +1602,8 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 }
 
 //factor: (<tNOT>)? primario
-/**
- * Params: análogo a los de la producción "expresion"
- */
-  static final public void factor(ExpressionAttrib expAt) throws ParseException {// Symbol.Types type;
-        boolean not = false;
+  static final public void factor(ExpressionAttrib expAt) throws ParseException {boolean not = false;
         ExpressionAttrib expAt1 = new ExpressionAttrib();
-        // expAt1.clone(expAt);
-
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tNOT:{
       jj_consume_token(tNOT);
@@ -1590,11 +1631,8 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-/**
- * Params: análogo a los de la producción "expresion"
- */
   static final public void primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
-        Attributes at = new Attributes(); // TODO: revisar si hay que meter esto o el expAt1 en lista_una_o_mas_exps
+        Attributes at = new Attributes();
         Symbol.Types type = Symbol.Types.UNDEFINED;
         Token id;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1718,14 +1756,11 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
         }
       }
     }
-// No estoy seguro si los STC con 🎃 estarían bien, ya que no sé si en todos los casos
-                // se debería de hacer el STC o solo en algunos casos determinados
-                expAt.type = expAt1.type;
+expAt.type = expAt1.type;
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
 /**
- * Params:
  * 	-id: Token de la función/procedimiento invocado, o del array accedido
  */
   static final public void lista_una_o_mas_exps(Token id, Attributes at) throws ParseException {// Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
@@ -1805,21 +1840,82 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     finally { jj_save(1, xla); }
   }
 
-  static private boolean jj_3R_primario_1251_17_52()
- {
-    if (jj_scan_token(tFALSE)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1247_17_51()
+  static private boolean jj_3R_primario_1297_17_51()
  {
     if (jj_scan_token(tTRUE)) return true;
     return false;
   }
 
-  static private boolean jj_3R_null_764_29_25()
+  static private boolean jj_3R_expresion_1010_19_38()
  {
-    if (jj_3R_array_access_663_9_26()) return true;
+    if (jj_scan_token(tAND)) return true;
+    if (jj_3R_relacion_1062_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1293_17_50()
+ {
+    if (jj_scan_token(tCONST_CHAR)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1225_37_45()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_1010_17_29()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_1010_17_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_expresion_1024_17_33()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_1010_17_32()
+ {
+    Token xsp;
+    if (jj_3R_expresion_1010_19_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_1010_19_38()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_relacion_1063_11_31()
+ {
+    if (jj_3R_operador_relacional_1100_9_37()) return true;
+    if (jj_3R_expresion_simple_1113_5_30()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_null_761_29_25()
+ {
+    if (jj_3R_array_access_660_9_26()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1113_6_34()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1289_17_49()
+ {
+    if (jj_scan_token(tCONST_INT)) return true;
     return false;
   }
 
@@ -1827,65 +1923,43 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_null_764_29_25()) jj_scanpos = xsp;
+    if (jj_3R_null_761_29_25()) jj_scanpos = xsp;
     if (jj_scan_token(tASSIGN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_1243_17_50()
+  static private boolean jj_3R_relacion_1062_9_28()
  {
-    if (jj_scan_token(tCONST_CHAR)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1175_37_45()
- {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_941_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_957_19_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_998_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1239_17_49()
- {
-    if (jj_scan_token(tCONST_INT)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_957_17_33()
- {
+    if (jj_3R_expresion_simple_1113_5_30()) return true;
     Token xsp;
-    if (jj_3R_expresion_957_19_39()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_957_19_39()) { jj_scanpos = xsp; break; }
-    }
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_1063_11_31()) jj_scanpos = xsp;
     return false;
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_1291_11_54()
- {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_941_9_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_1057_10_36()
+  static private boolean jj_3R_expresion_simple_1113_5_30()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
+    if (jj_3R_expresion_simple_1113_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_1150_5_35()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_simple_1118_10_36()) { jj_scanpos = xsp; break; }
     }
-    if (jj_3R_termino_1092_5_35()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_factor_1198_11_42()
+ {
+    if (jj_scan_token(tNOT)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_termino_1151_11_41()
+ {
+    if (jj_3R_operador_multiplicativo_1187_9_44()) return true;
+    if (jj_3R_factor_1198_9_40()) return true;
     return false;
   }
 
@@ -1893,151 +1967,37 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
  {
     if (jj_scan_token(tID)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_lista_una_o_mas_exps_1279_9_53()) return true;
+    if (jj_3R_lista_una_o_mas_exps_1326_9_53()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_factor_1145_11_42()
+  static private boolean jj_3R_lista_una_o_mas_exps_1338_11_54()
  {
-    if (jj_scan_token(tNOT)) return true;
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
     return false;
   }
 
-  static private boolean jj_3R_factor_1145_9_40()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_factor_1145_11_42()) jj_scanpos = xsp;
-    if (jj_3R_primario_1175_9_43()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1182_17_47()
- {
-    if (jj_scan_token(tCHAR2INT)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_941_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_1052_6_34()
+  static private boolean jj_3R_factor_1198_9_40()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
+    if (jj_3R_factor_1198_11_42()) jj_scanpos = xsp;
+    if (jj_3R_primario_1225_9_43()) return true;
     return false;
   }
 
-  static private boolean jj_3R_termino_1093_11_41()
+  static private boolean jj_3R_expresion_1008_9_27()
  {
-    if (jj_3R_operador_multiplicativo_1129_9_44()) return true;
-    if (jj_3R_factor_1145_9_40()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_999_11_31()
- {
-    if (jj_3R_operador_relacional_1036_9_37()) return true;
-    if (jj_3R_expresion_simple_1052_5_30()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_1052_5_30()
- {
+    if (jj_3R_relacion_1062_9_28()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_1052_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_1092_5_35()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_1057_10_36()) { jj_scanpos = xsp; break; }
-    }
+    if (jj_3R_expresion_1010_17_29()) jj_scanpos = xsp;
     return false;
   }
 
-  static private boolean jj_3R_expresion_943_19_38()
- {
-    if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_998_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_943_17_29()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_943_17_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_expresion_957_17_33()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_943_17_32()
- {
-    Token xsp;
-    if (jj_3R_expresion_943_19_38()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_943_19_38()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_998_9_28()
- {
-    if (jj_3R_expresion_simple_1052_5_30()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_relacion_999_11_31()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_lista_una_o_mas_exps_1279_9_53()
- {
-    if (jj_3R_expresion_941_9_27()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_lista_una_o_mas_exps_1291_11_54()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_primario_1176_17_46()
- {
-    if (jj_scan_token(tINT2CHAR)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_941_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_termino_1092_5_35()
- {
-    if (jj_3R_factor_1145_9_40()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_termino_1093_11_41()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_array_access_663_9_26()
- {
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_941_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_relacional_1036_9_37()
+  static private boolean jj_3R_operador_relacional_1100_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -2060,7 +2020,36 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_operador_multiplicativo_1129_9_44()
+  static private boolean jj_3R_primario_1232_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_termino_1150_5_35()
+ {
+    if (jj_3R_factor_1198_9_40()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_termino_1151_11_41()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1226_17_46()
+ {
+    if (jj_scan_token(tINT2CHAR)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_operador_multiplicativo_1187_9_44()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -2074,36 +2063,38 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_expresion_941_9_27()
+  static private boolean jj_3R_lista_una_o_mas_exps_1326_9_53()
  {
-    if (jj_3R_relacion_998_9_28()) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
     Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_943_17_29()) jj_scanpos = xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_lista_una_o_mas_exps_1338_11_54()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
-  static private boolean jj_3R_primario_1175_9_43()
+  static private boolean jj_3R_primario_1225_9_43()
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_primario_1175_37_45()) {
+    if (jj_3R_primario_1225_37_45()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1176_17_46()) {
+    if (jj_3R_primario_1226_17_46()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1182_17_47()) {
+    if (jj_3R_primario_1232_17_47()) {
     jj_scanpos = xsp;
     if (jj_3_2()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1213_17_48()) {
+    if (jj_3R_primario_1263_17_48()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1239_17_49()) {
+    if (jj_3R_primario_1289_17_49()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1243_17_50()) {
+    if (jj_3R_primario_1293_17_50()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1247_17_51()) {
+    if (jj_3R_primario_1297_17_51()) {
     jj_scanpos = xsp;
-    if (jj_3R_primario_1251_17_52()) return true;
+    if (jj_3R_primario_1301_17_52()) return true;
     }
     }
     }
@@ -2115,9 +2106,53 @@ if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDUR
     return false;
   }
 
-  static private boolean jj_3R_primario_1213_17_48()
+  static private boolean jj_3R_primario_1263_17_48()
  {
     if (jj_scan_token(tID)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_array_access_660_9_26()
+ {
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_1008_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_1024_19_39()
+ {
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_1062_9_28()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_1024_17_33()
+ {
+    Token xsp;
+    if (jj_3R_expresion_1024_19_39()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_1024_19_39()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1301_17_52()
+ {
+    if (jj_scan_token(tFALSE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1118_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_1150_5_35()) return true;
     return false;
   }
 
