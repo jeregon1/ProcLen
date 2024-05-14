@@ -813,13 +813,12 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if(Attributes at) :
 {
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	ExpressionAttrib expAt2 = new ExpressionAttrib();
-	Attributes at1 = new Attributes();
-	Attributes at2 = new Attributes();
-	Attributes at3 = new Attributes();
-	Boolean hasElsif = false;
-	List<String> labelsEnd = new ArrayList<>();
+	ExpressionAttrib expAt1 = new ExpressionAttrib(); // guarda if
+	ExpressionAttrib expAt2 = new ExpressionAttrib(); // guardas elsifs
+	Attributes at1 = new Attributes(); // instrucciones if
+	Attributes at2 = new Attributes(); // instrucciones elsifs
+	Attributes at3 = new Attributes(); // instrucciones else
+	List<String> labelsEnd = new ArrayList<>(); // Lista de etiquetas de fin de bloques
 }
 {
 	{ 
@@ -881,7 +880,6 @@ void inst_if(Attributes at) :
 		}
 	}
 }
-
 
 
 //inst_while: <tWHILE> expresion <tLOOP> instruccion+ <tENDLOOP>
