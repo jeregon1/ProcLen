@@ -1,35 +1,23 @@
   ENP L0
-L0:
-  STC  1
-  STC  0
-  GT 
-  JMF L1
-  STC  0
-  WRT  1
-  STC 13
-  WRT  0
-  STC 10
-  WRT  0
-  JMP L2
 L1:
-  STC  1
-  STC  0
-  LT 
-  JMF L3
-  STC  1
-  WRT  1
-  STC 13
-  WRT  0
-  STC 10
-  WRT  0
-  JMP L4
-L3:
-  STC  2
-  WRT  1
-  STC 13
-  WRT  0
-  STC 10
-  WRT  0
-L4:
+  SRF  0  3
+  ASGI 
+  JMP L2
 L2:
+  SRF  0  3
+  DRF 
+  CSF 
+  CSF 
+L0:
+  SRF  0  4
+  STC  1
+  OSF  6  0 L1
+  ASG 
+  SRF  0  4
+  DRF 
+  WRT  1
+  STC 13
+  WRT  0
+  STC 10
+  WRT  0
   LVP 

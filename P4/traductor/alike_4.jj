@@ -403,7 +403,6 @@ void declaracion_procedimiento(Attributes at) :
 	funcProcDecAt.id = <tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN>)?
  	{
-
 		semantic.insertSymbol(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values())), label);
 		semantic.insertBlock();
 
@@ -415,10 +414,11 @@ void declaracion_procedimiento(Attributes at) :
 			}
 
 			// Desapilado de parámetros en orden inverso
-			// level: número de bloques que hay que bajar para obtener la variable
-			int level = 0; // TODO: nivel fijado a 0, no sé si es lo correcto
+			List<Token> tokens = new ArrayList<>(funcProcDecAt.params.keySet());
+			int currentLevel = semantic.getCurrentLevel();
 			for (int i = params_size; i > 0; i--) {
-				at1.code.addInst(PCodeInstruction.OpCode.SRF, level, i+2);
+				Symbol symbol = semantic.getSymbol(tokens.get(i-1));
+				at1.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, i+2);
 				at1.code.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
@@ -429,7 +429,6 @@ void declaracion_procedimiento(Attributes at) :
 	<tBEGIN>
 		{ 
 			label = CGUtils.newLabel();
-
 			at1.code.addInst(PCodeInstruction.OpCode.JMP, label); // Salto a la instrucción de inicio del procedimiento
 			at1.code.addLabel(label); // Etiqueta de inicio del procedimiento
 		} 
@@ -476,10 +475,9 @@ void declaracion_funcion(Attributes at) :
 			}
 
 				// Desapilado de parámetros en orden inverso
-			// level: número de bloques que hay que bajar para obtener la variable
-			int level = 0; // TODO: nivel fijado a 0, no sé si es lo correcto
 			for (int i = params_size; i > 0; i--) {
-				at1.code.addInst(PCodeInstruction.OpCode.SRF, level, i+2);
+				// Como los parámetros están en el mismo bloque, tienes que bajar 0 (level) bloques para obtener su valor
+				at1.code.addInst(PCodeInstruction.OpCode.SRF, 0, i+2); 
 				at1.code.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
@@ -554,7 +552,7 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 				}
 			}
 		}
-		// System.out.println("Lista de parámetros: " + funcProcDecAt.params);
+		System.out.println("Lista de parámetros: " + funcProcDecAt.params);
 
 	}
 }
@@ -573,8 +571,8 @@ void instruccion(Attributes at):
 	|   inst_escribir(at1) {at.code.addBlock(at1.code);}
 	|   inst_escribir_linea(at1) {at.code.addBlock(at1.code);}
 	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);}
-	|   inst_if(at1) {at.code.addBlock(at1.code);} // TODO
-	|   inst_while(at1) {at.code.addBlock(at1.code);} // TODO
+	|   inst_if(at1) {at.code.addBlock(at1.code);} // TODO: falta hacerlo recursivo en lugar de manualmente
+	|   inst_while(at1) {at.code.addBlock(at1.code);}
 	|   inst_return(at1) {at.code.addBlock(at1.code);}
 	|   inst_exit(at1) {at.code.addBlock(at1.code);}
 	|   <tNULL> )
@@ -785,7 +783,8 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
 			{
-				at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
+				int currentLevel = semantic.getCurrentLevel();
+				at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir); 
 				at.code.addBlock(expAt.code);
 				at.code.addBlock(at1.code);
 				at.code.addInst(PCodeInstruction.OpCode.ASG);
@@ -873,17 +872,26 @@ void inst_while(Attributes at) :
 {
 	ExpressionAttrib expAt = new ExpressionAttrib();
 	Attributes at1 = new Attributes();
+	String label_init, label_end;
 }
 {
+	{
+		label_init = CGUtils.newLabel();
+		label_end = CGUtils.newLabel();
+		expAt.code.addLabel(label_init);
+	}
 	<tWHILE> expresion(expAt)
 	{
 		semantic.whileChecks(getToken(0), expAt.type); // Comprobar que la guarda es de tipo BOOL
+		expAt.code.addInst(PCodeInstruction.OpCode.JMF, label_end); // Salto al final del bucle si la guarda es falsa
 	}
-	<tLOOP> ( instruccion(at1) )+ <tEND> <tLOOP>
-	{ 
-		// TODO: REVISAR QUE FUNCIONE
+	<tLOOP> ( instruccion(at1) )+
+	{ at1.code.addInst(PCodeInstruction.OpCode.JMP, label_init); } // Salto incondicional al inicio del bucle
+	<tEND> <tLOOP>
+	{
 		at.code.addBlock(expAt.code);
 		at.code.addBlock(at1.code);
+		at.code.addLabel(label_end); // Fin del bucle
 	}
 }
 
@@ -1158,7 +1166,7 @@ void factor(ExpressionAttrib expAt) :
 void primario(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	Attributes at = new Attributes(); // TODO: revisar si hay que meter esto o el expAt1 en lista_una_o_mas_exps
+	Attributes at = new Attributes();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
 }
@@ -1222,9 +1230,8 @@ void primario(ExpressionAttrib expAt) :
 				id.clone(expAt.param);
 				if (expAt.esAsignable != null) expAt.esAsignable = true;
 				expAt1.type = symbol.type;
-				// int currentLevel = semantic.getCurrentLevel();
-				int level = 0; // TODO: revisar el nivel (al igual que en 'declaracion_procedimiento')
-				expAt.code.addInst(PCodeInstruction.OpCode.SRF, level, (int) symbol.dir);
+				int currentLevel = semantic.getCurrentLevel();
+				expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
 				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
 		}
 	}
