@@ -569,7 +569,7 @@ void instruccion(Attributes at):
 	|   inst_escribir(at1) {at.code.addBlock(at1.code);}
 	|   inst_escribir_linea(at1) {at.code.addBlock(at1.code);}
 	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);}
-	|   inst_if(at1) {at.code.addBlock(at1.code);} // TODO: falta hacerlo recursivo en lugar de manualmente
+	|   inst_if(at1) {at.code.addBlock(at1.code);}
 	|   inst_while(at1) {at.code.addBlock(at1.code);}
 	|   inst_return(at1) {at.code.addBlock(at1.code);}
 	|   inst_exit(at1) {at.code.addBlock(at1.code);}
