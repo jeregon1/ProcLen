@@ -6,7 +6,7 @@ Análisis semántico
 Javier Sin Pelayo, 843442
 Jesús López Ansón, 839922
 
---> Fecha de entrega: 17-4-2024
+--> Fecha de entrega: 15-5-2024
 
 --> Compilar mediante: "ant"
 
@@ -22,10 +22,12 @@ aportar una ruta hasta el mismo, o estar en el propio directorio al lanzar el pr
 - Si se invoca con el parámetro "-v", se mostrará información adicional sobre el proceso de compilación, como la tabla de símbolos al acabar cada bloque.
 
 --> Características generales:
-Consiste en un compilador que realiza el análisis léxico, sintáctico y semántico de la entrada recibida 
-para el lenguaje de programación "alike". Consiste en la versión de nivel 4 del compilador, que admite
-las siguentes características:
-"Uso de parámetros escalares y de vectores, tanto por valor como por referencia en procedimientos y funciones".
+Consiste en un compilador que realiza el análisis léxico, sintáctico, semántico y generación de código de la entrada recibida 
+para el lenguaje de programación "alike". Consiste en la versión de nivel 2 del compilador, a pesar de que no ha dado
+tiempo a la comprobación de la parte por referencia.
+Este admite las siguentes características:
+"Uso de parámetros escalares (tipos simples) por valoren procedimientos y funciones, pero no admite parámetros
+de tipo vector (de referencia no se ha comprobado)".
 
 Se ha incluido una opción verbose, que permite mostrar información adicional sobre el proceso de compilación.
 De este modo, cada vez que se cierre un bloque de la tabla de símbolos, se mostrará la información de la misma.
@@ -55,3 +57,5 @@ Para ello, se apoya de las clases:
    encapsulado en esta clase, al igual que otros detalles varios como flags necesarios para el 
    correcto funcionamiento del compilador.
 - Las clases en lib/attributes, en las que se guardan datos útiles durante el análisis semántico.
+- En tools/codeGeneration se encuentra el código necesario para la generación de código intermedio, donde 
+se ha hecho alguna modificación para poder asignar bien las etiquetas de los saltos a los procedimientos y funciones.
