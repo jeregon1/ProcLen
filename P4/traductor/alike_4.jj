@@ -716,17 +716,41 @@ void inst_escribir_elemento(Attributes at) :
 {
 	(value = <tCONST_STRING>
 		{
-			// Iterar en el valor del string y escribir uno a uno los ascii de los caracteres
-			for (int i = 0; i < value.image.length(); i++) {
-				expAt.code.addInst(PCodeInstruction.OpCode.STC, value.image.charAt(i));
+			for (byte b : value.image.getBytes()) {
+				expAt.code.addInst(PCodeInstruction.OpCode.STC, b);
 				expAt.code.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
 			at.code.addBlock(expAt.code);
 		} 
-	 | expresion(expAt)
-	 {
-		at.code.addBlock(expAt.code);
-		at.code.addInst(PCodeInstruction.OpCode.WRT, expAt.type == Symbol.Types.CHAR ? 0 : 1);
+		| expresion(expAt)
+		{
+			at.code.addBlock(expAt.code);
+		// Si es tipo boolean, hay que escribir las cadenas "true" o "false" en lugar de 1 o 0
+		if (expAt.type == Symbol.Types.BOOL) {
+			String labelFalse = CGUtils.newLabel();
+			String labelEnd = CGUtils.newLabel();
+			at.code.addInst(PCodeInstruction.OpCode.JMF, labelFalse);
+
+			// Se quitan las comillas dobles de los extremos
+			String trueString = tokenImage[tTRUE].substring(1, tokenImage[tTRUE].length() - 1);
+			for (char character : trueString.toCharArray()) {
+				at.code.addInst(PCodeInstruction.OpCode.STC, (int) character);
+				at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
+			}
+
+			at.code.addInst(PCodeInstruction.OpCode.JMP, labelEnd);
+			at.code.addLabel(labelFalse);
+
+			String falseString = tokenImage[tFALSE].substring(1, tokenImage[tFALSE].length() - 1);
+			for (char character : falseString.toCharArray()) {
+				at.code.addInst(PCodeInstruction.OpCode.STC, (int) character);
+				at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
+			}
+
+			at.code.addLabel(labelEnd);
+		} else {
+			at.code.addInst(PCodeInstruction.OpCode.WRT, expAt.type == Symbol.Types.CHAR ? 0 : 1);
+		}
 	 }
 	)
 	{
