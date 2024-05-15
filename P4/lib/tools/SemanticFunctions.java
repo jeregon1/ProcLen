@@ -152,7 +152,7 @@ public class SemanticFunctions {
 		try {
 			// Función o procedimiento, donde se asigna el label como dirección de memoria
 			switch (s.type) {
-				case FUNCTION: ((SymbolFunction) s).label = label; break;
+				case FUNCTION:  ((SymbolFunction)  s).label = label; break;
 				case PROCEDURE: ((SymbolProcedure) s).label = label; break;
 				default:
 					CGUtils.memorySpaces[st.level]++;
@@ -215,7 +215,7 @@ public class SemanticFunctions {
 				error(t, "El array '" + t.image + "' debe ser de tipo " + "integer" + " o " + "character" + ".");
 			}
 		} else if (access) { // que no se acceda a una variable simple, procedimiento o función como a un array 
-			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por no ser de tipo " + "array" + " sino " + s.type + ".");
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + s.type + " y no array.");
 		}		
 	}
 
@@ -241,7 +241,7 @@ public class SemanticFunctions {
 				error(t, "El tipo '" + type + "' de la expresión no coincide con el tipo '" + baseType + "' base del array '" + t.image + "'.");
 			}
 		} else if (access) { // no puede accederse a una variable no array
-			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + "array" + " y no " + s.type + ".");
+			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + s.type + " y no array.");
 		}
 	}
 
@@ -270,14 +270,13 @@ public class SemanticFunctions {
 
 	public void whileChecks(Token t, Symbol.Types type) {
 		if (type != Symbol.Types.BOOL) { // Comprobar que la guarda es de tipo BOOL
-			error(t, "La guarda de un bucle " + "while" + " debe ser de tipo " + "boolean" + ".");
+			error(t, "La guarda de un bucle 'while'" + "' debe ser de tipo " + "boolean" + ".");
 		}
 	}
 
 	public void signInExpressionCheck(Token t, Symbol.Types type, boolean sign) {
 		if (sign && (type != Symbol.Types.INT)) { // Si hay signo, la expresión debe ser de tipo INT
-			error(t, "Los signos " + "+" + " y " + "-" + 
-					" solo se puede usar con expresiones de tipo " + "integer" + ", se encontró " + type + ".");
+			error(t, "Los signos + y - solo se puede usar con expresiones de tipo " + "integer" + ", se encontró " + type + ".");
 		}
 	}
 

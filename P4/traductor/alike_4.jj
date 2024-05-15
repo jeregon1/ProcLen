@@ -197,16 +197,13 @@ SPECIAL_TOKEN : { // Debe estar al final para que sea lo último en comprobarse
 void Programa(String file) :
 {
 	Token id;
-	CodeBlock programa;
+	CodeBlock programa = new CodeBlock();
 	Attributes at = new Attributes(), at1 = new Attributes();
-	String label;
+	String label = CGUtils.newLabel();
+	// Inicialización del programa
+	programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
 }
 {
-	{ // Inicialización del programa
-		label = CGUtils.newLabel();
-		programa = new CodeBlock();
-		programa.addInst(PCodeInstruction.OpCode.ENP, label); // Enter Program en 'label', definido justo arriba
-	}
 	<tPROCEDURE>
 	id = <tID>
 	{	// Procedimiento principal

@@ -16,24 +16,28 @@ PTOOLS="$dir/../other/alike/pcode_tools/linux"
 #   -o --> own
 if [ $# -lt 2 ] || [ "$1" != "-t" ] && [ "$1" != "-o" ]
 then
-    echo "Uso: ./run.sh < -t | -o > <fichero> [-v]"
+    echo "Uso: ./run.sh < -t | -o > <fichero> [-v] [-s, skip ant]"
     echo "   -t: usar compilador de los profesores"
     echo "   -o: usar compilador propio"
     exit 1
 fi
 
 if [ $1 = "-t" ]; then
-    rm "$2".pcode "$2".x
+    rm "$2".pcode "$2".x 2> /dev/null
     if ! java -jar $COMP_TEACHERS "$2"; then
         echo "error: alike.jar failed"
         exit 1
     fi
 else # own
-    if ! ant ; then
-		echo "error: ant failed"
-		exit 1
-	fi
-    rm "$2".pcode "$2".x
+
+    if [ "$3" != "-s" ] && [ "$4" != "-s" ]; then
+        if ! ant ; then
+            echo "error: ant failed"
+            exit 1
+        fi
+    fi
+    
+    rm "$2".pcode "$2".x 2> /dev/null
 
     java -jar $COMP_SINANSON "$2" "$3"
 fi
