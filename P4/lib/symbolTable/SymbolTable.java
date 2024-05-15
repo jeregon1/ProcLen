@@ -50,7 +50,6 @@ public class SymbolTable {
     //Si un símbolo con el mismo nombre está, excepción. 
     //Si no, se inserta
     public void insertSymbol(Symbol s) throws AlreadyDefinedSymbolException {
-        // TODO: 🎃 Checkear que no sea una palabra reservada (clike lo hace)
         HashMap<String, Symbol> currentBlock = st.get(st.size()-1);
         String key = s.name.toLowerCase(); // case insensitive, pero se almacena el nombre original del símbolo
         if (currentBlock.containsKey(key)) { // ya está

@@ -11,14 +11,13 @@ COMP_TEACHERS="$dir/../other/alike/alike.jar"
 COMP_SINANSON="$dir/dist/alike_4.jar"
 PTOOLS="$dir/../other/alike/pcode_tools/linux"
 
-# COMPILER SELECTOR:
-#   -t --> teachers
-#   -o --> own
 if [ $# -lt 2 ] || [ "$1" != "-t" ] && [ "$1" != "-o" ]
 then
-    echo "Uso: ./run.sh < -t | -o > <fichero> [-v] [-s, skip ant]"
+    echo "Uso: ./run.sh < -t | -o > <fichero> [-v] [-s]"
     echo "   -t: usar compilador de los profesores"
     echo "   -o: usar compilador propio"
+    echo "   -v: verbose, mostrar bloques de symbol table"
+    echo "   -s: saltar ant"
     exit 1
 fi
 

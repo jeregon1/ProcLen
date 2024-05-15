@@ -64,8 +64,7 @@ public class alike_4 {
 			parser.Programa(fileName);
 			
 			if (!semantic.hayErrores()) {
-				fileName = fileName.substring(0, fileName.lastIndexOf('.')); // Eliminar extensión
-				System.out.println("Compilación finalizada. Se ha generado el fichero " + fileName + ".pcode");
+				System.out.println("Generado '" + fileName + ".pcode'");
 			}
 			else
 				if (semantic.getNumErrores() == 1) {
@@ -932,7 +931,6 @@ void inst_exit(Attributes at) : {}
 
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
 
-// 🎃 REVISAR MAIL QUE MANDÓ (20/4) SOBRE FALLO EN ESTA PRODUCCIÓN 🎃
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
 void expresion(ExpressionAttrib expAt) : 
 {

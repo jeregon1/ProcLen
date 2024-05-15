@@ -26,7 +26,6 @@ public class alike implements alikeConstants {
                    System.err.println ("Fichero " + args[0] + " no encontrado.");
            }
            catch (TokenMgrError e) {
-                // 🎃 👇🏼👇🏼👇🏼 🎃
                 // Tiene que quedar el mensaje así
                 // ERROR LÉXICO: (<línea, columna>): símbolo no reconocido: <símbolo>
                    System.err.println("ERROR L\u00c9XICO: " + e.getMessage());
