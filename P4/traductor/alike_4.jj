@@ -560,17 +560,20 @@ void instruccion(Attributes at):
 	Attributes at1 = new Attributes();
 }
 {
-	(	inst_leer(at1) {at.code.addBlock(at1.code);}
-	|	<tSKIP_LINE>  skip_line(at1) {at.code.addBlock(at1.code);}
-	|   inst_escribir(at1) {at.code.addBlock(at1.code);}
-	|   inst_escribir_linea(at1) {at.code.addBlock(at1.code);}
-	|   inst_invocacion_procedimiento_o_asignacion(at1) {at.code.addBlock(at1.code);}
-	|   inst_if(at1) {at.code.addBlock(at1.code);}
-	|   inst_while(at1) {at.code.addBlock(at1.code);}
-	|   inst_return(at1) {at.code.addBlock(at1.code);}
-	|   inst_exit(at1) {at.code.addBlock(at1.code);}
+	(	inst_leer(at1)
+	|	<tSKIP_LINE> skip_line(at1)
+	|   inst_escribir(at1)
+	|   inst_escribir_linea(at1)
+	|   inst_invocacion_procedimiento_o_asignacion(at1)
+	|   inst_if(at1)
+	|   inst_while(at1)
+	|   inst_return(at1)
+	|   inst_exit(at1)
 	|   <tNULL> )
 	<tSEMICOLON>
+	{
+		at.code.addBlock(at1.code);
+	}
 }
 
 
