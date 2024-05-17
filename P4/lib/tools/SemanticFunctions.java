@@ -321,15 +321,21 @@ public class SemanticFunctions {
 		if (param == null) error(t, "En una expresión debe accederse a un elemento del array '" + t.image + "'.");
 	}
 
-	public boolean checkNumberOfArguments(Token t, Integer paramSize, Integer argsSize, String msg) {
+	public boolean checkNumberOfArguments(Token id, Integer paramSize, Integer argsSize, Symbol symbol) {
 		if (argsSize != paramSize) {
-			error(t, "El número de argumentos no coincide con el número de parámetros " + msg);
+
+			String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
+			error(id, "El número de argumentos no coincide con el número de parámetros " + msg + " '" + id.image + "'");
 			return true;
 		}
 		return false;
 	}
 
 	public void arrayInListOfExpressionCheck(Token id, List<Symbol.Types> types) {
+		/* Comprobaciones sobre el array
+		- El acceso a un array debe tener un único índice
+		- El índice de un array debe ser de tipo integer
+		*/ 
 		if (types.size() != 1) {
 			error(id, "El acceso a un array debe tener un único índice.");
 		}
@@ -338,41 +344,46 @@ public class SemanticFunctions {
 		}
 	}
 
-	public void checkArgumentTypes(Token id, List<Symbol.Types> types, List<Symbol> parList, Map<Token, Boolean> args, String msg) {
+	public void checkArgumentTypes(Token id, List<Symbol.Types> types, List<Symbol> parList, Map<Token, Boolean> args, Symbol symbol) {
 		List<Token> tokenArgs = new ArrayList<>(args.keySet());
 		List<Boolean> assignables = new ArrayList<>(args.values());
+		String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
+		msg += " '" + id.image + "'";
 
 		for (int i = 0; i < types.size(); i++) {
-				if (types.get(i) == Symbol.Types.UNDEFINED) continue; // Si hay un error en la expresión, no comprobar más
-				if (types.get(i) != parList.get(i).type) {
-					error(id, "El tipo " + types.get(i) + " del argumento nº " + (i + 1) + " no coincide con el tipo " + parList.get(i).type + " del parámetro " + msg);
-					continue;
+			if (types.get(i) == Symbol.Types.UNDEFINED) {
+				error(id, "Error en la expresión del argumento nº " + (i + 1) + " " + msg);
+				continue; // Si hay un error en la expresión, no comprobar más
+			}
+			if (types.get(i) != parList.get(i).type) {
+				error(id, "El tipo " + types.get(i) + " del argumento nº " + (i + 1) + " no coincide con el tipo " + parList.get(i).type + " del parámetro " + msg);
+				continue;
+			}
+
+			Token arg = tokenArgs.get(i);
+
+			if (parList.get(i).type == Symbol.Types.ARRAY) {
+				// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
+				SymbolArray paramArray = (SymbolArray) parList.get(i);
+
+				// Si el argumento es un array, comprobar que el tipo base y el rango de índices coinciden (del parámetro y argumento)
+				SymbolArray argArray = (SymbolArray) getSymbol(arg);
+				
+				if (argArray.baseType != paramArray.baseType) {
+					error(id, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
 				}
-
-				Token arg = tokenArgs.get(i);
-
-				if (parList.get(i).type == Symbol.Types.ARRAY) {
-					// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
-					SymbolArray paramArray = (SymbolArray) parList.get(i);
-
-					// Si el argumento es un array, comprobar que el tipo base y el rango de índices coinciden (del parámetro y argumento)
-					SymbolArray argArray = (SymbolArray) getSymbol(arg);
-					
-					if (argArray.baseType != paramArray.baseType) {
-						error(id, "El tipo base del vector '" + arg + "' no coincide con el tipo base del parámetro " + (i + 1) + " " + msg);
-					}
-					if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
-						error(id, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
-					}
-				} else {
-					// Si el parámetro es simple y por valor, no hay que comprobar nada más
-					// Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
-					if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
-						if (!assignables.get(i)) {
-							error(id, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
-						}
+				if (argArray.minInd != paramArray.minInd || argArray.maxInd != paramArray.maxInd) {
+					error(id, "El rango de índices del vector '" + arg  + "' no coincide con el rango de índices del parámetro " + (i + 1) + " " + msg);
+				}
+			} else {
+				// Si el parámetro es simple y por valor, no hay que comprobar nada más
+				// Si el parámetro es simple por referencia, además el argumento debe ser un asignable (id o componente de array del mismo tipo)
+				if (parList.get(i).parClass == Symbol.ParameterClass.REF) {
+					if (!assignables.get(i)) {
+						error(id, "El argumento nº " + (i + 1) + " no es una variable asignable para el parámetro por referencia " + msg);
 					}
 				}
 			}
+		}
 	}
 }

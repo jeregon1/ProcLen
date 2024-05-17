@@ -21,9 +21,8 @@ public class ExpressionAttrib extends Attributes {
         // this.errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".";
     }
 
-    public ExpressionAttrib clone(ExpressionAttrib e) {
-        this.param = e.param;
+    public void clone(ExpressionAttrib e) {
         this.esAsignable = e.esAsignable;
-        return this;
+        this.type = e.type;
     }
 }

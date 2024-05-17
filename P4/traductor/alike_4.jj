@@ -836,8 +836,8 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if(Attributes at) :
 {
-	ExpressionAttrib expAt1 = new ExpressionAttrib(); // guarda if
-	ExpressionAttrib expAt2 = new ExpressionAttrib(); // guardas elsifs
+	ExpressionAttrib expAt_son = new ExpressionAttrib(); // guarda if
+	ExpressionAttrib expAt_son2 = new ExpressionAttrib(); // guardas elsifs
 	Attributes at1 = new Attributes(); // instrucciones if
 	Attributes at2 = new Attributes(); // instrucciones elsifs
 	Attributes at3 = new Attributes(); // instrucciones else
@@ -850,11 +850,11 @@ void inst_if(Attributes at) :
 		String label_else; 
 		String label_next = label_elsif;
 	}
-	<tIF> expresion(expAt1) 
+	<tIF> expresion(expAt_son) 
 	{
-		semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
+		semantic.ifChecks(getToken(0), expAt_son.type); // Comprobar que la guarda es de tipo BOOL
 
-		at.code.addBlock(expAt1.code); // If: Guarda
+		at.code.addBlock(expAt_son.code); // If: Guarda
 		at.code.addInst(PCodeInstruction.OpCode.JMF, label_next);
 	}
 	<tTHEN> ( instruccion(at1) )+ 
@@ -864,15 +864,15 @@ void inst_if(Attributes at) :
 		labelsEnd.add(label_end);
 		at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
 	}
-	(<tELSIF> expresion(expAt2)
+	(<tELSIF> expresion(expAt_son2)
 		{
-			semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de tipo BOOL
+			semantic.ifChecks(getToken(0), expAt_son2.type); // Comprobar que la guarda es de tipo BOOL
 
 			at.code.addLabel(label_next);
 			label_next = CGUtils.newLabel(); // Siguiente etiqueta para caso recursivo
 
-			at.code.addBlock(expAt2.code); // Elsif: Guarda
-			expAt2 = new ExpressionAttrib(); // Reiniciar expAt2 para que no se acumulen las instrucciones
+			at.code.addBlock(expAt_son2.code); // Elsif: Guarda
+			expAt_son2 = new ExpressionAttrib(); // Reiniciar expAt_son2 para que no se acumulen las instrucciones
 
 			label_end = CGUtils.newLabel();
 			labelsEnd.add(label_end);
@@ -961,26 +961,26 @@ void inst_exit(Attributes at) : {}
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
 void expresion(ExpressionAttrib expAt) : 
 {
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	ExpressionAttrib expAt2 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
+	ExpressionAttrib expAt_son2 = new ExpressionAttrib();
 	Symbol.Types type;
 	boolean moreThanOne = false;
 	String errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + tokenImage[tBOOL] + ".";
 	Token op = new Token();
 }
 {
-	relacion(expAt1)
+	relacion(expAt_son)
 	(
 		( op = <tAND>
 			{
 				moreThanOne = true;
-				if (expAt1.type != Symbol.Types.BOOL)
+				if (expAt_son.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
 			}
-			relacion(expAt2) 
+			relacion(expAt_son2) 
 			{
 				// Si hay más de una relación, deben ser todas BOOL
-				if (expAt2.type != Symbol.Types.BOOL)
+				if (expAt_son2.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
 			}
 		)+
@@ -988,22 +988,22 @@ void expresion(ExpressionAttrib expAt) :
 		( op = <tOR>
 			{
 				moreThanOne = true;
-				if (expAt1.type != Symbol.Types.BOOL)
+				if (expAt_son.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
 			}
-			relacion(expAt2)
+			relacion(expAt_son2)
 			{
 				// Si hay más de una relación, deben ser todas BOOL
-				if (expAt2.type != Symbol.Types.BOOL)
+				if (expAt_son2.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
 			}
 		)+
 	)?
 	{
-		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
-		if (moreThanOne && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay más de una relación, la expresión no es asignable
-		expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt1.type;
+		if (moreThanOne && expAt_son.esAsignable != null) expAt.esAsignable = false; // Si hay más de una relación, la expresión no es asignable
+		expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt_son.type;
 
 		if (moreThanOne) {
 			// apilar operador lógico
@@ -1018,30 +1018,30 @@ void expresion(ExpressionAttrib expAt) :
 //relacion: expresion_simple (operador_relacional expresion_simple)?
 void relacion(ExpressionAttrib expAt) : 
 {
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	ExpressionAttrib expAt2 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
+	ExpressionAttrib expAt_son2 = new ExpressionAttrib();
 	Token op = new Token();
 }
 {
-	expresion_simple(expAt1)
- 	( op = operador_relacional() expresion_simple(expAt2) )?
+	expresion_simple(expAt_son)
+ 	( op = operador_relacional() expresion_simple(expAt_son2) )?
 	{
-		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
 		// Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
-		if (expAt2.type != null) {
-			if (expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay dos expresiones, la expresión no es asignable
-			if (expAt1.type != expAt2.type)
-				semantic.error(getToken(0), "Las expresiones de una relación deben ser del mismo tipo, se encontró " + expAt1.type + " y " + expAt2.type + ".");
+		if (expAt_son2.type != null) {
+			if (expAt_son.esAsignable != null) expAt.esAsignable = false; // Si hay dos expresiones, la expresión no es asignable
+			if (expAt_son.type != expAt_son2.type)
+				semantic.error(getToken(0), "Las expresiones de una relación deben ser del mismo tipo, se encontró " + expAt_son.type + " y " + expAt_son2.type + ".");
 
 			expAt.type = Symbol.Types.BOOL; // Si hay dos expresiones, el resultado es booleano
 		}
 		// else: si hay solo una expresión, se devuelve su tipo
-		else { expAt.type = expAt1.type; }
+		else { expAt.type = expAt_son.type; }
 
 		// Si hay dos expresiones, entonces apilar el código de la segunda y el operador relacional
-		if (expAt2.type != null) {
-			expAt.code.addBlock(expAt2.code);
+		if (expAt_son2.type != null) {
+			expAt.code.addBlock(expAt_son2.code);
 			// apilar operador relacional
 			switch (op.kind) {
 				case tEQ:  expAt.code.addInst(PCodeInstruction.OpCode.EQ); break;
@@ -1069,31 +1069,31 @@ Token operador_relacional() :
 void expresion_simple(ExpressionAttrib expAt) :
 {
 	boolean sign = false;
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	ExpressionAttrib expAt2 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
+	ExpressionAttrib expAt_son2 = new ExpressionAttrib();
 	Token op = new Token();
 }
 {
-    (( op = <tPLUS> | op = <tMINUS>) { sign = true; } )? termino(expAt1) 
+    (( op = <tPLUS> | op = <tMINUS>) { sign = true; } )? termino(expAt_son) 
 		{
-			semantic.signInExpressionCheck(getToken(0), expAt1.type, sign); // Si hay signo, la expresión debe ser de tipo INT
-			if (op.kind == tMINUS) expAt1.code.addInst(PCodeInstruction.OpCode.NGI); // Si hay signo negativo, añadir instrucción de negación
+			semantic.signInExpressionCheck(getToken(0), expAt_son.type, sign); // Si hay signo, la expresión debe ser de tipo INT
+			if (op.kind == tMINUS) expAt_son.code.addInst(PCodeInstruction.OpCode.NGI); // Si hay signo negativo, añadir instrucción de negación
 		}
-	(( op = <tPLUS> | op = <tMINUS> ) termino(expAt2)
+	(( op = <tPLUS> | op = <tMINUS> ) termino(expAt_son2)
 		{
 			sign = true;
-			semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
+			semantic.moreThanOneExpressionCheck(getToken(0), expAt_son2.type); // Si hay más de un término, deben ser todos INT
 		}
 	)*
 	{
-		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
-		if (sign && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay signo o más de un término, la expresión no es asignable
-		expAt.type = (sign) ? Symbol.Types.INT : expAt1.type;
+		if (sign && expAt_son.esAsignable != null) expAt.esAsignable = false; // Si hay signo o más de un término, la expresión no es asignable
+		expAt.type = (sign) ? Symbol.Types.INT : expAt_son.type;
 
 		// Si hay más de un término, añadir el código del segundo término y apilar el operador
-		if (expAt2.type != null) {
-			expAt.code.addBlock(expAt2.code);
+		if (expAt_son2.type != null) {
+			expAt.code.addBlock(expAt_son2.code);
 			switch (op.kind) {
 				case tPLUS: expAt.code.addInst(PCodeInstruction.OpCode.PLUS); break;
 				case tMINUS: expAt.code.addInst(PCodeInstruction.OpCode.SBT); break;
@@ -1106,32 +1106,32 @@ void expresion_simple(ExpressionAttrib expAt) :
 void termino(ExpressionAttrib expAt) : 
 {
 	boolean moreThanOne = false;
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	ExpressionAttrib expAt2 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
+	ExpressionAttrib expAt_son2 = new ExpressionAttrib();
 	Token op = new Token();
 }
 {
-    factor(expAt1) 
+    factor(expAt_son) 
 	( op = operador_multiplicativo()
 		{
 			moreThanOne = true;
-			semantic.multiplicativeFactorCheck(getToken(0), expAt1.type); // Los factores deben ser todos INT para poder operar con *, /, %
+			semantic.multiplicativeFactorCheck(getToken(0), expAt_son.type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
-	factor(expAt2)
+	factor(expAt_son2)
 		{ 
 			// Si hay más de un factor, deben ser todos INT
-			semantic.multiplicativeFactorCheck(getToken(0), expAt2.type); // Los factores deben ser todos INT para poder operar con *, /, %
+			semantic.multiplicativeFactorCheck(getToken(0), expAt_son2.type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
 	)*
 	{
-		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
-		if (moreThanOne && expAt1.esAsignable != null) expAt1.esAsignable = false; // Si hay más de un factor, la expresión no es asignable
-		expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt1.type;
+		if (moreThanOne && expAt_son.esAsignable != null) expAt.esAsignable = false; // Si hay más de un factor, la expresión no es asignable
+		expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt_son.type;
 
 		// Si hay más de un factor, añadir el código del segundo factor y apilar el operador
-		if (expAt2.type != null) {
-			expAt.code.addBlock(expAt2.code);
+		if (expAt_son2.type != null) {
+			expAt.code.addBlock(expAt_son2.code);
 
 			switch (op.kind) {
 				case tMULT: expAt.code.addInst(PCodeInstruction.OpCode.TMS); break;
@@ -1156,23 +1156,23 @@ Token operador_multiplicativo() :
 void factor(ExpressionAttrib expAt) : 
 {
 	boolean not = false;
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
 }
 {
-	( <tNOT> {not = true;} )? primario(expAt1) 
+	( <tNOT> {not = true;} )? primario(expAt_son) 
 	{
-		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
 		if (not) {
-			if (expAt1.esAsignable != null) expAt1.esAsignable = false;
-			semantic.notOperatorCheck(getToken(0), expAt1.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
+			if (expAt_son.esAsignable != null) expAt_son.esAsignable = false;
+			semantic.notOperatorCheck(getToken(0), expAt_son.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 
-			expAt.code.addBlock(expAt1.code);
+			expAt.code.addBlock(expAt_son.code);
 			expAt.code.addInst(PCodeInstruction.OpCode.NGB);
 
 			expAt.type = Symbol.Types.BOOL;
 		}
-		expAt.type = expAt1.type;
+		expAt.clone(expAt_son);
 	}
 }
 
@@ -1180,42 +1180,42 @@ void factor(ExpressionAttrib expAt) :
 //			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
 void primario(ExpressionAttrib expAt) : 
 {
-	ExpressionAttrib expAt1 = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
 	Attributes at = new Attributes();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
 }
 {
-	(			    <tLPAREN> expresion(expAt1) <tRPAREN> {expAt.code.addBlock(expAt1.code);}
-	|	<tINT2CHAR> <tLPAREN> expresion(expAt1) <tRPAREN> 
+	(			    <tLPAREN> expresion(expAt_son) <tRPAREN> {expAt.code.addBlock(expAt_son.code);}
+	|	<tINT2CHAR> <tLPAREN> expresion(expAt_son) <tRPAREN> 
 	{
-		expAt.code.addBlock(expAt1.code);
-		semantic.int2charCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo INT
-		expAt1.type = Symbol.Types.CHAR;
+		expAt.code.addBlock(expAt_son.code);
+		semantic.int2charCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo INT
+		expAt_son.type = Symbol.Types.CHAR;
 	}
-	|	<tCHAR2INT> <tLPAREN> expresion(expAt1) <tRPAREN>
+	|	<tCHAR2INT> <tLPAREN> expresion(expAt_son) <tRPAREN>
 	{
-		expAt.code.addBlock(expAt1.code);
+		expAt.code.addBlock(expAt_son.code);
 		// La expresioón debe ser de tipo CHAR
-		semantic.char2intCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo CHAR
-		expAt1.type = Symbol.Types.INT;
+		semantic.char2intCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo CHAR
+		expAt_son.type = Symbol.Types.INT;
 	}
 	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at) <tRPAREN> //invocar func. (con parámetros) o comp. array
 	{
-		if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
+		if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
 
 		switch (symbol.type) {
 			// Si es una función, devolver su tipo retorno
-			case FUNCTION: expAt1.type = ((SymbolFunction) symbol).returnType; break;
+			case FUNCTION: expAt_son.type = ((SymbolFunction) symbol).returnType; break;
 			// Checkear que no es procedimiento 
 			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break;
 			case ARRAY:
-				expAt1.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
+				expAt_son.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
 				if (expAt.esAsignable != null) expAt.esAsignable = true;
 				id.clone(expAt.param);
 				break;
-			default: expAt1.type = symbol.type;
+			default: expAt_son.type = symbol.type;
 		}
 
 		// apilar los parámetros y llamar a OSF
@@ -1226,14 +1226,14 @@ void primario(ExpressionAttrib expAt) :
 	}
 	|	id = <tID> // variable simple o func/proced sin parámetros
 	{
-		if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
+		if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
 
 		switch (symbol.type) {
 			case FUNCTION: 
 				SymbolFunction function = (SymbolFunction) symbol;
 				semantic.functionParametersCheck(id, function); // Checkear que la función no tenga parámetros
-				expAt1.type = function.returnType;
+				expAt_son.type = function.returnType;
 				String label = semantic.getLabelFromSymbol(id);
 				expAt.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 				break;
@@ -1244,31 +1244,32 @@ void primario(ExpressionAttrib expAt) :
 			default:
 				id.clone(expAt.param);
 				if (expAt.esAsignable != null) expAt.esAsignable = true;
-				expAt1.type = symbol.type;
+				expAt_son.type = symbol.type;
+
 				int currentLevel = semantic.getCurrentLevel();
 				expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
 				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
 		}
 	}
 	|	<tCONST_INT>  { // guardar el valor del int y hacer: STC (ascii del int)
-			expAt1.type = Symbol.Types.INT; 
+			expAt_son.type = Symbol.Types.INT; 
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(getToken(0).image));
 		} 
 	|	<tCONST_CHAR> {// STC (ascii del char)
-			expAt1.type = Symbol.Types.CHAR;
+			expAt_son.type = Symbol.Types.CHAR;
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, getToken(0).image.charAt(1));
 		} 
 	|	<tTRUE> { // STC 1
-			expAt1.type = Symbol.Types.BOOL;
+			expAt_son.type = Symbol.Types.BOOL;
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, 1);
 		} 
 	|	<tFALSE> { // STC 0
-			expAt1.type = Symbol.Types.BOOL;
+			expAt_son.type = Symbol.Types.BOOL;
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, 0);
 		}
 	)
 	{
-		expAt.type = expAt1.type;
+		expAt.type = expAt_son.type;
 	}
 }
 
@@ -1284,53 +1285,47 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 	if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
 	Symbol symbol = semantic.getSymbol(id);
 	
-	ExpressionAttrib expAt = new ExpressionAttrib();
+	ExpressionAttrib expAt_son = new ExpressionAttrib();
+	expAt_son.esAsignable = false;
+	expAt_son.param = new Token(0);
 }
 {
+	expresion(expAt_son)
 	{
-		expAt.esAsignable = false;
-		expAt.param = new Token(0);
+		types.add(expAt_son.type);
+		if (expAt_son.param.kind == 0) args.put(getToken(0), false);
+		else 			 		   args.put(expAt_son.param, expAt_son.esAsignable);
+		expAt_son.esAsignable = false;
+		expAt_son.param = new Token(0);
 	}
-	expresion(expAt)
-	{
-		types.add(expAt.type);
-		if (expAt.param.kind == 0) args.put(getToken(0), false);
-		else 			 		   args.put(expAt.param, expAt.esAsignable);
-		expAt.esAsignable = false;
-		expAt.param = new Token(0);
-	}
-	( <tCOMMA> expresion(expAt) 
+	( <tCOMMA> expresion(expAt_son) 
 		{ // Iterate over all the parameters
-			types.add(expAt.type);
-			if (expAt.param.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
-			else 			 		   args.put(expAt.param, expAt.esAsignable);
-			expAt.esAsignable = false;
-			expAt.param = new Token(0);
+			types.add(expAt_son.type);
+			if (expAt_son.param.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
+			else 			 		   args.put(expAt_son.param, expAt_son.esAsignable);
+			expAt_son.esAsignable = false;
+			expAt_son.param = new Token(0);
 		}
 	)*
 	{
 		if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDURE) {
 
-			// Recuperar lista parámetros del Token 'id' 
+			// Recuperar lista parámetros del símbolo con nombre 'id' 
 			List<Symbol> parList = (symbol instanceof SymbolFunction) ? ((SymbolFunction) symbol).parList : ((SymbolProcedure) symbol).parList;
 
 			// Comprobar que el número de argumentos coincide con el número de parámetros
-			String msg = (symbol.type == Symbol.Types.FUNCTION) ? "de la función" : "del procedimiento";
-			msg += " '" + id.image + "'";
-			if (semantic.checkNumberOfArguments(id, parList.size(), types.size(), msg)) return; // Si no coinciden los parámetros, salir
+			if (semantic.checkNumberOfArguments(id, parList.size(), types.size(), symbol)) 
+				return; // Si no coincide el nº, salir
 
 			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
-			semantic.checkArgumentTypes(id, types, parList, args, msg);
+			semantic.checkArgumentTypes(id, types, parList, args, symbol);
 
 		} else if (symbol.type == Symbol.Types.ARRAY) {
-			/*Comprobaciones sobre el array
-			- El acceso a un array debe tener un único índice
-			- El índice de un array debe ser de tipo integer
-			*/ 
 			semantic.arrayInListOfExpressionCheck(id, types);
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
 			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
 		}
-		at.code.addBlock(expAt.code);
+
+		at.code.addBlock(expAt_son.code);
 	}
 }
