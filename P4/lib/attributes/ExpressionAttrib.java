@@ -14,8 +14,8 @@ public class ExpressionAttrib extends Attributes {
     // String errorMsg;
 
     public ExpressionAttrib() {
-        this.param = null;
-        this.esAsignable = null;
+        this.param = new Token(0);
+        this.esAsignable = false;
         this.type = null;
         // this.moreThanOne = false;
         // this.errorMsg = "Las relaciones de una expresión lógica deben ser de tipo " + "boolean"/* tokenImage[tBOOL] */ + ".";
