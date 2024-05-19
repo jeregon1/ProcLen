@@ -382,7 +382,7 @@ void tipo_variable_simple(TypeAttrib typeAt) :
 void declaracion_procedimiento(Attributes at) : 
 {
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-	Attributes at_son = new Attributes();
+	Attributes at_inst = new Attributes();
 	String paramsLabel = CGUtils.newLabel(); 
 	String codeLabel = CGUtils.newLabel();
 }
@@ -408,15 +408,15 @@ void declaracion_procedimiento(Attributes at) :
 		( declaracion_var() )*
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
 	<tBEGIN>
-		(instruccion(at_son))+
+		(instruccion(at_inst))+
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
 		semantic.removeBlock(); // Eliminación del bloque actual
 
 		at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
-		at_son.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-		at.code.addBlock(at_son.code);	// Después se añade el código de la función
+		at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
+		at.code.addBlock(at_inst.code);	// Después se añade el código de la función
 		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 }
@@ -427,7 +427,7 @@ void declaracion_funcion(Attributes at) :
 	TypeAttrib typeAt = new TypeAttrib();
 	typeAt.t = null; // Indica que se están leyendo parámetros, y que los símbolos se insertan aquí y no en "tipo_variable_simple"
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-	Attributes at_son = new Attributes();
+	Attributes at_inst = new Attributes();
 	String paramsLabel = CGUtils.newLabel(); 
 	String codeLabel = CGUtils.newLabel();
 }
@@ -457,7 +457,7 @@ void declaracion_funcion(Attributes at) :
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
 	<tBEGIN> 
 		{ semantic.enterFunction(funcSymbol); }
-		(instruccion(at_son))+
+		(instruccion(at_inst))+
 	<tEND> <tSEMICOLON>
 	{
 		semantic.exitFunction(getToken(0));
@@ -466,7 +466,7 @@ void declaracion_funcion(Attributes at) :
 
 		at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
 		at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-		at.code.addBlock(at_son.code);	// Después se añade el código de la función
+		at.code.addBlock(at_inst.code);	// Después se añade el código de la función
 		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 }
@@ -753,13 +753,13 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 		}
 		| // invocación_procedimiento()
 		// checkear que el id es un procedimiento y nada más
-		( <tLPAREN> lista_una_o_mas_exps(id, at1) <tRPAREN> )? 
+		( <tLPAREN> lista_una_o_mas_exps(id, at1) {access = true;} <tRPAREN> )? 
 		{
 			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
 			Symbol symbol = semantic.getSymbol(id);
 
 			semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
-			semantic.funcProcNoParametersCheck(id, symbol); // Comprobar que no se pasan parámetros a un procedimiento sin parámetros
+			if (! access) semantic.funcProcNoParametersCheck(id, symbol); // Comprobar que no se pasan parámetros a un procedimiento sin parámetros
 
 			// apilar los parámetros
 			at.code.addBlock(at1.code);
