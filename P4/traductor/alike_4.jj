@@ -206,6 +206,7 @@ void Programa(String file) :
 	<tPROCEDURE>
 	id = <tID>
 	{	// Procedimiento principal
+		semantic.insertBlock();
 		semantic.insertSymbol(id, new SymbolProcedure(id.image, new ArrayList<Symbol>()), label);
 		semantic.setMainProcedureName(id.image);
 	}
@@ -554,14 +555,14 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
-//instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
+//instruccion: (inst_leer | skip_line | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
 void instruccion(Attributes at) : 
 {
 	Attributes at1 = new Attributes();
 }
 {
 	(	inst_leer(at1)
-	|	<tSKIP_LINE> skip_line(at1)
+	|	skip_line(at1)
 	|   inst_escribir(at1)
 	|   inst_escribir_linea(at1)
 	|   inst_invocacion_procedimiento_o_asignacion(at1)
@@ -582,6 +583,7 @@ void skip_line(Attributes at) :
 	int last_dir = (int) semantic.getLastSymbolAddress();
 }
 {
+	<tSKIP_LINE>
 	{
 		// System.out.println("Dirección de almacenamiento temporal: " + last_dir);
 		String label = CGUtils.newLabel();
@@ -811,7 +813,7 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 
 			// addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
 			String label = semantic.getLabelFromSymbol(id);
-			at.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
+			at.code.addOSFInst(semantic.getLastSymbolAddress(), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 		}
 	)
 }

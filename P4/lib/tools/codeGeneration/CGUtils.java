@@ -19,7 +19,10 @@ public class CGUtils {
 		return "L"+(l++); 
 	}
 	
-	// campo requeridos para la generación de código
-	public static int memorySpaces[] = new int[100];
+	/*  campo requerido para la generación de código
+	 Cada componente de este array simboliza los espacios de memoria usados 
+	 en la última función definida de cada nivel de profundidad de definición de funciones
+	 */
+	public static int usedMemorySpaces[] = new int[100];
 	
 }

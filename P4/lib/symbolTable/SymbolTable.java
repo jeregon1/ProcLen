@@ -32,7 +32,6 @@ public class SymbolTable {
     public SymbolTable() {
         st = new ArrayList<HashMap<String, Symbol>>(ST_SIZE);
         level = -1; //aún no hay ningún bloque introducido
-        insertBlock();
     }
     
     //apila un nuevo bloque

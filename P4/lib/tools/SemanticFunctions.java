@@ -116,9 +116,12 @@ public class SemanticFunctions {
 
 	public void insertBlock() {
 		st.insertBlock();
+		CGUtils.usedMemorySpaces[st.level] = 3;
 	}
 
 	public void removeBlock() {
+		// Liberar espacio de memoria
+		CGUtils.usedMemorySpaces[st.level] = 0;
 		st.removeBlock();
 	}
 
@@ -126,8 +129,9 @@ public class SemanticFunctions {
 		System.err.println(st.toString(id_image));
 	}
 
-	public long getLastSymbolAddress() {
-		return st.getLastSymbolAddress();
+	public int getLastSymbolAddress() {
+		return CGUtils.usedMemorySpaces[st.level];
+		// return st.getLastSymbolAddress();
 	}
 
 	public String getLabelFromSymbol(Token id) {
@@ -155,8 +159,8 @@ public class SemanticFunctions {
 				case FUNCTION:  ((SymbolFunction)  s).label = label; break;
 				case PROCEDURE: ((SymbolProcedure) s).label = label; break;
 				default:
-					CGUtils.memorySpaces[st.level]++;
- 					s.dir = CGUtils.memorySpaces[st.level] + 2; 
+ 					s.dir = CGUtils.usedMemorySpaces[st.level];
+					CGUtils.usedMemorySpaces[st.level]++; 
 					// System.out.println("Insertando símbolo: " + s.name + " en la dirección de memoria " + s.dir);
 					break;
 			}
