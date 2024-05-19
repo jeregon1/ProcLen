@@ -755,7 +755,6 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			at.code.addInst(PCodeInstruction.OpCode.ASG);
 		}
 		| // invocación_procedimiento()
-		// checkear que el id es un procedimiento y nada más
 		( <tLPAREN> lista_una_o_mas_exps(id, at1) {access = true;} <tRPAREN> )? 
 		{
 			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
@@ -766,10 +765,9 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 
 			// apilar los parámetros
 			at.code.addBlock(at1.code);
-
 			// addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
 			String label = semantic.getLabelFromSymbol(id);
-			at.code.addOSFInst(semantic.getLastSymbolAddress(), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
+			at.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
 		}
 	)
 }
@@ -777,11 +775,11 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
 void inst_if(Attributes at) :
 {
-	ExpressionAttrib expAt_son = new ExpressionAttrib(); // guarda if
-	ExpressionAttrib expAt_son2 = new ExpressionAttrib(); // guardas elsifs
-	Attributes at1 = new Attributes(); // instrucciones if
-	Attributes at2 = new Attributes(); // instrucciones elsifs
-	Attributes at3 = new Attributes(); // instrucciones else
+	ExpressionAttrib expAt_if = new ExpressionAttrib(); // guarda if
+	ExpressionAttrib expAt_elsif = new ExpressionAttrib(); // guardas elsifs
+	Attributes at_if = new Attributes(); // instrucciones if
+	Attributes at_elsif = new Attributes(); // instrucciones elsifs
+	Attributes at_else = new Attributes(); // instrucciones else
 	List<String> labelsEnd = new ArrayList<>(); // Lista de etiquetas de fin de bloques
 }
 {
@@ -791,29 +789,29 @@ void inst_if(Attributes at) :
 		String label_else; 
 		String label_next = label_elsif;
 	}
-	<tIF> expresion(expAt_son) 
+	<tIF> expresion(expAt_if) 
 	{
-		semantic.ifChecks(getToken(0), expAt_son.type); // Comprobar que la guarda es de tipo BOOL
+		semantic.ifChecks(getToken(0), expAt_if.type); // Comprobar que la guarda es de tipo BOOL
 
-		at.code.addBlock(expAt_son.code); // If: Guarda
+		at.code.addBlock(expAt_if.code); // If: Guarda
 		at.code.addInst(PCodeInstruction.OpCode.JMF, label_next);
 	}
-	<tTHEN> ( instruccion(at1) )+ 
+	<tTHEN> ( instruccion(at_if) )+ 
 	{
-		at.code.addBlock(at1.code);	// If: Instrucciones
+		at.code.addBlock(at_if.code);	// If: Instrucciones
 		label_end = CGUtils.newLabel();
 		labelsEnd.add(label_end);
 		at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
 	}
-	(<tELSIF> expresion(expAt_son2)
+	(<tELSIF> expresion(expAt_elsif)
 		{
-			semantic.ifChecks(getToken(0), expAt_son2.type); // Comprobar que la guarda es de tipo BOOL
+			semantic.ifChecks(getToken(0), expAt_elsif.type); // Comprobar que la guarda es de tipo BOOL
 
 			at.code.addLabel(label_next);
 			label_next = CGUtils.newLabel(); // Siguiente etiqueta para caso recursivo
 
-			at.code.addBlock(expAt_son2.code); // Elsif: Guarda
-			expAt_son2 = new ExpressionAttrib(); // Reiniciar expAt_son2 para que no se acumulen las instrucciones
+			at.code.addBlock(expAt_elsif.code); // Elsif: Guarda
+			expAt_elsif = new ExpressionAttrib(); // Reiniciar expAt_elsif para que no se acumulen las instrucciones
 
 			label_end = CGUtils.newLabel();
 			labelsEnd.add(label_end);
@@ -821,17 +819,17 @@ void inst_if(Attributes at) :
 			at.code.addInst(PCodeInstruction.OpCode.JMF, label_next); // Salto al final del if
 
 		} 
-		<tTHEN> ( instruccion(at2) )+ 
+		<tTHEN> ( instruccion(at_elsif) )+ 
 		{
-			at.code.addBlock(at2.code); // Elsif: Instrucciones
-			at2 = new Attributes(); // Reiniciar at2 para que no se acumulen las instrucciones
+			at.code.addBlock(at_elsif.code); // Elsif: Instrucciones
+			at_elsif = new Attributes(); // Reiniciar at_elsif para que no se acumulen las instrucciones
 			at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
 		}
 	)* 
-	(<tELSE>  ( instruccion(at3) )+ 
+	(<tELSE>  ( instruccion(at_else) )+ 
 		{
 			at.code.addLabel(label_next); // label_next tiene la siguiente etiqueta para añadir
-			at.code.addBlock(at3.code); // Else: Instrucciones
+			at.code.addBlock(at_else.code); // Else: Instrucciones
 		}
 	)? 
 	<tEND> <tIF>
@@ -1169,8 +1167,7 @@ void primario(ExpressionAttrib expAt) :
 		// apilar los parámetros y llamar a OSF
 		expAt.code.addBlock(at_son.code);
 		String label = semantic.getLabelFromSymbol(id);
-		expAt.code.addOSFInst(semantic.getLastSymbolAddress(), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
-
+		expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 	}
 	|	id = <tID> // variable simple o func/proced sin parámetros
 	{
@@ -1182,7 +1179,7 @@ void primario(ExpressionAttrib expAt) :
 				semantic.funcProcNoParametersCheck(id, symbol);
 				expAt_son.type = ((SymbolFunction) symbol).returnType;
 				String label = semantic.getLabelFromSymbol(id);
-				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
+				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 				break;
 			// Checkear que no es procedimiento
 			case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break; 
@@ -1280,7 +1277,6 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 
 				at.code.addBlock(expAt.code);
 			}
-
 		} else if (symbol.type == Symbol.Types.ARRAY) {
 			semantic.arrayInListOfExpressionCheck(id, types);
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
