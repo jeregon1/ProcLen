@@ -601,9 +601,10 @@ void inst_leer_elemento(Attributes at) :
 		semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
 
 		at.code.addBlock(at1.code);
-		// System.out.println("Leyendo " + id.image + "con nivel: " + symbol.nivel + " y dirección: " + symbol.dir);
-		at.code.addInst(PCodeInstruction.OpCode.SRF, symbol.nivel, (int) symbol.dir);
-		at.code.addInst(PCodeInstruction.OpCode.RD, symbol.type == Symbol.Types.CHAR ? 0 : 1);
+		at.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
+		if (symbol.parClass == Symbol.ParameterClass.REF) // Si es un parámetro por referencia, se desreferencia
+			at.code.addInst(PCodeInstruction.OpCode.DRF);
+		at.code.addInst(PCodeInstruction.OpCode.RD, symbol.type == Symbol.Types.CHAR ? 0 : 1); // TODO: si ref character es 0 o 1?
 	}
 }
 
@@ -745,8 +746,7 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			semantic.assigningArrayChecks(id, symbol, expAt.type, access);
 			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
-			int currentLevel = semantic.getCurrentLevel();
-			at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
+			at.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
 			// Si es un parametro por referencia, se desreferencia
 			if (symbol.parClass == Symbol.ParameterClass.REF)
 				at.code.addInst(PCodeInstruction.OpCode.DRF);
@@ -1194,8 +1194,7 @@ void primario(ExpressionAttrib expAt) :
 				expAt.esAsignable = true;
 				expAt_son.type = symbol.type;
 
-				int currentLevel = semantic.getCurrentLevel();
-				expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
+				expAt.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
 				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
 				if (symbol.parClass == Symbol.ParameterClass.REF)
 					expAt.code.addInst(PCodeInstruction.OpCode.DRF);
