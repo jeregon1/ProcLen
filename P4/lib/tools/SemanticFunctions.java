@@ -270,8 +270,11 @@ public class SemanticFunctions {
 
 	public void procedureChecks(Token t, Symbol s) {
 		if (s.type != Symbol.Types.PROCEDURE) { // Comprobar que el símbolo es un procedimiento
-			error(t, "Solo se pueden invocar procedimientos.");
-		} else if (s.name.toLowerCase().equals(getMainProcedureName())) { // Checkear que no sea el procedimiento principal del programa
+			error(t, "Solo se pueden invocar procedimientos como instrucciones.");
+		} else if (s.name.toLowerCase().equals(getMainProcedureName()) && st.getNumberOfProcedures(s.name) == 1) {
+			// Checkear que no sea el procedimiento principal del programa
+			// Lo que sí se permite es un procedimiento con el mismo nombre que el principal pero definido en otro nivel
+			// Si hay más de un símbolo visible con el mismo nombre, es que hay otro procedimiento con el mismo nombre en otro nivel
 			error(t, "No se puede invocar el procedimiento principal del programa.");
 		}
 	}

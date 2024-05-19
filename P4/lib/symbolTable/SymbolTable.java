@@ -68,20 +68,17 @@ public class SymbolTable {
         return result; 
     }
 
-    public Symbol getPreviousBlockSymbol (String name){
-        if (level == 0) {
-            return null;
+    public int getNumberOfProcedures(String name) {
+        int count = 0;
+        name = name.toLowerCase(); // case insensitive
+        for (int i = st.size()-1; i >= 0; i--) {
+            if (st.get(i).containsKey(name)) {
+                if (st.get(i).get(name).type == Symbol.Types.PROCEDURE) {
+                    count++;
+                }
+            }
         }
-        return st.get(level - 1).get(name.toLowerCase());
-    }
-
-    // Devuelve la dirección del último símbolo en el nivel actual
-    public long getLastSymbolAddress() {
-        HashMap<String, Symbol> currentBlock = st.get(st.size()-1);
-        if (currentBlock.size() == 0) {
-            return 0;
-        }
-        return currentBlock.values().stream().mapToLong(s -> s.dir).max().getAsLong();
+        return count;
     }
 
     public SymbolProcedure getMainProcedure() {
