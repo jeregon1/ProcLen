@@ -159,6 +159,13 @@ public class SemanticFunctions {
 			switch (s.type) {
 				case FUNCTION: 
 				case PROCEDURE: break;
+				case ARRAY: 
+					if (s.parClass == Symbol.ParameterClass.VAL) {
+
+						s.dir = CGUtils.usedMemorySpaces[st.level];
+						CGUtils.usedMemorySpaces[st.level] += ((SymbolArray) s).getNumComp();
+						break;
+					}
 				default:
  					s.dir = CGUtils.usedMemorySpaces[st.level];
 					CGUtils.usedMemorySpaces[st.level]++; 
