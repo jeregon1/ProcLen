@@ -391,17 +391,11 @@ void declaracion_procedimiento(Attributes at) :
 	funcProcDecAt.id = <tID> // Puede NO tener parámetros
 	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN>)?
  	{
-		semantic.insertFuncProc(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, 
-																	new ArrayList<Symbol>(funcProcDecAt.params.values()), 
-																	paramsLabel), 
-								funcProcDecAt.params);
+		ArrayList<Symbol> paramsList = funcProcDecAt.getParamsList();
+		semantic.insertFuncProc(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, paramsList, paramsLabel), funcProcDecAt.params);
 
 		at.code.addLabel(paramsLabel);
-		// Desapilado de parámetros en orden inverso
-		for (int i = funcProcDecAt.params.size(); i >= 1; i--) {
-			at.code.addInst(PCodeInstruction.OpCode.SRF, 0, i+2);
-			at.code.addInst(PCodeInstruction.OpCode.ASGI);
-		}
+		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
 		at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del procedimiento
 	}
 	<tIS>
@@ -439,17 +433,12 @@ void declaracion_funcion(Attributes at) :
 	tipo_variable_simple(typeAt)
 	{
 		funcProcDecAt.returnType = typeAt.type;
-		SymbolFunction funcSymbol = new SymbolFunction(funcProcDecAt.id.image, new ArrayList<Symbol>(funcProcDecAt.params.values()), 
-														  funcProcDecAt.returnType, paramsLabel);
+		ArrayList<Symbol> paramsList = funcProcDecAt.getParamsList();
+		SymbolFunction funcSymbol = new SymbolFunction(funcProcDecAt.id.image, paramsList, funcProcDecAt.returnType, paramsLabel);
 		semantic.insertFuncProc(funcProcDecAt.id, funcSymbol, funcProcDecAt.params);
 
 		at.code.addLabel(paramsLabel);
-		// Desapilado de parámetros en orden inverso
-		for (int i = funcProcDecAt.params.size(); i >= 1; i--) {
-			// Como los parámetros están en el mismo bloque, tienes que bajar 0 (level) bloques para obtener su valor
-			at.code.addInst(PCodeInstruction.OpCode.SRF, 0, i+2); 
-			at.code.addInst(PCodeInstruction.OpCode.ASGI);
-		}
+		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
 		at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del código de la función
 	}
 	<tIS>
@@ -727,7 +716,7 @@ void inst_escribir_elemento(Attributes at) :
 //inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
 void inst_invocacion_procedimiento_o_asignacion(Attributes at) : 
 {
-	Attributes at1 = new Attributes();
+	Attributes at_access = new Attributes();
 	ExpressionAttrib expAt = new ExpressionAttrib();
 	Token id;
 	boolean access = false;
@@ -735,8 +724,8 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 {
 	id = <tID>
 	(   // asignacion()
-		LOOKAHEAD( (array_access(at1))? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
-		(array_access(at1) {access = true;} )? 
+		LOOKAHEAD( (array_access(at_access))? <tASSIGN> ) // comprueba si es una asignación (mediante uso de LOOKAHEAD sintáctico)
+		(array_access(at_access) {access = true;} )? 
 		<tASSIGN>
 		expresion(expAt)
 		{
@@ -746,16 +735,19 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			semantic.assigningArrayChecks(id, symbol, expAt.type, access);
 			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
-			at.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
-			// Si es un parametro por referencia, se desreferencia
-			if (symbol.parClass == Symbol.ParameterClass.REF)
-				at.code.addInst(PCodeInstruction.OpCode.DRF);
-			at.code.addBlock(expAt.code);
-			at.code.addBlock(at1.code);
+			if (symbol.type == Symbol.Types.ARRAY) {
+				at.code.addBlock(semantic.arrayAccessCode(at_access, symbol)); // calcular la dirección de acceso al array
+			} else {
+				at.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
+				// Si es un parametro por referencia, se desreferencia
+				if (symbol.parClass == Symbol.ParameterClass.REF)
+					at.code.addInst(PCodeInstruction.OpCode.DRF);
+			}
+			at.code.addBlock(expAt.code); 	  // calcular el valor de la expresión
 			at.code.addInst(PCodeInstruction.OpCode.ASG);
 		}
 		| // invocación_procedimiento()
-		( <tLPAREN> lista_una_o_mas_exps(id, at1) {access = true;} <tRPAREN> )? 
+		( <tLPAREN> lista_una_o_mas_exps(id, at_access) {access = true;} <tRPAREN> )? 
 		{
 			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
 			Symbol symbol = semantic.getSymbol(id);
@@ -763,8 +755,7 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
 			if (! access) semantic.funcProcNoParametersCheck(id, symbol); // Comprobar que no se pasan parámetros a un procedimiento sin parámetros
 
-			// apilar los parámetros
-			at.code.addBlock(at1.code);
+			at.code.addBlock(at_access.code); // apilar los parámetros
 			// addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
 			String label = semantic.getLabelFromSymbol(id);
 			at.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
@@ -1132,18 +1123,18 @@ void primario(ExpressionAttrib expAt) :
 	Token id;
 }
 {
-	(			    <tLPAREN> expresion(expAt_son) <tRPAREN> {expAt.code.addBlock(expAt_son.code);}
+	(			    <tLPAREN> expresion(expAt_son) <tRPAREN> 
+		{expAt.code.addBlock(expAt_son.code);}
 	|	<tINT2CHAR> <tLPAREN> expresion(expAt_son) <tRPAREN> 
 	{
-		expAt.code.addBlock(expAt_son.code);
 		semantic.int2charCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo INT
+		expAt.code.addBlock(expAt_son.code);
 		expAt_son.type = Symbol.Types.CHAR;
 	}
 	|	<tCHAR2INT> <tLPAREN> expresion(expAt_son) <tRPAREN>
 	{
-		expAt.code.addBlock(expAt_son.code);
-		// La expresioón debe ser de tipo CHAR
 		semantic.char2intCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo CHAR
+		expAt.code.addBlock(expAt_son.code);
 		expAt_son.type = Symbol.Types.INT;
 	}
 	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at_son) <tRPAREN> //invocar func. (con parámetros) o comp. array
@@ -1153,23 +1144,24 @@ void primario(ExpressionAttrib expAt) :
 
 		switch (symbol.type) {
 			// Si es una función, devolver su tipo retorno
-			case FUNCTION: expAt_son.type = ((SymbolFunction) symbol).returnType; break;
-			// Checkear que no es procedimiento 
-			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break;
+			case FUNCTION: expAt_son.type = ((SymbolFunction) symbol).returnType; 
+				
+				expAt.code.addBlock(at_son.code); // apilar los parámetros y llamar a OSF
+				String label = semantic.getLabelFromSymbol(id);
+				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
+				break;
+
+			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break; // Checkear que no es procedimiento 
 			case ARRAY:
+				expAt.code.addBlock(at_son.code);
 				expAt_son.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
-				expAt.esAsignable = true;
+				expAt.esAsignable = true; // es una componente de array
 				break;
 			default: expAt_son.type = symbol.type;
 		}
 		id.clone(expAt.param);
-
-		// apilar los parámetros y llamar a OSF
-		expAt.code.addBlock(at_son.code);
-		String label = semantic.getLabelFromSymbol(id);
-		expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 	}
-	|	id = <tID> // variable simple o func/proced sin parámetros
+	|	id = <tID> // variable simple o func sin parámetros
 	{
 		if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
@@ -1179,7 +1171,7 @@ void primario(ExpressionAttrib expAt) :
 				semantic.funcProcNoParametersCheck(id, symbol);
 				expAt_son.type = ((SymbolFunction) symbol).returnType;
 				String label = semantic.getLabelFromSymbol(id);
-				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
+				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
 				break;
 			// Checkear que no es procedimiento
 			case PROCEDURE: semantic.procedureInPrimaryError(id, "variable"); break; 
@@ -1200,6 +1192,8 @@ void primario(ExpressionAttrib expAt) :
 	|	<tCONST_INT>  { // guardar el valor del int y hacer: STC (ascii del int)
 			expAt_son.type = Symbol.Types.INT; 
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(getToken(0).image));
+			if (getToken(0).image.charAt(0) == '-') // si es negativo, añadir instrucción de negación
+				expAt.code.addInst(PCodeInstruction.OpCode.NGI);
 		} 
 	|	<tCONST_CHAR> {// STC (ascii del char)
 			expAt_son.type = Symbol.Types.CHAR;
@@ -1279,6 +1273,10 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 			}
 		} else if (symbol.type == Symbol.Types.ARRAY) {
 			semantic.arrayInListOfExpressionCheck(id, types);
+			at.code.addBlock(semantic.arrayAccessCode(expAt_list.get(0), symbol));
+			// Al usarse en una expresión, se desreferencia
+			at.code.addInst(PCodeInstruction.OpCode.DRF);
+
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
 			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
 		}

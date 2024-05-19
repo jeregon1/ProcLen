@@ -17,6 +17,7 @@ import lib.symbolTable.exceptions.*;
 import lib.errores.*;
 
 import lib.tools.codeGeneration.*;
+import lib.attributes.Attributes;
 
 import java.util.Map;
 
@@ -151,8 +152,6 @@ public class SemanticFunctions {
 		return st.level;
 	}
 
-	// El parámetro "label" será el label del procedimiento o función que ha llamado a insertar el símbolo.
-	// Si no, será null.
 	public void insertSymbol(Token id, Symbol s) {
 		try {
 			// Función o procedimiento, donde se asigna el label como dirección de memoria
@@ -169,11 +168,9 @@ public class SemanticFunctions {
 				default:
  					s.dir = CGUtils.usedMemorySpaces[st.level];
 					CGUtils.usedMemorySpaces[st.level]++; 
-					// System.out.println("Insertando símbolo: " + s.name + " en la dirección de memoria " + s.dir);
 			}
 
 			st.insertSymbol(s);
-			// System.out.println("Tabla de símbolos: " + st.toString(id.image));
 		}
 		catch (AlreadyDefinedSymbolException e) {
 			error(id, "El símbolo '" + id.image + "' ya está definido.");
@@ -216,6 +213,55 @@ public class SemanticFunctions {
 		} else {
 			return null;
 		}
+	}
+
+	// -------------------- GENERACION CODIGO --------------------------
+
+	public CodeBlock readParamsCode(List<Symbol> params) {
+		CodeBlock code = new CodeBlock();
+
+		// Calcular el espacio necesario para los parámetros
+		int space = 0;
+		for (Symbol s : params) {
+			if (s instanceof SymbolArray && s.parClass == Symbol.ParameterClass.VAL) {
+				space += ((SymbolArray) s).getNumComp();
+			} else {
+				space++;
+			}
+		}
+
+		// Desapilado de parámetros en orden inverso
+		for (int i = space; i >= 1; i--) {
+			// Como los parámetros están en el mismo bloque, tienes que bajar 0 (level) bloques para obtener su valor
+			code.addInst(PCodeInstruction.OpCode.SRF, 0, i+2); 
+			code.addInst(PCodeInstruction.OpCode.ASGI);
+		}
+
+		return code;
+	}
+
+	public CodeBlock arrayAccessCode (Attributes expAt, Symbol symbol) {
+		CodeBlock code = new CodeBlock();
+
+		// código para acceder al array
+		// dir a calcular: @base + (indice_acceso - lim_inf) * tam_elemento (1, así que no hace falta multiplicar)
+		code.addBlock(expAt.code); // código de la expresión del índice de acceso
+		
+		int lim_inf = ((SymbolArray) symbol).minInd;
+		code.addInst(PCodeInstruction.OpCode.STC, lim_inf);
+		if (lim_inf < 0) // si es negativo, añadir instrucción de negación
+			code.addInst(PCodeInstruction.OpCode.NGI);
+		code.addInst(PCodeInstruction.OpCode.SBT); // indice_acceso - lim_inf
+
+		// SRF @base
+		code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
+		// Si es un parámetro por referencia, se desreferencia
+		if (symbol.parClass == Symbol.ParameterClass.REF)
+			code.addInst(PCodeInstruction.OpCode.DRF);
+
+		code.addInst(PCodeInstruction.OpCode.PLUS); // @base + (indice_acceso - lim_inf)
+		
+		return code;
 	}
 
 	// -------------------------- TIPOS --------------------------------
