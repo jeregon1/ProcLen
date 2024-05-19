@@ -1126,7 +1126,7 @@ void factor(ExpressionAttrib expAt) :
 void primario(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt_son = new ExpressionAttrib();
-	Attributes at = new Attributes();
+	Attributes at_son = new Attributes();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
 }
@@ -1224,31 +1224,34 @@ void primario(ExpressionAttrib expAt) :
  */
 void lista_una_o_mas_exps(Token id, Attributes at) : 
 { // Se ejecuta en una invocación de función o procedimiento y en el acceso a un array en una expresión
-	List<Symbol.Types> types = new ArrayList<>();
-	Map<Token, Boolean> args = new LinkedHashMap<>();
-
 	if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
-	Symbol symbol = semantic.getSymbol(id);
 	
+	List<ExpressionAttrib> expAt_list = new ArrayList<>();
 	ExpressionAttrib expAt_son = new ExpressionAttrib();
 }
 {
 	expresion(expAt_son)
 	{
-		types.add(expAt_son.type);
-		if (expAt_son.param.kind == 0) args.put(getToken(0), false);
-		else 			 		   	   args.put(expAt_son.param, expAt_son.esAsignable);
-		expAt_son = new ExpressionAttrib();
+		if (expAt_son.param.kind == 0) expAt_son.param = getToken(0);
+		expAt_list.add(expAt_son);
+		expAt_son = new ExpressionAttrib(); // borramos el contenido de expAt_son
 	}
 	( <tCOMMA> expresion(expAt_son) 
 		{ // Iterate over all the parameters
-			types.add(expAt_son.type);
-			if (expAt_son.param.kind == 0) args.put(getToken(0), false); // Si no se ha sobrescrito t, se añade el token actual
-			else 			 		   args.put(expAt_son.param, expAt_son.esAsignable);
-			expAt_son = new ExpressionAttrib();
+			if (expAt_son.param.kind == 0) expAt_son.param = getToken(0);
+			expAt_list.add(expAt_son);
+			expAt_son = new ExpressionAttrib(); // borramos el contenido de expAt_son
 		}
 	)*
 	{
+		Symbol symbol = semantic.getSymbol(id);
+		// Creamos una lista types con el atributo type de todos los elementos de expAt_list
+		List<Symbol.Types> types = new ArrayList<>();
+		for (ExpressionAttrib expAt : expAt_list) types.add(expAt.type);
+
+		Map<Token, Boolean> args = new LinkedHashMap<>();
+		for (ExpressionAttrib expAt : expAt_list) args.put(expAt.param, expAt.esAsignable);
+
 		if (symbol.type == Symbol.Types.FUNCTION || symbol.type == Symbol.Types.PROCEDURE) {
 
 			// Recuperar lista parámetros del símbolo con nombre 'id' 
@@ -1261,12 +1264,23 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
 			semantic.checkArgumentTypes(id, types, parList, args, symbol);
 
+			// iterar sobre los bloques de código de los argumentos y la lista de params y añadirlos al bloque de código de la invocación
+			for (int i = 0; i < expAt_list.size(); i++) {
+				ExpressionAttrib expAt = expAt_list.get(i);
+				Symbol par = parList.get(i);
+				
+				// Si es asignable y es para un parámetro por referencia, se quita una instrucción SRF
+				if (par.parClass == Symbol.ParameterClass.REF && expAt.esAsignable) {
+					expAt.code.removeLastInst();
+				}
+
+				at.code.addBlock(expAt.code);
+			}
+
 		} else if (symbol.type == Symbol.Types.ARRAY) {
 			semantic.arrayInListOfExpressionCheck(id, types);
 		} else { // Si id es un tipo simple, no puede accederse a un elemento
 			semantic.error(id, "No se puede acceder a un elemento del símbolo '" + id.image + "' por ser de tipo " + symbol.type + " y no " + tokenImage[tARRAY] + ".");
 		}
-
-		at.code.addBlock(expAt_son.code);
 	}
 }
