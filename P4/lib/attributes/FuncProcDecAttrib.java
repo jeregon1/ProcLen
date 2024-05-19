@@ -11,12 +11,10 @@ public class FuncProcDecAttrib extends Attributes {
     public Token id;
     public Map <Token,Symbol> params;
     public Symbol.Types returnType; // Utilizado solo en caso de función
-    public SymbolFunction functionSymbol; // Utilizado solo en caso de función
 
     public FuncProcDecAttrib() {
         this.id = null;
         this.params = new LinkedHashMap<Token,Symbol>();
         this.returnType = Symbol.Types.UNDEFINED;
-        this.functionSymbol = null;
     }
 }

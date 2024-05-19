@@ -18,6 +18,8 @@ import lib.errores.*;
 
 import lib.tools.codeGeneration.*;
 
+import java.util.Map;
+
 public class SemanticFunctions {
 
 	private SymbolTable st; //tabla de símbolos
@@ -152,17 +154,16 @@ public class SemanticFunctions {
 
 	// El parámetro "label" será el label del procedimiento o función que ha llamado a insertar el símbolo.
 	// Si no, será null.
-	public void insertSymbol(Token id, Symbol s, String label) {
+	public void insertSymbol(Token id, Symbol s) {
 		try {
 			// Función o procedimiento, donde se asigna el label como dirección de memoria
 			switch (s.type) {
-				case FUNCTION:  ((SymbolFunction)  s).label = label; break;
-				case PROCEDURE: ((SymbolProcedure) s).label = label; break;
+				case FUNCTION: 
+				case PROCEDURE: break;
 				default:
  					s.dir = CGUtils.usedMemorySpaces[st.level];
 					CGUtils.usedMemorySpaces[st.level]++; 
 					// System.out.println("Insertando símbolo: " + s.name + " en la dirección de memoria " + s.dir);
-					break;
 			}
 
 			st.insertSymbol(s);
@@ -170,6 +171,25 @@ public class SemanticFunctions {
 		}
 		catch (AlreadyDefinedSymbolException e) {
 			error(id, "El símbolo '" + id.image + "' ya está definido.");
+		}
+	}
+
+	public void insertFuncProc(Token id, Symbol s, Map<Token, Symbol> params) {
+		if (s.type == Symbol.Types.FUNCTION) {
+			s = (SymbolFunction) s;
+		} else if (s.type == Symbol.Types.PROCEDURE) {
+			s = (SymbolProcedure) s;
+
+		} else {
+			System.err.println("Error: No se puede insertar un símbolo que no sea una función o procedimiento.");
+		}
+
+		this.insertSymbol(id, s);
+		this.insertBlock();
+
+		// Se insertan params con los tokens en la tabla de símbolos DESPUÉS de crear un nuevo bloque
+		for (Map.Entry<Token, Symbol> entry : params.entrySet()) {
+			this.insertSymbol(entry.getKey() ,entry.getValue());
 		}
 	}
 
@@ -207,6 +227,12 @@ public class SemanticFunctions {
 	}
 
 	public void readingArrayChecks(Token t, Symbol s, boolean access){
+		/* Comprobaciones relacionadas con arrays:
+		- Si es array: 
+			- comprobar que se ha accedido a un elemento y no al array entero
+			- comprobar que el tipo del array es INT o CHAR
+		- Si no: que no se acceda a una variable simple, procedimiento o función como a un array
+		*/
 		if (s.type == Symbol.Types.ARRAY) {
 			// si es array, comprobar que se ha accedido a un elemento y no al array entero
 			if (!access) {
@@ -216,7 +242,7 @@ public class SemanticFunctions {
 			// si es array, comprobar que el tipo del array es INT o CHAR
 			SymbolArray array = (SymbolArray) s;
 			if (array.baseType != Symbol.Types.INT && array.baseType != Symbol.Types.CHAR) {
-				error(t, "El array '" + t.image + "' debe ser de tipo " + "integer" + " o " + "character" + ".");
+				error(t, "El tipo base del array '" + t.image + "' debe ser de tipo integer o character, pero es " + array.baseType + ".");
 			}
 		} else if (access) { // que no se acceda a una variable simple, procedimiento o función como a un array 
 			error(t, "No se puede acceder a un elemento del símbolo '" + t.image + "' por ser de tipo " + s.type + " y no array.");
@@ -328,9 +354,24 @@ public class SemanticFunctions {
 		error(t, "No se puede invocar un procedimiento en una expresión como a una " + wrongType + ".");
 	}
 
-	public void functionParametersCheck(Token t, SymbolFunction function) {
-		if (function.parList.size() > 0) {
-			error(t, "La función '" + t.image + "' debe invocarse con " + function.parList.size() + " argumentos.");
+	public void funcProcNoParametersCheck(Token t, Symbol func_proc) {
+		if (func_proc.type == Symbol.Types.FUNCTION) {
+
+			int paramsListSize = ((SymbolFunction) func_proc).parList.size();
+
+			if (paramsListSize > 0) {
+				error(t, "La función '" + t.image + "' debe invocarse con " + paramsListSize + " argumentos.");
+			}
+		} else if (func_proc.type == Symbol.Types.PROCEDURE) {
+
+			int paramsListSize = ((SymbolProcedure) func_proc).parList.size();
+
+			if (paramsListSize > 0) {
+				error(t, "El procedimiento '" + t.image + "' debe invocarse con " + paramsListSize + " argumentos.");
+			}
+		}
+		else {
+			error(t, "El símbolo '" + t.image + "' no es una función o procedimiento.");
 		}
 	}
 	
