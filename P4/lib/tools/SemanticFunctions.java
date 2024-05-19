@@ -232,6 +232,12 @@ public class SemanticFunctions {
 	}
 
 	public void assigningArrayChecks(Token t, Symbol s, Symbol.Types type, boolean access) {
+		/* Comprobaciones relacionadas con arrays:
+		- Si es array:
+			- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
+			- comprobar que el tipo de la expresión coincide con el tipo base del array
+		- Si no: no puede accederse a una variable no array
+		*/
 		if (s.type == Symbol.Types.ARRAY) {
 			if (!access) { // Si id es array, se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son) 
 				error(t, "Los arrays no son asignables, se debe acceder a un elemento de '" + t.image + "'.");
@@ -246,6 +252,10 @@ public class SemanticFunctions {
 	}
 
 	public void assignableTypeChecks(Token t, Symbol s, Symbol.Types type) {
+		/* Comprobaciones sobre los tipos de los asignables:
+		- Si es un procedimiento o función, error
+		- Asignable y expresión deben ser del mismo tipo
+		*/
 		if (s.type == Symbol.Types.PROCEDURE || s.type == Symbol.Types.FUNCTION) {
 			error(t, "Los procedimientos y funciones no son asignables.");
 		} 

@@ -151,7 +151,7 @@ TOKEN : {
 	// Literales
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
-| 	< tCONST_INT: (<DIGIT>)+ >
+| 	< tCONST_INT: (<tMINUS> | <tPLUS>)? (<DIGIT>)+ >
 |	< tCONST_CHAR: "'"~[]"'" >
 |	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
 	{
@@ -268,7 +268,7 @@ void lista_ids(List<Token> list) :
 /**
  * Params: 
  *	-t: lista de tokens de la enumeración de los identificadores de las variables
- *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
+ *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro A RRAY
  *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
 void tipo_variable(TypeAttrib typeAt) : 
@@ -307,13 +307,13 @@ void tipo_variable_array(TypeAttrib typeAt) :
 }
 {
 	<tARRAY> <tLPAREN>
-	(<tMINUS> {arrayTypeAt.minus1 = -1;} | <tPLUS>)? arrayTypeAt.tMin = <tCONST_INT> 
+	arrayTypeAt.tMin = <tCONST_INT> 
 		<tRANGE> 
-	(<tMINUS> {arrayTypeAt.minus2 = -1;} | <tPLUS>)? arrayTypeAt.tMax = <tCONST_INT> 
+	arrayTypeAt.tMax = <tCONST_INT> 
 	<tRPAREN>
 	{
-		arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image) * arrayTypeAt.minus1;
-		arrayTypeAt.max = Integer.parseInt(arrayTypeAt.tMax.image) * arrayTypeAt.minus2;
+		arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image);
+		arrayTypeAt.max = Integer.parseInt(arrayTypeAt.tMax.image);
 		semantic.emptyArrayRange(arrayTypeAt.tMax, arrayTypeAt.min, arrayTypeAt.max); // Comprobar que el rango no es vacío (min > max)
 
 		if (isDeclaration) {
@@ -555,7 +555,7 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 /*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
 
 //instruccion: (inst_leer | <tSKIP_LINE> | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
-void instruccion(Attributes at): 
+void instruccion(Attributes at) : 
 {
 	Attributes at1 = new Attributes();
 }
@@ -579,19 +579,18 @@ void instruccion(Attributes at):
 
 void skip_line(Attributes at) : 
 {
-	long last_dir;
+	int last_dir = (int) semantic.getLastSymbolAddress();
 }
 {
 	{
-		last_dir = semantic.getLastSymbolAddress();
 		// System.out.println("Dirección de almacenamiento temporal: " + last_dir);
 		String label = CGUtils.newLabel();
 		at.code.addLabel(label);
-		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, (int) last_dir); // Dirección de almacén temporal (var local)
+		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, last_dir); // Dirección de almacén temporal (var local)
 		at.code.addInst(PCodeInstruction.OpCode.RD, 0); // Leer de stdin y asignarlo a var_local
-		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, (int) last_dir); 
+		at.code.addInst(PCodeInstruction.OpCode.SRF, 0, last_dir); 
 		at.code.addInst(PCodeInstruction.OpCode.DRF); // Obtener valor que se acaba de escribir
-		at.code.addInst(PCodeInstruction.OpCode.STC, 10);
+		at.code.addInst(PCodeInstruction.OpCode.STC, '\n'); // Salto de línea
 		at.code.addInst(PCodeInstruction.OpCode.EQ); // Compararlo con el salto de línea
 		at.code.addInst(PCodeInstruction.OpCode.JMF, label); // Repetir si no es así
 	}
@@ -699,10 +698,10 @@ void inst_escribir_linea(Attributes at) :
 			at.code.addBlock(at1.code);
 		}
 
-		// Añadir siempre el salto de línea: CR + LF (asciis 13 y 10 respectivamente)
-		at.code.addInst(PCodeInstruction.OpCode.STC, 13);
+		// Añadir siempre el salto de línea: CR + LF
+		at.code.addInst(PCodeInstruction.OpCode.STC, '\r');
 		at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
-		at.code.addInst(PCodeInstruction.OpCode.STC, 10);
+		at.code.addInst(PCodeInstruction.OpCode.STC, '\n');
 		at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
 	}
 }
@@ -737,7 +736,7 @@ void inst_escribir_elemento(Attributes at) :
 			// Se quitan las comillas dobles de los extremos
 			String trueString = tokenImage[tTRUE].substring(1, tokenImage[tTRUE].length() - 1);
 			for (char character : trueString.toCharArray()) {
-				at.code.addInst(PCodeInstruction.OpCode.STC, (int) character);
+				at.code.addInst(PCodeInstruction.OpCode.STC, character);
 				at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
 
@@ -746,7 +745,7 @@ void inst_escribir_elemento(Attributes at) :
 
 			String falseString = tokenImage[tFALSE].substring(1, tokenImage[tFALSE].length() - 1);
 			for (char character : falseString.toCharArray()) {
-				at.code.addInst(PCodeInstruction.OpCode.STC, (int) character);
+				at.code.addInst(PCodeInstruction.OpCode.STC, character);
 				at.code.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
 
@@ -789,27 +788,14 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			if (! semantic.isSymbolDefined(id)) return; // Si no está definido, no se puede comprobar nada más
 			Symbol symbol = semantic.getSymbol(id);
 
-			/* Comprobaciones relacionadas con arrays:
-			- Si es array:
-				- se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son)
-				- comprobar que el tipo de la expresión coincide con el tipo base del array
-			- Si no: no puede accederse a una variable no array
-			*/
 			semantic.assigningArrayChecks(id, symbol, expAt.type, access);
-
-			/* Comprobaciones sobre los tipos de los asignables:
-			- Si es un procedimiento o función, error
-			- Asignable y expresión deben ser del mismo tipo
-			*/
 			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
-			{
-				int currentLevel = semantic.getCurrentLevel();
-				at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir); 
-				at.code.addBlock(expAt.code);
-				at.code.addBlock(at1.code);
-				at.code.addInst(PCodeInstruction.OpCode.ASG);
-			}
+			int currentLevel = semantic.getCurrentLevel();
+			at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir); 
+			at.code.addBlock(expAt.code);
+			at.code.addBlock(at1.code);
+			at.code.addInst(PCodeInstruction.OpCode.ASG);
 		}
 		| // invocación_procedimiento()
 		// checkear que el id es un procedimiento y nada más
@@ -820,15 +806,12 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 
 			semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
 
-			{
-				// apilar los parámetros
-				at.code.addBlock(expAt.code);
-				at.code.addBlock(at1.code);
+			// apilar los parámetros
+			at.code.addBlock(at1.code);
 
-				// addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
-				String label = semantic.getLabelFromSymbol(id);
-				at.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
-			}
+			// addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
+			String label = semantic.getLabelFromSymbol(id);
+			at.code.addOSFInst((int) (semantic.getLastSymbolAddress()+1), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 		}
 	)
 }
