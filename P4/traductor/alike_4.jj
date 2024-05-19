@@ -1145,7 +1145,7 @@ void primario(ExpressionAttrib expAt) :
 		semantic.char2intCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo CHAR
 		expAt_son.type = Symbol.Types.INT;
 	}
-	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at) <tRPAREN> //invocar func. (con parámetros) o comp. array
+	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at_son) <tRPAREN> //invocar func. (con parámetros) o comp. array
 	{
 		if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
@@ -1158,13 +1158,13 @@ void primario(ExpressionAttrib expAt) :
 			case ARRAY:
 				expAt_son.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
 				expAt.esAsignable = true;
-				id.clone(expAt.param);
 				break;
 			default: expAt_son.type = symbol.type;
 		}
+		id.clone(expAt.param);
 
 		// apilar los parámetros y llamar a OSF
-		expAt.code.addBlock(at.code);
+		expAt.code.addBlock(at_son.code);
 		String label = semantic.getLabelFromSymbol(id);
 		expAt.code.addOSFInst(semantic.getLastSymbolAddress(), symbol.nivel, label); // TODO: REVISAR PARÁMETROS DE OSF (creo que 's' y 'label' están ya bien)
 

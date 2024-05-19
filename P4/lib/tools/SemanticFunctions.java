@@ -133,15 +133,14 @@ public class SemanticFunctions {
 
 	public int getLastSymbolAddress() {
 		return CGUtils.usedMemorySpaces[st.level];
-		// return st.getLastSymbolAddress();
 	}
 
 	public String getLabelFromSymbol(Token id) {
 		Symbol s = getSymbol(id);
 		if (s == null) return null;
-		if (s.type == Symbol.Types.FUNCTION) {
+		if (s instanceof SymbolFunction) {
 			return ((SymbolFunction) s).label;
-		} else if (s.type == Symbol.Types.PROCEDURE) {
+		} else if (s instanceof SymbolProcedure) {
 			return ((SymbolProcedure) s).label;
 		} else {
 			return null;
@@ -175,9 +174,9 @@ public class SemanticFunctions {
 	}
 
 	public void insertFuncProc(Token id, Symbol s, Map<Token, Symbol> params) {
-		if (s.type == Symbol.Types.FUNCTION) {
+		if (s instanceof SymbolFunction) {
 			s = (SymbolFunction) s;
-		} else if (s.type == Symbol.Types.PROCEDURE) {
+		} else if (s instanceof SymbolProcedure) {
 			s = (SymbolProcedure) s;
 
 		} else {
@@ -233,7 +232,7 @@ public class SemanticFunctions {
 			- comprobar que el tipo del array es INT o CHAR
 		- Si no: que no se acceda a una variable simple, procedimiento o función como a un array
 		*/
-		if (s.type == Symbol.Types.ARRAY) {
+		if (s instanceof SymbolArray) {
 			// si es array, comprobar que se ha accedido a un elemento y no al array entero
 			if (!access) {
 				error(t, "Se debe acceder a un elemento del array '" + t.image + "'.");
@@ -268,7 +267,7 @@ public class SemanticFunctions {
 			- comprobar que el tipo de la expresión coincide con el tipo base del array
 		- Si no: no puede accederse a una variable no array
 		*/
-		if (s.type == Symbol.Types.ARRAY) {
+		if (s instanceof SymbolArray) {
 			if (!access) { // Si id es array, se debe acceder a un elemento (el array no es asignable pero sus elementos sí lo son) 
 				error(t, "Los arrays no son asignables, se debe acceder a un elemento de '" + t.image + "'.");
 			}
@@ -355,14 +354,14 @@ public class SemanticFunctions {
 	}
 
 	public void funcProcNoParametersCheck(Token t, Symbol func_proc) {
-		if (func_proc.type == Symbol.Types.FUNCTION) {
+		if (func_proc instanceof SymbolFunction) {
 
 			int paramsListSize = ((SymbolFunction) func_proc).parList.size();
 
 			if (paramsListSize > 0) {
 				error(t, "La función '" + t.image + "' debe invocarse con " + paramsListSize + " argumentos.");
 			}
-		} else if (func_proc.type == Symbol.Types.PROCEDURE) {
+		} else if (func_proc instanceof SymbolProcedure) {
 
 			int paramsListSize = ((SymbolProcedure) func_proc).parList.size();
 
@@ -420,7 +419,7 @@ public class SemanticFunctions {
 
 			Token arg = tokenArgs.get(i);
 
-			if (parList.get(i).type == Symbol.Types.ARRAY) {
+			if (parList.get(i) instanceof SymbolArray) {
 				// Si el parámetro debe ser un array, da igual si es por valor o referencia ya que el argumento debe ser un array entero
 				SymbolArray paramArray = (SymbolArray) parList.get(i);
 

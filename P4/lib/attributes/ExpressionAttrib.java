@@ -8,7 +8,6 @@ public class ExpressionAttrib extends Attributes {
     public Token param;
     public Boolean esAsignable;
     public Symbol.Types type;
-    public Token t;
 
     // boolean moreThanOne;
     // String errorMsg;
