@@ -746,7 +746,10 @@ void inst_invocacion_procedimiento_o_asignacion(Attributes at) :
 			semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
 			int currentLevel = semantic.getCurrentLevel();
-			at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir); 
+			at.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
+			// Si es un parametro por referencia, se desreferencia
+			if (symbol.parClass == Symbol.ParameterClass.REF)
+				at.code.addInst(PCodeInstruction.OpCode.DRF);
 			at.code.addBlock(expAt.code);
 			at.code.addBlock(at1.code);
 			at.code.addInst(PCodeInstruction.OpCode.ASG);
@@ -1194,6 +1197,8 @@ void primario(ExpressionAttrib expAt) :
 				int currentLevel = semantic.getCurrentLevel();
 				expAt.code.addInst(PCodeInstruction.OpCode.SRF, currentLevel - symbol.nivel, (int) symbol.dir);
 				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
+				if (symbol.parClass == Symbol.ParameterClass.REF)
+					expAt.code.addInst(PCodeInstruction.OpCode.DRF);
 		}
 	}
 	|	<tCONST_INT>  { // guardar el valor del int y hacer: STC (ascii del int)
