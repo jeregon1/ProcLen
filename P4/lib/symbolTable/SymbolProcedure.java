@@ -21,10 +21,10 @@ public class SymbolProcedure extends Symbol implements Cloneable {
     // Nuevo atributo para guardar el Label del procedimiento (será el 3er atributo de OSF)
     public String label;
 
-
-    public SymbolProcedure(String _name, ArrayList<Symbol> _parList) {
+    public SymbolProcedure(String _name, ArrayList<Symbol> _parList, String _label) {
     	super(_name, Types.PROCEDURE, ParameterClass.NONE);
         parList = _parList;
+        label = _label;
     }
 
     public String toString() {
