@@ -218,12 +218,11 @@ void Programa(String file) :
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(id.image); // Impresión de la tabla de símbolos
-		programa.addBlock(at.code);
+		programa.addBlock(at.code); // Código de declaración de procedimientos y funciones
 		programa.addLabel(label); // Añadir la etiqueta de inicio del programa
-		programa.addBlock(at1.code);
+		programa.addBlock(at1.code); // Código del programa principal
 		programa.addInst(PCodeInstruction.OpCode.LVP); // Leave Program
 		if (!semantic.hayErrores()) {
-			// file = file.substring(0, file.lastIndexOf('.')); // Eliminar extensión
 			File f = new File(file + ".pcode");
 			System.out.println("Generando fichero " + file + ".pcode");
 			try {
@@ -267,24 +266,22 @@ void lista_ids(List<Token> list) :
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
 /**
  * Params: 
- *	-t: lista de tokens de la enumeración de los identificadores de las variables
- *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro A RRAY
- *	-paramClass: valor != de NONE en caso de ser un parámetro
+ *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
  */
-void tipo_variable(TypeAttrib typeAt) : 
+void tipo_variable(TypeAttrib typeAt) :
 {
 	TypeAttrib typeAt1 = new TypeAttrib(), typeAt2 = new TypeAttrib();
 	typeAt1.clone(typeAt); typeAt2.clone(typeAt);
 	typeAt1.paramArray = null;
 }
 {
-	( 
+	(
 		tipo_variable_simple(typeAt1) 
-		{ 
+		{
 			typeAt.type = typeAt1.type;	// Si es un tipo simple, se asigna el tipo de la variable
 		}
-	|   tipo_variable_array(typeAt2)  
-		{ 
+	|   tipo_variable_array(typeAt2)
+		{
 			typeAt.type = typeAt2.type;
 		}
 	)
@@ -360,7 +357,7 @@ void tipo_variable_simple(TypeAttrib typeAt) :
 			return;
 		}
 		else if (isArray) { // Declaración de variables arrays
-			typeAt.paramArray.baseType = typeAt.type;
+			typeAt.paramArray.baseType = typeAt.type; // Rellenar el tipo base, ya que se había dejado como UNDEFINED en "tipo_variable_array"
 			for (Token id : typeAt.t) { 
 				SymbolArray newArray = typeAt.paramArray.clone(); // Necesario para obtener un array nuevo con la info de índices y paramClass
 				newArray.name = id.image;
@@ -382,27 +379,29 @@ void tipo_variable_simple(TypeAttrib typeAt) :
 void declaracion_procedimiento(Attributes at) : 
 {
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-	Attributes at_inst = new Attributes();
+	Attributes at1 = new Attributes();
 	String paramsLabel = CGUtils.newLabel(); 
 	String codeLabel = CGUtils.newLabel();
 }
 {
 	<tPROCEDURE>
-	funcProcDecAt.id = <tID> // Puede NO tener parámetros
-	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN>)?
+	funcProcDecAt.id = <tID> 
+	( <tLPAREN> lista_parametros(funcProcDecAt) <tRPAREN>)? // Puede NO tener parámetros
  	{
 		ArrayList<Symbol> paramsList = funcProcDecAt.getParamsList();
+
+		// Insertar símbolo de procedimiento en st, crear nuevo bloque, y DESPUÉS de crear bloque se insertan los parámetros
 		semantic.insertFuncProc(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, paramsList, paramsLabel), funcProcDecAt.params);
 
-		at.code.addLabel(paramsLabel);
-		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
+		at.code.addLabel(paramsLabel); // Etiqueta de inicio del procedimiento
+		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso (SRF + ASGI)
 		at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del procedimiento
 	}
 	<tIS>
 		( declaracion_var() )*
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
 	<tBEGIN>
-		(instruccion(at_inst))+
+		(instruccion(at1))+
 	<tEND> <tSEMICOLON>
 	{
 		if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de la tabla de símbolos
@@ -410,7 +409,7 @@ void declaracion_procedimiento(Attributes at) :
 
 		at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
 		at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-		at.code.addBlock(at_inst.code);	// Después se añade el código de la función
+		at.code.addBlock(at1.code);	// Después se añade el código de la función
 		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 }
@@ -421,7 +420,7 @@ void declaracion_funcion(Attributes at) :
 	TypeAttrib typeAt = new TypeAttrib();
 	typeAt.t = null; // Indica que se están leyendo parámetros, y que los símbolos se insertan aquí y no en "tipo_variable_simple"
 	FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-	Attributes at_inst = new Attributes();
+	Attributes at1 = new Attributes();
 	String paramsLabel = CGUtils.newLabel(); 
 	String codeLabel = CGUtils.newLabel();
 }
@@ -437,8 +436,8 @@ void declaracion_funcion(Attributes at) :
 		SymbolFunction funcSymbol = new SymbolFunction(funcProcDecAt.id.image, paramsList, funcProcDecAt.returnType, paramsLabel);
 		semantic.insertFuncProc(funcProcDecAt.id, funcSymbol, funcProcDecAt.params);
 
-		at.code.addLabel(paramsLabel);
-		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
+		at.code.addLabel(paramsLabel); // Etiqueta de inicio de la función
+		at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso (SRF + ASGI)
 		at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del código de la función
 	}
 	<tIS>
@@ -446,7 +445,7 @@ void declaracion_funcion(Attributes at) :
 		( declaracion_procedimiento(funcProcDecAt) | declaracion_funcion(funcProcDecAt) )*
 	<tBEGIN> 
 		{ semantic.enterFunction(funcSymbol); }
-		(instruccion(at_inst))+
+		(instruccion(at1))+
 	<tEND> <tSEMICOLON>
 	{
 		semantic.exitFunction(getToken(0));
@@ -455,7 +454,7 @@ void declaracion_funcion(Attributes at) :
 
 		at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
 		at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-		at.code.addBlock(at_inst.code);	// Después se añade el código de la función
+		at.code.addBlock(at1.code);	// Después se añade el código de la función
 		at.code.addInst(PCodeInstruction.OpCode.CSF);
 	}
 }
@@ -517,8 +516,8 @@ void instruccion(Attributes at) :
 	Attributes at1 = new Attributes();
 }
 {
-	(	inst_leer(at1)
-	|	skip_line(at1)
+	(	skip_line(at1)
+	|	inst_leer(at1)
 	|   inst_escribir(at1)
 	|   inst_escribir_linea(at1)
 	|   inst_invocacion_procedimiento_o_asignacion(at1)
@@ -586,7 +585,7 @@ void inst_leer_elemento(Attributes at) :
 		Symbol symbol = semantic.getSymbol(id);
 
 		semantic.isProcedureOrFunction(id, symbol); // si es procedimiento o función, error
-		semantic.readingArrayChecks(id, symbol, access);
+		semantic.readingArrayChecks(id, symbol, access); // se accede a un array y es de tipo INT/CHAR
 		semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
 
 		at.code.addBlock(at1.code);
@@ -936,6 +935,7 @@ void expresion(ExpressionAttrib expAt) :
 		expAt.param = expAt_son.param;
 
 		if (moreThanOne) {
+			expAt.code.addBlock(expAt_son2.code);
 			// apilar operador lógico
 			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
@@ -1085,7 +1085,6 @@ void factor(ExpressionAttrib expAt) :
 			expAt.esAsignable = false;
 			semantic.notOperatorCheck(getToken(0), expAt_son.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 
-			expAt.code.addBlock(expAt_son.code);
 			expAt.code.addInst(PCodeInstruction.OpCode.NGB);
 
 			expAt.type = Symbol.Types.BOOL;
