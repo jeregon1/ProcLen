@@ -314,7 +314,7 @@ public class SemanticFunctions {
 							code.addInst(PCodeInstruction.OpCode.PLUS); // @base + j
 							code.addInst(PCodeInstruction.OpCode.DRF); // array[j]
 						}
-					} else { // arg.class == VAL o UNDEF
+					} else { // arg.parClass == VAL o UNDEF
 						// Si es un parámetro de array por valor, se añade código para empujar todos los elementos del array
 						for (int j = 0; j < ((SymbolArray) par).getNumComp(); j++) {
 							code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir + j);

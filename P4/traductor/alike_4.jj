@@ -1017,7 +1017,8 @@ void expresion_simple(ExpressionAttrib expAt) :
 		}
 	}
 }
-                                                                                                                                                                        
+
+
 //termino: factor (operador_multiplicativo factor)*
 void termino(ExpressionAttrib expAt) : 
 {
@@ -1065,6 +1066,7 @@ Token operador_multiplicativo() :
 	{ return op; }
 }
 
+
 //factor: (<tNOT>)? primario
 void factor(ExpressionAttrib expAt) : 
 {
@@ -1095,7 +1097,7 @@ void factor(ExpressionAttrib expAt) :
 void primario(ExpressionAttrib expAt) : 
 {
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
-	Attributes at_son = new Attributes();
+	Attributes at1 = new Attributes();
 	Symbol.Types type = Symbol.Types.UNDEFINED;
 	Token id;
 }
@@ -1114,7 +1116,7 @@ void primario(ExpressionAttrib expAt) :
 		expAt.code.addBlock(expAt1.code);
 		expAt1.type = Symbol.Types.INT;
 	}
-	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at_son) <tRPAREN> //invocar func. (con parámetros) o comp. array
+	|	LOOKAHEAD (2) id = <tID> <tLPAREN> lista_una_o_mas_exps(id, at1) <tRPAREN> //invocar func. (con parámetros) o comp. array
 	{
 		if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
 		Symbol symbol = semantic.getSymbol(id);
@@ -1123,14 +1125,14 @@ void primario(ExpressionAttrib expAt) :
 			// Si es una función, devolver su tipo retorno
 			case FUNCTION: expAt1.type = ((SymbolFunction) symbol).returnType; 
 				
-				expAt.code.addBlock(at_son.code); // apilar los parámetros y llamar a OSF
+				expAt.code.addBlock(at1.code); // apilar los parámetros y llamar a OSF
 				String label = semantic.getLabelFromSymbol(id);
 				expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
 				break;
 
 			case PROCEDURE: semantic.procedureInPrimaryError(id, "función"); break; // Checkear que no es procedimiento 
 			case ARRAY:
-				expAt.code.addBlock(at_son.code);
+				expAt.code.addBlock(at1.code);
 				expAt1.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
 				expAt.esAsignable = true; // es una componente de array
 				break;
@@ -1210,7 +1212,7 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 		expAt1 = new ExpressionAttrib(); // borramos el contenido de expAt1
 	}
 	( <tCOMMA> expresion(expAt1) 
-		{ // Iterate over all the parameters
+		{ // Iterar sobre todos los parámetros
 			if (expAt1.param.kind == 0) expAt1.param = getToken(0);
 			expAt_list.add(expAt1);
 			expAt1 = new ExpressionAttrib(); // borramos el contenido de expAt1
