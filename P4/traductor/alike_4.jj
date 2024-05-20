@@ -1161,8 +1161,6 @@ void primario(ExpressionAttrib expAt) :
 	|	<tCONST_INT>  { // guardar el valor del int y hacer: STC (ascii del int)
 			expAt1.type = Symbol.Types.INT; 
 			expAt.code.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(getToken(0).image));
-			if (getToken(0).image.charAt(0) == '-') // si es negativo, añadir instrucción de negación
-				expAt.code.addInst(PCodeInstruction.OpCode.NGI);
 		} 
 	|	<tCONST_CHAR> {// STC (ascii del char)
 			expAt1.type = Symbol.Types.CHAR;
