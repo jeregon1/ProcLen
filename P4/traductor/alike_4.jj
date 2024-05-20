@@ -1015,36 +1015,32 @@ void expresion_simple(ExpressionAttrib expAt) :
 //termino: factor (operador_multiplicativo factor)*
 void termino(ExpressionAttrib expAt) : 
 {
-	boolean moreThanOne = false;
 	ExpressionAttrib expAt1 = new ExpressionAttrib();
 	ExpressionAttrib expAt2 = new ExpressionAttrib();
-	Token op = new Token();
+	Token op = null;
 }
 {
     factor(expAt1) 
 	( op = operador_multiplicativo()
 		{
-			moreThanOne = true;
 			semantic.multiplicativeFactorCheck(getToken(0), expAt1.type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
 	factor(expAt2)
-		{ 
+		{
+			expAt2.code.addInst(semantic.operatorOpCode(op)); // Apilar el operador entre cada par de factores
 			// Si hay más de un factor, deben ser todos INT
 			semantic.multiplicativeFactorCheck(getToken(0), expAt2.type); // Los factores deben ser todos INT para poder operar con *, /, %
 		}
 	)*
 	{
 		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt2.code); // código del resto de factores con sus operadores (puede estar vacío)
+
+		boolean moreThanOne = op != null;
 
 		expAt.esAsignable = expAt1.esAsignable && ! moreThanOne; // Si hay más de un factor, la expresión no es asignable
 		expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt1.type;
 		expAt.param = expAt1.param;
-
-		// Si hay más de un factor, añadir el código del segundo factor y apilar el operador
-		if (expAt2.type != null) {
-			expAt.code.addBlock(expAt2.code);
-			expAt.code.addInst(semantic.operatorOpCode(op));
-		}
 	}
 }		
 
