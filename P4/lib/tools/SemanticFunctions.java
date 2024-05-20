@@ -18,6 +18,7 @@ import lib.errores.*;
 
 import lib.tools.codeGeneration.*;
 import lib.attributes.Attributes;
+import lib.attributes.ExpressionAttrib;
 
 import java.util.Map;
 
@@ -159,7 +160,7 @@ public class SemanticFunctions {
 				case FUNCTION: 
 				case PROCEDURE: break;
 				case ARRAY: 
-					if (s.parClass == Symbol.ParameterClass.VAL) {
+					if (s.parClass != Symbol.ParameterClass.REF) {
 
 						s.dir = CGUtils.usedMemorySpaces[st.level];
 						CGUtils.usedMemorySpaces[st.level] += ((SymbolArray) s).getNumComp();
@@ -215,7 +216,7 @@ public class SemanticFunctions {
 		}
 	}
 
-	// -------------------- GENERACION CODIGO --------------------------
+	// -------------------- GENERACIÓN CÓDIGO --------------------------
 
 	public CodeBlock readParamsCode(List<Symbol> params) {
 		CodeBlock code = new CodeBlock();
@@ -261,6 +262,38 @@ public class SemanticFunctions {
 
 		code.addInst(PCodeInstruction.OpCode.PLUS); // @base + (indice_acceso - lim_inf)
 		
+		return code;
+	}
+
+	public CodeBlock pushParametersCode (List<ExpressionAttrib> expAt_list, List<Symbol> parList, Symbol symbol) {
+		CodeBlock code = new CodeBlock();
+		
+		// iterar sobre los bloques de código de los argumentos y la lista de params y añadirlos al bloque de código de la invocación
+		for (int i = 0; i < expAt_list.size(); i++) {
+			ExpressionAttrib expAt = expAt_list.get(i);
+			Symbol par = parList.get(i);
+			
+			if (par.type == Symbol.Types.ARRAY) {
+				Symbol arg = this.getSymbol(expAt.param);
+				if (par.parClass == Symbol.ParameterClass.VAL) {
+
+					// Si es un parámetro de array por valor, se añade código para empujar todos los elementos del array
+					for (int j = 0; j < ((SymbolArray) par).getNumComp(); j++) {
+						code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir + j);
+						code.addInst(PCodeInstruction.OpCode.DRF);
+					}
+				} else {
+					// Si es un parámetro de array por referencia, se añade código para empujar la dirección del array
+					code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir);
+					code.addInst(PCodeInstruction.OpCode.DRF);
+				}
+			}
+
+			// Si es para un parámetro por referencia, se quita una instrucción DRF para quedarse con la dirección
+			if (par.parClass == Symbol.ParameterClass.REF)
+				code.removeLastInst();
+		}
+
 		return code;
 	}
 

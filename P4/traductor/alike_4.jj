@@ -1182,11 +1182,12 @@ void primario(ExpressionAttrib expAt) :
 				id.clone(expAt.param);
 				expAt.esAsignable = true;
 				expAt_son.type = symbol.type;
-
-				expAt.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
-				expAt.code.addInst(PCodeInstruction.OpCode.DRF);
-				if (symbol.parClass == Symbol.ParameterClass.REF)
+				if (symbol.type != Symbol.Types.ARRAY){ // Los arrays se tratan en lista_una_o_mas_exps
+					expAt.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
 					expAt.code.addInst(PCodeInstruction.OpCode.DRF);
+					if (symbol.parClass == Symbol.ParameterClass.REF)
+						expAt.code.addInst(PCodeInstruction.OpCode.DRF);
+				}
 		}
 	}
 	|	<tCONST_INT>  { // guardar el valor del int y hacer: STC (ascii del int)
@@ -1259,18 +1260,8 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
 			semantic.checkArgumentTypes(id, types, parList, args, symbol);
 
-			// iterar sobre los bloques de código de los argumentos y la lista de params y añadirlos al bloque de código de la invocación
-			for (int i = 0; i < expAt_list.size(); i++) {
-				ExpressionAttrib expAt = expAt_list.get(i);
-				Symbol par = parList.get(i);
-				
-				// Si es asignable y es para un parámetro por referencia, se quita una instrucción SRF
-				if (par.parClass == Symbol.ParameterClass.REF && expAt.esAsignable) {
-					expAt.code.removeLastInst();
-				}
+			at.code.addBlock(semantic.pushParametersCode(expAt_list, parList, symbol));
 
-				at.code.addBlock(expAt.code);
-			}
 		} else if (symbol.type == Symbol.Types.ARRAY) {
 			semantic.arrayInListOfExpressionCheck(id, types);
 			at.code.addBlock(semantic.arrayAccessCode(expAt_list.get(0), symbol));
