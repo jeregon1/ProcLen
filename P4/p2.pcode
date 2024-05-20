@@ -1,0 +1,20 @@
+  ENP L0
+L1:
+  JMP L2
+L3:
+  JMP L4
+L5:
+  JMP L6
+  SRF  0  3
+  OSF  4  1 L3
+  ASG
+L6:
+  CSF
+L4:
+  STC  0
+  CSF
+  CSF
+L2:
+  CSF
+L0:
+  LVP

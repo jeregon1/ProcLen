@@ -1,0 +1,57 @@
+  ENP L0
+L1:
+  SRF  0  3
+  ASGI
+  JMP L2
+L2:
+  SRF  0  3
+  DRF 
+  ; en ref params hacer DRF x2
+  WRT  1
+  SRF  0  3
+  ; en asignaciones de ref params, hacer DRF x1
+  STC  0
+  ASG
+  SRF  0  3
+  DRF
+  CSF ; return
+  CSF ; end
+L3:
+  SRF  0  4
+  ASGI
+  SRF  0  3
+  ASGI
+  JMP L4
+L4: ; se están acumulando las direcciones de variables de un mismo nivel
+  SRF  0  4
+  DRF
+  WRT  1
+  SRF  0  5
+  DRF
+  ; DRF x2
+  WRT  1
+  SRF  0  5
+  ; DRF x1
+  STC  0
+  ASG
+  SRF  0  4
+  SRF  0  4
+  DRF
+  OSF  6  0 L1 ; debería ser 5, pq los lugares de memoria ocupados son 0-4; problema derivado de las dirs incorrecta
+                ; las direcciones de los argumentos se están acumulando en un mismo nivel
+  ASG
+  SRF  0  4
+  SRF  0  5
+  DRF
+  OSF  6  0 L1 ; lo mismo (5), y l debería ser 1, de niveles ocultados
+  ASG
+  CSF
+L0:
+  SRF  0  3
+  DRF
+  SRF  0  4
+  DRF ; sobra DRF en args por referencia
+  ; habría que pasar un atributo que indique si en lista_una_o_amas_exps cada exp es por ref o val
+  OSF  5  0 L3
+  LVP
+
