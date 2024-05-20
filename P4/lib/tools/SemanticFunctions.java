@@ -322,6 +322,8 @@ public class SemanticFunctions {
 						}
 					}
 				}
+			} else {
+				code.addBlock(expAt.code);
 			}
 
 			// Si es para un parámetro por referencia, se quita una instrucción DRF para quedarse con la dirección
