@@ -209,7 +209,9 @@ list.add(t);
 //tipo_variable: (tipo_variable_simple | tipo_variable_array)
 /**
  * Params: 
- *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro ARRAY
+ *	-t: lista de tokens de la enumeración de los identificadores de las variables
+ *	-paramArray: creado y utilizado en la producción "parametro_formal" para rellenar los datos de un parámetro A RRAY
+ *	-paramClass: valor != de NONE en caso de ser un parámetro
  */
   static final public void tipo_variable(TypeAttrib typeAt) throws ParseException {TypeAttrib typeAt1 = new TypeAttrib(), typeAt2 = new TypeAttrib();
         typeAt1.clone(typeAt); typeAt2.clone(typeAt);
@@ -331,7 +333,7 @@ if (typeAt.t == null) { // Parámetros
 
 //declaracion_procedimiento: <tPROCDURE> <tID> (<tLPAREN> lista_parametros <tRPAREN>)? <tIS> (declaracion_var)* (declaracion_procedimiento | declaracion_funcion)* <tBEGIN> (instruccion)+ <tEND> <tSEMICOLON>
   static final public void declaracion_procedimiento(Attributes at) throws ParseException {FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-        Attributes at1 = new Attributes();
+        Attributes at_inst = new Attributes();
         String paramsLabel = CGUtils.newLabel();
         String codeLabel = CGUtils.newLabel();
     jj_consume_token(tPROCEDURE);
@@ -348,12 +350,10 @@ if (typeAt.t == null) { // Parámetros
       ;
     }
 ArrayList<Symbol> paramsList = funcProcDecAt.getParamsList();
-
-                // Insertar símbolo de procedimiento en st, crear nuevo bloque, y DESPUÉS de crear bloque se insertan los parámetros
                 semantic.insertFuncProc(funcProcDecAt.id, new SymbolProcedure(funcProcDecAt.id.image, paramsList, paramsLabel), funcProcDecAt.params);
 
-                at.code.addLabel(paramsLabel); // Etiqueta de inicio del procedimiento
-                at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso (SRF + ASGI)
+                at.code.addLabel(paramsLabel);
+                at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
                 at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del procedimiento
 
     jj_consume_token(tIS);
@@ -400,7 +400,7 @@ ArrayList<Symbol> paramsList = funcProcDecAt.getParamsList();
     jj_consume_token(tBEGIN);
     label_7:
     while (true) {
-      instruccion(at1);
+      instruccion(at_inst);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tWHILE:
       case tIF:
@@ -427,7 +427,7 @@ if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de
 
                 at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
                 at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-                at.code.addBlock(at1.code);     // Después se añade el código de la función
+                at.code.addBlock(at_inst.code); // Después se añade el código de la función
                 at.code.addInst(PCodeInstruction.OpCode.CSF);
 }
 
@@ -435,7 +435,7 @@ if (verbose) semantic.printSymbolTable(funcProcDecAt.id.image); // Impresión de
   static final public void declaracion_funcion(Attributes at) throws ParseException {TypeAttrib typeAt = new TypeAttrib();
         typeAt.t = null; // Indica que se están leyendo parámetros, y que los símbolos se insertan aquí y no en "tipo_variable_simple"
         FuncProcDecAttrib funcProcDecAt = new FuncProcDecAttrib();
-        Attributes at1 = new Attributes();
+        Attributes at_inst = new Attributes();
         String paramsLabel = CGUtils.newLabel();
         String codeLabel = CGUtils.newLabel();
     jj_consume_token(tFUNCTION);
@@ -458,8 +458,8 @@ funcProcDecAt.returnType = typeAt.type;
                 SymbolFunction funcSymbol = new SymbolFunction(funcProcDecAt.id.image, paramsList, funcProcDecAt.returnType, paramsLabel);
                 semantic.insertFuncProc(funcProcDecAt.id, funcSymbol, funcProcDecAt.params);
 
-                at.code.addLabel(paramsLabel); // Etiqueta de inicio de la función
-                at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso (SRF + ASGI)
+                at.code.addLabel(paramsLabel);
+                at.code.addBlock(semantic.readParamsCode(paramsList)); // Desapilado de parámetros en orden inverso
                 at.code.addInst(PCodeInstruction.OpCode.JMP, codeLabel); // Salto a la instrucción de inicio del código de la función
 
     jj_consume_token(tIS);
@@ -507,7 +507,7 @@ funcProcDecAt.returnType = typeAt.type;
 semantic.enterFunction(funcSymbol);
     label_10:
     while (true) {
-      instruccion(at1);
+      instruccion(at_inst);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tWHILE:
       case tIF:
@@ -535,7 +535,7 @@ semantic.exitFunction(getToken(0));
 
                 at.code.addBlock(funcProcDecAt.code); // Primero se añade el código de las func/proc declaradas internamente
                 at.code.addLabel(codeLabel); // Etiqueta de inicio del código la función
-                at.code.addBlock(at1.code);     // Después se añade el código de la función
+                at.code.addBlock(at_inst.code); // Después se añade el código de la función
                 at.code.addInst(PCodeInstruction.OpCode.CSF);
 }
 
@@ -601,12 +601,12 @@ parVarAt.baseType = typeAt.type;
 //instruccion: (inst_leer | skip_line | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
   static final public void instruccion(Attributes at) throws ParseException {Attributes at1 = new Attributes();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case tSKIP_LINE:{
-      skip_line(at1);
-      break;
-      }
     case tGET:{
       inst_leer(at1);
+      break;
+      }
+    case tSKIP_LINE:{
+      skip_line(at1);
       break;
       }
     case tPUT:{
@@ -710,7 +710,7 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // El error de sí
                 Symbol symbol = semantic.getSymbol(id);
 
                 semantic.isProcedureOrFunction(id, symbol); // si es procedimiento o función, error
-                semantic.readingArrayChecks(id, symbol, access); // se accede a un array y es de tipo INT/CHAR
+                semantic.readingArrayChecks(id, symbol, access);
                 semantic.isBooleanBeingRead(id, symbol); // no se puede leer un booleano
 
                 at.code.addBlock(at1.code);
@@ -866,7 +866,7 @@ switch (expAt.type) {
 }
 
 //inst_invocacion_procedimiento_o_asignacion: <tID> (array_access)? (<tASSIGN> expresion | <tLPAREN> lista_una_o_mas_exps <tRPAREN>)?
-  static final public void inst_invocacion_procedimiento_o_asignacion(Attributes at) throws ParseException {Attributes at1 = new Attributes();
+  static final public void inst_invocacion_procedimiento_o_asignacion(Attributes at) throws ParseException {Attributes at_access = new Attributes();
         ExpressionAttrib expAt = new ExpressionAttrib();
         Token id;
         boolean access = false;
@@ -874,7 +874,7 @@ switch (expAt.type) {
     if (jj_2_1(2147483647)) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tLPAREN:{
-        array_access(at1);
+        array_access(at_access);
 access = true;
         break;
         }
@@ -891,7 +891,7 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
                         semantic.assignableTypeChecks(id, symbol, expAt.type); // Solamente son asignables las variables simples y los elementos de un array
 
                         if (symbol.type == Symbol.Types.ARRAY) {
-                                at.code.addBlock(semantic.arrayAccessCode(at1, symbol)); // calcular la dirección de acceso al array
+                                at.code.addBlock(semantic.arrayAccessCode(at_access, symbol)); // calcular la dirección de acceso al array
                         } else {
                                 at.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
                                 // Si es un parametro por referencia, se desreferencia
@@ -904,7 +904,7 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tLPAREN:{
         jj_consume_token(tLPAREN);
-        lista_una_o_mas_exps(id, at1);
+        lista_una_o_mas_exps(id, at_access);
 access = true;
         jj_consume_token(tRPAREN);
         break;
@@ -919,7 +919,7 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
                         semantic.procedureChecks(id, symbol); // Comprobar que el símbolo es un procedimiento, y que no es el procedimiento principal
                         if (! access) semantic.funcProcNoParametersCheck(id, symbol); // Comprobar que no se pasan parámetros a un procedimiento sin parámetros
 
-                        at.code.addBlock(at1.code); // apilar los parámetros
+                        at.code.addBlock(at_access.code); // apilar los parámetros
                         // addOSFInst (int s, int l, String label) --> respetando 's' componentes del bloque actual, ocultando 'l' bloques de activación, comenzando la ejecución en 'label'
                         String label = semantic.getLabelFromSymbol(id);
                         at.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
@@ -927,11 +927,11 @@ if (! semantic.isSymbolDefined(id)) {if ("" != null) return;} // Si no está def
 }
 
 //inst_if: <tIF> expresion <tTHEN> instruccion+ (<tELSIF> expresion <tTHEN> instruccion+)* (<tELSE> instruccion+)? <tEND> <IF>
-  static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib(); // guarda if
-        ExpressionAttrib expAt2 = new ExpressionAttrib(); // guardas elsifs
-        Attributes at1 = new Attributes(); // instrucciones if
-        Attributes at2 = new Attributes(); // instrucciones elsifs
-        Attributes at3 = new Attributes(); // instrucciones else
+  static final public void inst_if(Attributes at) throws ParseException {ExpressionAttrib expAt_if = new ExpressionAttrib(); // guarda if
+        ExpressionAttrib expAt_elsif = new ExpressionAttrib(); // guardas elsifs
+        Attributes at_if = new Attributes(); // instrucciones if
+        Attributes at_elsif = new Attributes(); // instrucciones elsifs
+        Attributes at_else = new Attributes(); // instrucciones else
         List<String> labelsEnd = new ArrayList<>(); // Lista de etiquetas de fin de bloques
 
 String label_elsif = CGUtils.newLabel();
@@ -939,15 +939,15 @@ String label_elsif = CGUtils.newLabel();
                 String label_else;
                 String label_next = label_elsif;
     jj_consume_token(tIF);
-    expresion(expAt1);
-semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de tipo BOOL
+    expresion(expAt_if);
+semantic.ifChecks(getToken(0), expAt_if.type); // Comprobar que la guarda es de tipo BOOL
 
-                at.code.addBlock(expAt1.code); // If: Guarda
+                at.code.addBlock(expAt_if.code); // If: Guarda
                 at.code.addInst(PCodeInstruction.OpCode.JMF, label_next);
     jj_consume_token(tTHEN);
     label_15:
     while (true) {
-      instruccion(at1);
+      instruccion(at_if);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case tWHILE:
       case tIF:
@@ -967,7 +967,7 @@ semantic.ifChecks(getToken(0), expAt1.type); // Comprobar que la guarda es de ti
         break label_15;
       }
     }
-at.code.addBlock(at1.code);     // If: Instrucciones
+at.code.addBlock(at_if.code);   // If: Instrucciones
                 label_end = CGUtils.newLabel();
                 labelsEnd.add(label_end);
                 at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
@@ -984,14 +984,14 @@ at.code.addBlock(at1.code);     // If: Instrucciones
         break label_16;
       }
       jj_consume_token(tELSIF);
-      expresion(expAt2);
-semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de tipo BOOL
+      expresion(expAt_elsif);
+semantic.ifChecks(getToken(0), expAt_elsif.type); // Comprobar que la guarda es de tipo BOOL
 
                         at.code.addLabel(label_next);
                         label_next = CGUtils.newLabel(); // Siguiente etiqueta para caso recursivo
 
-                        at.code.addBlock(expAt2.code); // Elsif: Guarda
-                        expAt2 = new ExpressionAttrib(); // Reiniciar expAt2 para que no se acumulen las instrucciones
+                        at.code.addBlock(expAt_elsif.code); // Elsif: Guarda
+                        expAt_elsif = new ExpressionAttrib(); // Reiniciar expAt_elsif para que no se acumulen las instrucciones
 
                         label_end = CGUtils.newLabel();
                         labelsEnd.add(label_end);
@@ -1001,7 +1001,7 @@ semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de ti
       jj_consume_token(tTHEN);
       label_17:
       while (true) {
-        instruccion(at2);
+        instruccion(at_elsif);
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tWHILE:
         case tIF:
@@ -1021,8 +1021,8 @@ semantic.ifChecks(getToken(0), expAt2.type); // Comprobar que la guarda es de ti
           break label_17;
         }
       }
-at.code.addBlock(at2.code); // Elsif: Instrucciones
-                        at2 = new Attributes(); // Reiniciar at2 para que no se acumulen las instrucciones
+at.code.addBlock(at_elsif.code); // Elsif: Instrucciones
+                        at_elsif = new Attributes(); // Reiniciar at_elsif para que no se acumulen las instrucciones
                         at.code.addInst(PCodeInstruction.OpCode.JMP, label_end); // Salto al final del if
 
     }
@@ -1031,7 +1031,7 @@ at.code.addBlock(at2.code); // Elsif: Instrucciones
       jj_consume_token(tELSE);
       label_18:
       while (true) {
-        instruccion(at3);
+        instruccion(at_else);
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tWHILE:
         case tIF:
@@ -1052,7 +1052,7 @@ at.code.addBlock(at2.code); // Elsif: Instrucciones
         }
       }
 at.code.addLabel(label_next); // label_next tiene la siguiente etiqueta para añadir
-                        at.code.addBlock(at3.code); // Else: Instrucciones
+                        at.code.addBlock(at_else.code); // Else: Instrucciones
 
       break;
       }
@@ -1132,12 +1132,12 @@ at.code.addInst(PCodeInstruction.OpCode.LVP);
 /*--------------------------------------- EXPRESIONES ---------------------------------------*/
 
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
-  static final public void expresion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
-        ExpressionAttrib expAt2 = new ExpressionAttrib();
+  static final public void expresion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt_son = new ExpressionAttrib();
+        ExpressionAttrib expAt_son2 = new ExpressionAttrib();
         Symbol.Types type;
         String errorMsg = "Las relaciones de una expresi\u00f3n l\u00f3gica deben ser de tipo " + tokenImage[tBOOL] + ".";
         Token op = null;
-    relacion(expAt1);
+    relacion(expAt_son);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tAND:
     case tOR:{
@@ -1146,11 +1146,12 @@ at.code.addInst(PCodeInstruction.OpCode.LVP);
         label_20:
         while (true) {
           op = jj_consume_token(tAND);
-if (expAt1.type != Symbol.Types.BOOL)
+if (expAt_son.type != Symbol.Types.BOOL)
                                         semantic.error(getToken(0), errorMsg);
-          relacion(expAt2);
-// Si hay más de una relación, deben ser todas BOOL
-                                if (expAt2.type != Symbol.Types.BOOL)
+          relacion(expAt_son2);
+expAt_son2.code.addInst(semantic.operatorOpCode(op));
+                                // Si hay más de una relación, deben ser todas BOOL
+                                if (expAt_son2.type != Symbol.Types.BOOL)
                                         semantic.error(getToken(0), errorMsg);
           switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
           case tAND:{
@@ -1168,11 +1169,12 @@ if (expAt1.type != Symbol.Types.BOOL)
         label_21:
         while (true) {
           op = jj_consume_token(tOR);
-if (expAt1.type != Symbol.Types.BOOL)
+if (expAt_son.type != Symbol.Types.BOOL)
                                         semantic.error(getToken(0), errorMsg);
-          relacion(expAt2);
-// Si hay más de una relación, deben ser todas BOOL
-                                if (expAt2.type != Symbol.Types.BOOL)
+          relacion(expAt_son2);
+expAt_son2.code.addInst(semantic.operatorOpCode(op));
+                                // Si hay más de una relación, deben ser todas BOOL
+                                if (expAt_son2.type != Symbol.Types.BOOL)
                                         semantic.error(getToken(0), errorMsg);
           switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
           case tOR:{
@@ -1197,26 +1199,21 @@ if (expAt1.type != Symbol.Types.BOOL)
       jj_la1[37] = jj_gen;
       ;
     }
-expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
+                expAt.code.addBlock(expAt_son2.code); // código del resto de relaciones
 
                 boolean moreThanOne = op != null;
 
-                expAt.esAsignable = expAt1.esAsignable && ! moreThanOne; // Si hay más de una relación, la expresión no es asignable
-                expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt1.type;
-                expAt.param = expAt1.param;
-
-                if (moreThanOne) {
-                        expAt.code.addBlock(expAt2.code);
-                        // apilar operador lógico
-                        expAt.code.addInst(semantic.operatorOpCode(op));
-                }
+                expAt.esAsignable = expAt_son.esAsignable && ! moreThanOne; // Si hay más de una relación, la expresión no es asignable
+                expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt_son.type;
+                expAt.param = expAt_son.param;
 }
 
 //relacion: expresion_simple (operador_relacional expresion_simple)?
-  static final public void relacion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
-        ExpressionAttrib expAt2 = new ExpressionAttrib();
+  static final public void relacion(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt_son = new ExpressionAttrib();
+        ExpressionAttrib expAt_son2 = new ExpressionAttrib();
         Token op = null;
-    expresion_simple(expAt1);
+    expresion_simple(expAt_son);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tEQ:
     case tNEQ:
@@ -1225,30 +1222,30 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
     case tGT:
     case tGE:{
       op = operador_relacional();
-      expresion_simple(expAt2);
+      expresion_simple(expAt_son2);
       break;
       }
     default:
       jj_la1[38] = jj_gen;
       ;
     }
-expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
-                expAt.esAsignable = expAt1.esAsignable && op == null; // Si hay dos expresiones, la expresión no es asignable
+expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
+                expAt.esAsignable = expAt_son.esAsignable && op == null; // Si hay dos expresiones, la expresión no es asignable
 
                 // Puede haber una o dos expresiones, pero si hay dos, deben ser del mismo tipo
-                if (expAt2.type != null) {
-                        if (expAt1.type != expAt2.type)
-                                semantic.error(getToken(0), "Las expresiones de una relaci\u00f3n deben ser del mismo tipo, se encontr\u00f3 " + expAt1.type + " y " + expAt2.type + ".");
+                if (expAt_son2.type != null) {
+                        if (expAt_son.type != expAt_son2.type)
+                                semantic.error(getToken(0), "Las expresiones de una relaci\u00f3n deben ser del mismo tipo, se encontr\u00f3 " + expAt_son.type + " y " + expAt_son2.type + ".");
 
                         expAt.type = Symbol.Types.BOOL; // Si hay dos expresiones, el resultado es booleano
                 }
                 // else: si hay solo una expresión, se devuelve su tipo
-                else { expAt.type = expAt1.type; }
-                expAt.param = expAt1.param;
+                else { expAt.type = expAt_son.type; }
+                expAt.param = expAt_son.param;
 
                 // Si hay dos expresiones, entonces apilar el código de la segunda y el operador relacional
-                if (expAt2.type != null) {
-                        expAt.code.addBlock(expAt2.code);
+                if (expAt_son2.type != null) {
+                        expAt.code.addBlock(expAt_son2.code);
                         // apilar operador relacional
                         expAt.code.addInst(semantic.operatorOpCode(op));
                 }
@@ -1291,8 +1288,8 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 }
 
 //expresion_simple: ( <tPLUS> |	<tMINUS> )? termino ( ( <tPLUS> | <tMINUS> ) termino )*
-  static final public void expresion_simple(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
-        ExpressionAttrib expAt2 = new ExpressionAttrib();
+  static final public void expresion_simple(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt_son = new ExpressionAttrib();
+        ExpressionAttrib expAt_son2 = new ExpressionAttrib();
         Token op = null;
         boolean sign;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1318,10 +1315,10 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
       jj_la1[41] = jj_gen;
       ;
     }
-    termino(expAt1);
+    termino(expAt_son);
 sign = (op != null);
-                        semantic.signInExpressionCheck(getToken(0), expAt1.type, sign); // Si hay signo, la expresión debe ser de tipo INT
-                        if (sign && op.kind == tMINUS) expAt1.code.addInst(PCodeInstruction.OpCode.NGI); // Si hay signo negativo, añadir instrucción de negación
+                        semantic.signInExpressionCheck(getToken(0), expAt_son.type, sign); // Si hay signo, la expresión debe ser de tipo INT
+                        if (sign && op.kind == tMINUS) expAt_son.code.addInst(PCodeInstruction.OpCode.NGI); // Si hay signo negativo, añadir instrucción de negación
 
     label_22:
     while (true) {
@@ -1349,30 +1346,30 @@ sign = (op != null);
         jj_consume_token(-1);
         throw new ParseException();
       }
-      termino(expAt2);
-semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
+      termino(expAt_son2);
+semantic.moreThanOneExpressionCheck(getToken(0), expAt_son2.type); // Si hay más de un término, deben ser todos INT
 
     }
 sign = (op != null);
-                expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+                expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
-                expAt.esAsignable = expAt1.esAsignable && ! sign; // Si hay signo o más de un término, la expresión no es asignable
-                expAt.type = (sign) ? Symbol.Types.INT : expAt1.type;
-                expAt.param = expAt1.param;
+                expAt.esAsignable = expAt_son.esAsignable && ! sign; // Si hay signo o más de un término, la expresión no es asignable
+                expAt.type = (sign) ? Symbol.Types.INT : expAt_son.type;
+                expAt.param = expAt_son.param;
 
                 // Si hay más de un término, añadir el código del segundo término y apilar el operador
-                if (expAt2.type != null) {
-                        expAt.code.addBlock(expAt2.code);
+                if (expAt_son2.type != null) {
+                        expAt.code.addBlock(expAt_son2.code);
                         expAt.code.addInst(semantic.operatorOpCode(op));
                 }
 }
 
 //termino: factor (operador_multiplicativo factor)*
   static final public void termino(ExpressionAttrib expAt) throws ParseException {boolean moreThanOne = false;
-        ExpressionAttrib expAt1 = new ExpressionAttrib();
-        ExpressionAttrib expAt2 = new ExpressionAttrib();
+        ExpressionAttrib expAt_son = new ExpressionAttrib();
+        ExpressionAttrib expAt_son2 = new ExpressionAttrib();
         Token op = new Token();
-    factor(expAt1);
+    factor(expAt_son);
     label_23:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -1388,22 +1385,22 @@ sign = (op != null);
       }
       op = operador_multiplicativo();
 moreThanOne = true;
-                        semantic.multiplicativeFactorCheck(getToken(0), expAt1.type); // Los factores deben ser todos INT para poder operar con *, /, %
+                        semantic.multiplicativeFactorCheck(getToken(0), expAt_son.type); // Los factores deben ser todos INT para poder operar con *, /, %
 
-      factor(expAt2);
+      factor(expAt_son2);
 // Si hay más de un factor, deben ser todos INT
-                        semantic.multiplicativeFactorCheck(getToken(0), expAt2.type); // Los factores deben ser todos INT para poder operar con *, /, %
+                        semantic.multiplicativeFactorCheck(getToken(0), expAt_son2.type); // Los factores deben ser todos INT para poder operar con *, /, %
 
     }
-expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
 
-                expAt.esAsignable = expAt1.esAsignable && ! moreThanOne; // Si hay más de un factor, la expresión no es asignable
-                expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt1.type;
-                expAt.param = expAt1.param;
+                expAt.esAsignable = expAt_son.esAsignable && ! moreThanOne; // Si hay más de un factor, la expresión no es asignable
+                expAt.type = (moreThanOne) ? Symbol.Types.INT : expAt_son.type;
+                expAt.param = expAt_son.param;
 
                 // Si hay más de un factor, añadir el código del segundo factor y apilar el operador
-                if (expAt2.type != null) {
-                        expAt.code.addBlock(expAt2.code);
+                if (expAt_son2.type != null) {
+                        expAt.code.addBlock(expAt_son2.code);
                         expAt.code.addInst(semantic.operatorOpCode(op));
                 }
 }
@@ -1434,7 +1431,7 @@ expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
 
 //factor: (<tNOT>)? primario
   static final public void factor(ExpressionAttrib expAt) throws ParseException {boolean not = false;
-        ExpressionAttrib expAt1 = new ExpressionAttrib();
+        ExpressionAttrib expAt_son = new ExpressionAttrib();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tNOT:{
       jj_consume_token(tNOT);
@@ -1445,54 +1442,54 @@ not = true;
       jj_la1[46] = jj_gen;
       ;
     }
-    primario(expAt1);
-expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
-                expAt.esAsignable = expAt1.esAsignable;
+    primario(expAt_son);
+expAt.code.addBlock(expAt_son.code); // Subir código hacia llamada superior
+                expAt.esAsignable = expAt_son.esAsignable;
 
                 if (not) {
                         expAt.esAsignable = false;
-                        semantic.notOperatorCheck(getToken(0), expAt1.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
+                        semantic.notOperatorCheck(getToken(0), expAt_son.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 
                         expAt.code.addInst(PCodeInstruction.OpCode.NGB);
 
                         expAt.type = Symbol.Types.BOOL;
                 }
-                expAt.type = expAt1.type;
-                expAt.param = expAt1.param;
+                expAt.type = expAt_son.type;
+                expAt.param = expAt_son.param;
 }
 
 //primario: <tLPAREN> expresion <tRPAREN> | <tINT2CHAR> <tLPAREN> expresion <tRPAREN> | <tCHAR2INT> <tLPAREN> expresion <tRPAREN> 
 //			| <tID> <tLPAREN> lista_una_o_mas_exps <tRPAREN> | <tID> | <tCONST_INT> | <tCONST_CHAR> | <tTRUE> | <tFALSE>
-  static final public void primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt1 = new ExpressionAttrib();
-        Attributes at1 = new Attributes();
+  static final public void primario(ExpressionAttrib expAt) throws ParseException {ExpressionAttrib expAt_son = new ExpressionAttrib();
+        Attributes at_son = new Attributes();
         Symbol.Types type = Symbol.Types.UNDEFINED;
         Token id;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case tLPAREN:{
       jj_consume_token(tLPAREN);
-      expresion(expAt1);
+      expresion(expAt_son);
       jj_consume_token(tRPAREN);
-expAt.code.addBlock(expAt1.code);
+expAt.code.addBlock(expAt_son.code);
       break;
       }
     case tINT2CHAR:{
       jj_consume_token(tINT2CHAR);
       jj_consume_token(tLPAREN);
-      expresion(expAt1);
+      expresion(expAt_son);
       jj_consume_token(tRPAREN);
-semantic.int2charCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo INT
-                expAt.code.addBlock(expAt1.code);
-                expAt1.type = Symbol.Types.CHAR;
+semantic.int2charCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo INT
+                expAt.code.addBlock(expAt_son.code);
+                expAt_son.type = Symbol.Types.CHAR;
       break;
       }
     case tCHAR2INT:{
       jj_consume_token(tCHAR2INT);
       jj_consume_token(tLPAREN);
-      expresion(expAt1);
+      expresion(expAt_son);
       jj_consume_token(tRPAREN);
-semantic.char2intCheck(getToken(0), expAt1.type); // La expresión debe ser de tipo CHAR
-                expAt.code.addBlock(expAt1.code);
-                expAt1.type = Symbol.Types.INT;
+semantic.char2intCheck(getToken(0), expAt_son.type); // La expresión debe ser de tipo CHAR
+                expAt.code.addBlock(expAt_son.code);
+                expAt_son.type = Symbol.Types.INT;
       break;
       }
     default:
@@ -1500,40 +1497,40 @@ semantic.char2intCheck(getToken(0), expAt1.type); // La expresión debe ser de t
       if (jj_2_2(2)) {
         id = jj_consume_token(tID);
         jj_consume_token(tLPAREN);
-        lista_una_o_mas_exps(id, at1);
+        lista_una_o_mas_exps(id, at_son);
         jj_consume_token(tRPAREN);
-if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
+if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
                 Symbol symbol = semantic.getSymbol(id);
 
                 switch (symbol.type) {
                         // Si es una función, devolver su tipo retorno
-                        case FUNCTION: expAt1.type = ((SymbolFunction) symbol).returnType;
+                        case FUNCTION: expAt_son.type = ((SymbolFunction) symbol).returnType;
 
-                                expAt.code.addBlock(at1.code); // apilar los parámetros y llamar a OSF
+                                expAt.code.addBlock(at_son.code); // apilar los parámetros y llamar a OSF
                                 String label = semantic.getLabelFromSymbol(id);
                                 expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
                                 break;
 
                         case PROCEDURE: semantic.procedureInPrimaryError(id, "funci\u00f3n"); break; // Checkear que no es procedimiento 
                         case ARRAY:
-                                expAt.code.addBlock(at1.code);
-                                expAt1.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
+                                expAt.code.addBlock(at_son.code);
+                                expAt_son.type = ((SymbolArray) symbol).baseType; // Si es un array, devolver su tipo base
                                 expAt.esAsignable = true; // es una componente de array
                                 break;
-                        default: expAt1.type = symbol.type;
+                        default: expAt_son.type = symbol.type;
                 }
                 id.clone(expAt.param);
       } else {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case tID:{
           id = jj_consume_token(tID);
-if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
+if (! semantic.isSymbolDefined(id)) expAt_son.type = Symbol.Types.UNDEFINED;
                 Symbol symbol = semantic.getSymbol(id);
 
                 switch (symbol.type) {
                         case FUNCTION:
                                 semantic.funcProcNoParametersCheck(id, symbol);
-                                expAt1.type = ((SymbolFunction) symbol).returnType;
+                                expAt_son.type = ((SymbolFunction) symbol).returnType;
                                 String label = semantic.getLabelFromSymbol(id);
                                 expAt.code.addOSFInst(semantic.getLastSymbolAddress(), semantic.getCurrentLevel() - symbol.nivel, label);
                                 break;
@@ -1545,7 +1542,7 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
 
                                 id.clone(expAt.param);
                                 expAt.esAsignable = true;
-                                expAt1.type = symbol.type;
+                                expAt_son.type = symbol.type;
                                 if (symbol.type != Symbol.Types.ARRAY){ // Los arrays se tratan en lista_una_o_mas_exps
                                         expAt.code.addInst(PCodeInstruction.OpCode.SRF, semantic.getCurrentLevel() - symbol.nivel, (int) symbol.dir);
                                         expAt.code.addInst(PCodeInstruction.OpCode.DRF);
@@ -1558,7 +1555,7 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
         case tCONST_INT:{
           jj_consume_token(tCONST_INT);
 // guardar el valor del int y hacer: STC (ascii del int)
-                        expAt1.type = Symbol.Types.INT;
+                        expAt_son.type = Symbol.Types.INT;
                         expAt.code.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(getToken(0).image));
                         if (getToken(0).image.charAt(0) == '-') // si es negativo, añadir instrucción de negación
                                 expAt.code.addInst(PCodeInstruction.OpCode.NGI);
@@ -1567,21 +1564,21 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
         case tCONST_CHAR:{
           jj_consume_token(tCONST_CHAR);
 // STC (ascii del char)
-                        expAt1.type = Symbol.Types.CHAR;
+                        expAt_son.type = Symbol.Types.CHAR;
                         expAt.code.addInst(PCodeInstruction.OpCode.STC, getToken(0).image.charAt(1));
           break;
           }
         case tTRUE:{
           jj_consume_token(tTRUE);
 // STC 1
-                        expAt1.type = Symbol.Types.BOOL;
+                        expAt_son.type = Symbol.Types.BOOL;
                         expAt.code.addInst(PCodeInstruction.OpCode.STC, 1);
           break;
           }
         case tFALSE:{
           jj_consume_token(tFALSE);
 // STC 0
-                        expAt1.type = Symbol.Types.BOOL;
+                        expAt_son.type = Symbol.Types.BOOL;
                         expAt.code.addInst(PCodeInstruction.OpCode.STC, 0);
           break;
           }
@@ -1592,7 +1589,7 @@ if (! semantic.isSymbolDefined(id)) expAt1.type = Symbol.Types.UNDEFINED;
         }
       }
     }
-expAt.type = expAt1.type;
+expAt.type = expAt_son.type;
 }
 
 //lista_una_o_mas_exps: expresion() ( <tCOMMA> expresion() )*
@@ -1603,11 +1600,11 @@ expAt.type = expAt1.type;
         if (! semantic.isSymbolDefined(id)) return; // Si no se ha definido el símbolo (error semántico previo en primario)
 
         List<ExpressionAttrib> expAt_list = new ArrayList<>();
-        ExpressionAttrib expAt1 = new ExpressionAttrib();
-    expresion(expAt1);
-if (expAt1.param.kind == 0) expAt1.param = getToken(0);
-                expAt_list.add(expAt1);
-                expAt1 = new ExpressionAttrib(); // borramos el contenido de expAt1
+        ExpressionAttrib expAt_son = new ExpressionAttrib();
+    expresion(expAt_son);
+if (expAt_son.param.kind == 0) expAt_son.param = getToken(0);
+                expAt_list.add(expAt_son);
+                expAt_son = new ExpressionAttrib(); // borramos el contenido de expAt_son
 
     label_24:
     while (true) {
@@ -1621,11 +1618,11 @@ if (expAt1.param.kind == 0) expAt1.param = getToken(0);
         break label_24;
       }
       jj_consume_token(tCOMMA);
-      expresion(expAt1);
+      expresion(expAt_son);
 // Iterate over all the parameters
-                        if (expAt1.param.kind == 0) expAt1.param = getToken(0);
-                        expAt_list.add(expAt1);
-                        expAt1 = new ExpressionAttrib(); // borramos el contenido de expAt1
+                        if (expAt_son.param.kind == 0) expAt_son.param = getToken(0);
+                        expAt_list.add(expAt_son);
+                        expAt_son = new ExpressionAttrib(); // borramos el contenido de expAt_son
 
     }
 Symbol symbol = semantic.getSymbol(id);
@@ -1681,14 +1678,21 @@ Symbol symbol = semantic.getSymbol(id);
  {
     if (jj_scan_token(tINT2CHAR)) return true;
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_896_9_27()) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_917_19_39()
+ {
+    if (jj_scan_token(tOR)) return true;
+    if (jj_3R_relacion_951_9_28()) return true;
     return false;
   }
 
   static private boolean jj_3R_lista_una_o_mas_exps_1208_9_53()
  {
-    if (jj_3R_expresion_896_9_27()) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
@@ -1697,7 +1701,7 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_operador_multiplicativo_1065_9_44()
+  static private boolean jj_3R_operador_multiplicativo_1066_9_44()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1711,20 +1715,13 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_expresion_911_19_39()
- {
-    if (jj_scan_token(tOR)) return true;
-    if (jj_3R_relacion_949_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_911_17_33()
+  static private boolean jj_3R_expresion_917_17_33()
  {
     Token xsp;
-    if (jj_3R_expresion_911_19_39()) return true;
+    if (jj_3R_expresion_917_19_39()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_expresion_911_19_39()) { jj_scanpos = xsp; break; }
+      if (jj_3R_expresion_917_19_39()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -1767,9 +1764,50 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
+  static private boolean jj_3R_expresion_903_19_38()
+ {
+    if (jj_scan_token(tAND)) return true;
+    if (jj_3R_relacion_951_9_28()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_primario_1186_17_52()
  {
     if (jj_scan_token(tFALSE)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_903_17_29()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_903_17_32()) {
+    jj_scanpos = xsp;
+    if (jj_3R_expresion_917_17_33()) return true;
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_903_17_32()
+ {
+    Token xsp;
+    if (jj_3R_expresion_903_19_38()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_expresion_903_19_38()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_1002_10_36()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
+    if (jj_3R_termino_1032_5_35()) return true;
     return false;
   }
 
@@ -1779,51 +1817,10 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_expresion_898_19_38()
+  static private boolean jj_3R_relacion_952_11_31()
  {
-    if (jj_scan_token(tAND)) return true;
-    if (jj_3R_relacion_949_9_28()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_1000_10_36()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    if (jj_3R_termino_1031_5_35()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_898_17_29()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_898_17_32()) {
-    jj_scanpos = xsp;
-    if (jj_3R_expresion_911_17_33()) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_898_17_32()
- {
-    Token xsp;
-    if (jj_3R_expresion_898_19_38()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_expresion_898_19_38()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_relacion_950_11_31()
- {
-    if (jj_3R_operador_relacional_981_9_37()) return true;
-    if (jj_3R_expresion_simple_994_5_30()) return true;
+    if (jj_3R_operador_relacional_983_9_37()) return true;
+    if (jj_3R_expresion_simple_996_5_30()) return true;
     return false;
   }
 
@@ -1833,12 +1830,33 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_relacion_949_9_28()
+  static private boolean jj_3R_relacion_951_9_28()
+ {
+    if (jj_3R_expresion_simple_996_5_30()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_relacion_952_11_31()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_901_9_27()
+ {
+    if (jj_3R_relacion_951_9_28()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_expresion_903_17_29()) jj_scanpos = xsp;
+    return false;
+  }
+
+  static private boolean jj_3R_expresion_simple_996_6_34()
  {
     if (jj_3R_expresion_simple_994_5_30()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_relacion_950_11_31()) jj_scanpos = xsp;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) return true;
+    }
     return false;
   }
 
@@ -1851,47 +1869,28 @@ Symbol symbol = semantic.getSymbol(id);
   static private boolean jj_3R_primario_1105_37_45()
  {
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_896_9_27()) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_expresion_simple_994_6_34()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_896_9_27()
+  static private boolean jj_3R_expresion_simple_996_5_30()
  {
     if (jj_3R_relacion_949_9_28()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_expresion_898_17_29()) jj_scanpos = xsp;
-    return false;
-  }
-
-  static private boolean jj_3R_expresion_simple_994_5_30()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_expresion_simple_994_6_34()) jj_scanpos = xsp;
-    if (jj_3R_termino_1031_5_35()) return true;
+    if (jj_3R_expresion_simple_996_6_34()) jj_scanpos = xsp;
+    if (jj_3R_termino_1032_5_35()) return true;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_expresion_simple_1000_10_36()) { jj_scanpos = xsp; break; }
+      if (jj_3R_expresion_simple_1002_10_36()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  static private boolean jj_3R_termino_1032_11_41()
+  static private boolean jj_3R_termino_1033_11_41()
  {
-    if (jj_3R_operador_multiplicativo_1065_9_44()) return true;
+    if (jj_3R_operador_multiplicativo_1066_9_44()) return true;
     if (jj_3R_factor_1077_9_40()) return true;
     return false;
   }
@@ -1920,14 +1919,7 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_lista_una_o_mas_exps_1214_11_54()
- {
-    if (jj_scan_token(tCOMMA)) return true;
-    if (jj_3R_expresion_896_9_27()) return true;
-    return false;
-  }
-
-  static private boolean jj_3R_operador_relacional_981_9_37()
+  static private boolean jj_3R_operador_relacional_983_9_37()
  {
     Token xsp;
     xsp = jj_scanpos;
@@ -1950,36 +1942,34 @@ Symbol symbol = semantic.getSymbol(id);
     return false;
   }
 
-  static private boolean jj_3R_array_access_605_9_26()
+  static private boolean jj_3R_array_access_606_9_26()
  {
     if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_896_9_27()) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
     if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 
-  static private boolean jj_3R_null_726_29_25()
+  static private boolean jj_3R_null_727_29_25()
  {
-    if (jj_3R_array_access_605_9_26()) return true;
+    if (jj_3R_array_access_606_9_26()) return true;
     return false;
   }
 
-  static private boolean jj_3R_primario_1113_17_47()
+  static private boolean jj_3R_lista_una_o_mas_exps_1214_11_54()
  {
-    if (jj_scan_token(tCHAR2INT)) return true;
-    if (jj_scan_token(tLPAREN)) return true;
-    if (jj_3R_expresion_896_9_27()) return true;
-    if (jj_scan_token(tRPAREN)) return true;
+    if (jj_scan_token(tCOMMA)) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
     return false;
   }
 
-  static private boolean jj_3R_termino_1031_5_35()
+  static private boolean jj_3R_termino_1032_5_35()
  {
     if (jj_3R_factor_1077_9_40()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_termino_1032_11_41()) { jj_scanpos = xsp; break; }
+      if (jj_3R_termino_1033_11_41()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -1988,8 +1978,17 @@ Symbol symbol = semantic.getSymbol(id);
  {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_null_726_29_25()) jj_scanpos = xsp;
+    if (jj_3R_null_727_29_25()) jj_scanpos = xsp;
     if (jj_scan_token(tASSIGN)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_primario_1113_17_47()
+ {
+    if (jj_scan_token(tCHAR2INT)) return true;
+    if (jj_scan_token(tLPAREN)) return true;
+    if (jj_3R_expresion_901_9_27()) return true;
+    if (jj_scan_token(tRPAREN)) return true;
     return false;
   }
 

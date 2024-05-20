@@ -508,7 +508,7 @@ void parametro_formal(FuncProcDecAttrib funcProcDecAt) :
 }
 
 
-/*------------------------------------------- INSTRUCCIONES -------------------------------------------*/ 
+/*--------------------------------------------------------------------------- INSTRUCCIONES ---------------------------------------------------------------------------*/ 
 
 //instruccion: (inst_leer | skip_line | inst_escribir | inst_escribir_linea | inst_invocacion_procedimiento_o_asignacion | inst_if | inst_while | <tNULL> | inst_return) <tSEMICOLON>
 void instruccion(Attributes at) : 
@@ -881,7 +881,7 @@ void inst_exit(Attributes at) : {}
 }
 
 
-/*--------------------------------------- EXPRESIONES ---------------------------------------*/ 
+/*----------------------------------------------------------------------- EXPRESIONES -----------------------------------------------------------------------*/ 
 
 //expresion: relacion ( (<tAND> relacion)+ | (<tOR> relacion)+ )?
 void expresion(ExpressionAttrib expAt) : 
@@ -902,6 +902,7 @@ void expresion(ExpressionAttrib expAt) :
 			}
 			relacion(expAt2) 
 			{
+				expAt2.code.addInst(semantic.operatorOpCode(op));
 				// Si hay más de una relación, deben ser todas BOOL
 				if (expAt2.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
@@ -915,6 +916,7 @@ void expresion(ExpressionAttrib expAt) :
 			}
 			relacion(expAt2)
 			{
+				expAt2.code.addInst(semantic.operatorOpCode(op));
 				// Si hay más de una relación, deben ser todas BOOL
 				if (expAt2.type != Symbol.Types.BOOL)
 					semantic.error(getToken(0), errorMsg);
@@ -923,18 +925,13 @@ void expresion(ExpressionAttrib expAt) :
 	)?
 	{
 		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt2.code); // código del resto de relaciones
 
 		boolean moreThanOne = op != null;		
 
 		expAt.esAsignable = expAt1.esAsignable && ! moreThanOne; // Si hay más de una relación, la expresión no es asignable
 		expAt.type = (moreThanOne) ? Symbol.Types.BOOL : expAt1.type;
 		expAt.param = expAt1.param;
-
-		if (moreThanOne) {
-			expAt.code.addBlock(expAt2.code);
-			// apilar operador lógico
-			expAt.code.addInst(semantic.operatorOpCode(op));
-		}
 	}
 }
 
