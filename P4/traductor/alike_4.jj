@@ -936,6 +936,7 @@ void expresion(ExpressionAttrib expAt) :
 		expAt.param = expAt_son.param;
 
 		if (moreThanOne) {
+			expAt.code.addBlock(expAt_son2.code);
 			// apilar operador lógico
 			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
@@ -1085,7 +1086,6 @@ void factor(ExpressionAttrib expAt) :
 			expAt.esAsignable = false;
 			semantic.notOperatorCheck(getToken(0), expAt_son.type); // Operador 'not' solo se puede usar con variables de tipo BOOL 
 
-			expAt.code.addBlock(expAt_son.code);
 			expAt.code.addInst(PCodeInstruction.OpCode.NGB);
 
 			expAt.type = Symbol.Types.BOOL;
