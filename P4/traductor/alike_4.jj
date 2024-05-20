@@ -1260,7 +1260,7 @@ void lista_una_o_mas_exps(Token id, Attributes at) :
 			// Comprobar que los tipos de los argumentos coinciden con los tipos de los parámetros
 			semantic.checkArgumentTypes(id, types, parList, args, symbol);
 
-			at.code.addBlock(semantic.pushParametersCode(expAt_list, parList, symbol));
+			at.code.addBlock(semantic.pushParametersCode(expAt_list, parList));
 
 		} else if (symbol.type == Symbol.Types.ARRAY) {
 			semantic.arrayInListOfExpressionCheck(id, types);

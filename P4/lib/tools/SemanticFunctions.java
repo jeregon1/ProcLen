@@ -265,7 +265,7 @@ public class SemanticFunctions {
 		return code;
 	}
 
-	public CodeBlock pushParametersCode (List<ExpressionAttrib> expAt_list, List<Symbol> parList, Symbol symbol) {
+	public CodeBlock pushParametersCode (List<ExpressionAttrib> expAt_list, List<Symbol> parList) {
 		CodeBlock code = new CodeBlock();
 		
 		// iterar sobre los bloques de código de los argumentos y la lista de params y añadirlos al bloque de código de la invocación
@@ -275,17 +275,33 @@ public class SemanticFunctions {
 			
 			if (par.type == Symbol.Types.ARRAY) {
 				Symbol arg = this.getSymbol(expAt.param);
-				if (par.parClass == Symbol.ParameterClass.VAL) {
 
-					// Si es un parámetro de array por valor, se añade código para empujar todos los elementos del array
-					for (int j = 0; j < ((SymbolArray) par).getNumComp(); j++) {
-						code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir + j);
-						code.addInst(PCodeInstruction.OpCode.DRF);
-					}
-				} else {
+				if (par.parClass == Symbol.ParameterClass.REF) {
+
 					// Si es un parámetro de array por referencia, se añade código para empujar la dirección del array
 					code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir);
-					code.addInst(PCodeInstruction.OpCode.DRF);
+					code.addInst(PCodeInstruction.OpCode.DRF); // Esta instrucción se quita después
+					if (arg.parClass == Symbol.ParameterClass.REF) 
+						code.addInst(PCodeInstruction.OpCode.DRF); // Si el argumento que estamos pasando como parámetro es por referencia, se desreferencia
+
+				} else { // par.class == VAL o UNDEF
+					if (arg.parClass == Symbol.ParameterClass.REF) {
+
+						// acceder a todos los componentes y pasarlos por valor
+						for (int j = 0; j < ((SymbolArray) par).getNumComp(); j++) {
+							code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir); // @@base
+							code.addInst(PCodeInstruction.OpCode.DRF); // @base
+							code.addInst(PCodeInstruction.OpCode.STC, j); 
+							code.addInst(PCodeInstruction.OpCode.PLUS); // @base + j
+							code.addInst(PCodeInstruction.OpCode.DRF); // array[j]
+						}
+					} else { // arg.class == VAL o UNDEF
+						// Si es un parámetro de array por valor, se añade código para empujar todos los elementos del array
+						for (int j = 0; j < ((SymbolArray) par).getNumComp(); j++) {
+							code.addInst(PCodeInstruction.OpCode.SRF, this.getCurrentLevel() - arg.nivel, (int) arg.dir + j);
+							code.addInst(PCodeInstruction.OpCode.DRF);
+						}
+					}
 				}
 			}
 
