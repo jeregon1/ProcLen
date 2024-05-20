@@ -996,22 +996,18 @@ void expresion_simple(ExpressionAttrib expAt) :
 		}
 	(( op = <tPLUS> | op = <tMINUS> ) termino(expAt2)
 		{
+			expAt2.code.addInst(semantic.operatorOpCode(op)); // Apilar el operador entre cada par de términos
 			semantic.moreThanOneExpressionCheck(getToken(0), expAt2.type); // Si hay más de un término, deben ser todos INT
 		}
 	)*
 	{
-		sign = (op != null);
 		expAt.code.addBlock(expAt1.code); // Subir código hacia llamada superior
+		expAt.code.addBlock(expAt2.code); // código del resto de términos (puede estar vacío)
 
+		sign = (op != null);
 		expAt.esAsignable = expAt1.esAsignable && ! sign; // Si hay signo o más de un término, la expresión no es asignable
 		expAt.type = (sign) ? Symbol.Types.INT : expAt1.type;
 		expAt.param = expAt1.param;
-
-		// Si hay más de un término, añadir el código del segundo término y apilar el operador
-		if (expAt2.type != null) {
-			expAt.code.addBlock(expAt2.code);
-			expAt.code.addInst(semantic.operatorOpCode(op));
-		}
 	}
 }
 
