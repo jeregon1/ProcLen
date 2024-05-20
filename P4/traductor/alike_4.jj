@@ -151,7 +151,7 @@ TOKEN : {
 	// Literales
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
-| 	< tCONST_INT: (<tMINUS> | <tPLUS>)? (<DIGIT>)+ >
+| 	< tCONST_INT: (<DIGIT>)+ >
 |	< tCONST_CHAR: "'"~[]"'" >
 |	< tCONST_STRING: "\"" ((~["\""] | "\"\""))* "\"" > // Dos comillas dobles seguidas se consideran una comilla doble
 	{
@@ -302,13 +302,13 @@ void tipo_variable_array(TypeAttrib typeAt) :
 }
 {
 	<tARRAY> <tLPAREN>
-	arrayTypeAt.tMin = <tCONST_INT> 
+	(<tMINUS> {arrayTypeAt.minus1 = -1;} | <tPLUS>)? arrayTypeAt.tMin = <tCONST_INT> 
 		<tRANGE> 
-	arrayTypeAt.tMax = <tCONST_INT> 
+	(<tMINUS> {arrayTypeAt.minus2 = -1;} | <tPLUS>)? arrayTypeAt.tMax = <tCONST_INT> 
 	<tRPAREN>
 	{
-		arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image);
-		arrayTypeAt.max = Integer.parseInt(arrayTypeAt.tMax.image);
+		arrayTypeAt.min = Integer.parseInt(arrayTypeAt.tMin.image) * arrayTypeAt.minus1;
+		arrayTypeAt.max = Integer.parseInt(arrayTypeAt.tMax.image) * arrayTypeAt.minus2;
 		semantic.emptyArrayRange(arrayTypeAt.tMax, arrayTypeAt.min, arrayTypeAt.max); // Comprobar que el rango no es vacío (min > max)
 
 		if (isDeclaration) {
