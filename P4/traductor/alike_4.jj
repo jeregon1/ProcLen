@@ -937,10 +937,7 @@ void expresion(ExpressionAttrib expAt) :
 
 		if (moreThanOne) {
 			// apilar operador lógico
-			switch (op.kind) {
-				case tAND: expAt.code.addInst(PCodeInstruction.OpCode.AND); break;
-				case tOR:  expAt.code.addInst(PCodeInstruction.OpCode.OR); break;
-			}
+			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
 	}
 }
@@ -974,14 +971,7 @@ void relacion(ExpressionAttrib expAt) :
 		if (expAt_son2.type != null) {
 			expAt.code.addBlock(expAt_son2.code);
 			// apilar operador relacional
-			switch (op.kind) {
-				case tEQ:  expAt.code.addInst(PCodeInstruction.OpCode.EQ); break;
-				case tLT:  expAt.code.addInst(PCodeInstruction.OpCode.LT); break;
-				case tGT:  expAt.code.addInst(PCodeInstruction.OpCode.GT); break;
-				case tLE:  expAt.code.addInst(PCodeInstruction.OpCode.LTE); break;
-				case tGE:  expAt.code.addInst(PCodeInstruction.OpCode.GTE); break;
-				case tNEQ: expAt.code.addInst(PCodeInstruction.OpCode.NEQ); break;
-			}
+			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
 	}
 }
@@ -1027,14 +1017,11 @@ void expresion_simple(ExpressionAttrib expAt) :
 		// Si hay más de un término, añadir el código del segundo término y apilar el operador
 		if (expAt_son2.type != null) {
 			expAt.code.addBlock(expAt_son2.code);
-			switch (op.kind) {
-				case tPLUS: expAt.code.addInst(PCodeInstruction.OpCode.PLUS); break;
-				case tMINUS: expAt.code.addInst(PCodeInstruction.OpCode.SBT); break;
-			}
+			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
 	}
 }
-                                                                                                                                                                         
+                                                                                                                                                                        
 //termino: factor (operador_multiplicativo factor)*
 void termino(ExpressionAttrib expAt) : 
 {
@@ -1066,12 +1053,7 @@ void termino(ExpressionAttrib expAt) :
 		// Si hay más de un factor, añadir el código del segundo factor y apilar el operador
 		if (expAt_son2.type != null) {
 			expAt.code.addBlock(expAt_son2.code);
-
-			switch (op.kind) {
-				case tMULT: expAt.code.addInst(PCodeInstruction.OpCode.TMS); break;
-				case tDIV:  expAt.code.addInst(PCodeInstruction.OpCode.DIV); break;
-				case tMOD:  expAt.code.addInst(PCodeInstruction.OpCode.MOD); break;
-			}
+			expAt.code.addInst(semantic.operatorOpCode(op));
 		}
 	}
 }		

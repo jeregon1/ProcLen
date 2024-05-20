@@ -218,6 +218,25 @@ public class SemanticFunctions {
 
 	// -------------------- GENERACIÓN CÓDIGO --------------------------
 
+	public PCodeInstruction.OpCode operatorOpCode(Token op) {
+		switch (op.kind) {
+			case alike_4Constants.tEQ:   return PCodeInstruction.OpCode.EQ;
+			case alike_4Constants.tLT:   return PCodeInstruction.OpCode.LT;
+			case alike_4Constants.tGT:   return PCodeInstruction.OpCode.GT;
+			case alike_4Constants.tLE:   return PCodeInstruction.OpCode.LTE;
+			case alike_4Constants.tGE:   return PCodeInstruction.OpCode.GTE;
+			case alike_4Constants.tNEQ:  return PCodeInstruction.OpCode.NEQ;
+			case alike_4Constants.tAND:  return PCodeInstruction.OpCode.AND;
+			case alike_4Constants.tOR:   return PCodeInstruction.OpCode.OR;
+			case alike_4Constants.tPLUS: return PCodeInstruction.OpCode.PLUS;
+			case alike_4Constants.tMINUS:return PCodeInstruction.OpCode.SBT;
+			case alike_4Constants.tMULT: return PCodeInstruction.OpCode.TMS;
+			case alike_4Constants.tDIV:  return PCodeInstruction.OpCode.DIV;
+			case alike_4Constants.tMOD:  return PCodeInstruction.OpCode.MOD;
+			default: return null;
+		}
+	}
+
 	public CodeBlock readParamsCode(List<Symbol> params) {
 		CodeBlock code = new CodeBlock();
 
